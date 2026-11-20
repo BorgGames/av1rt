@@ -110,12 +110,21 @@ internal static partial class cost
 
     // RTCD (av1_rtcd.h): the dispatched names.
     internal static void av1_cost_tokens_from_cdf_2_batch(Ptr<int> costs, int costs_stride,
-                                                          Ptr<ushort> cdf, int cdf_stride, int n) =>
-        av1_cost_tokens_from_cdf_2_batch_c(costs, costs_stride, cdf, cdf_stride, n);
+                                                          Ptr<ushort> cdf, int cdf_stride, int n)
+    {
+        if (Simd.UseAvx2) av1_cost_tokens_from_cdf_2_batch_avx2(costs, costs_stride, cdf, cdf_stride, n);
+        else av1_cost_tokens_from_cdf_2_batch_c(costs, costs_stride, cdf, cdf_stride, n);
+    }
 
     internal static void av1_cost_tokens_from_cdf_4_batch(Ptr<int> costs, int costs_stride,
-                                                          Ptr<ushort> cdf, int cdf_stride, int n) =>
-        av1_cost_tokens_from_cdf_4_batch_c(costs, costs_stride, cdf, cdf_stride, n);
+                                                          Ptr<ushort> cdf, int cdf_stride, int n)
+    {
+        if (Simd.UseAvx2) av1_cost_tokens_from_cdf_4_batch_avx2(costs, costs_stride, cdf, cdf_stride, n);
+        else av1_cost_tokens_from_cdf_4_batch_c(costs, costs_stride, cdf, cdf_stride, n);
+    }
+
+    // [port] The jagged overloads have no SIMD version: av1_cost_tokens_from_cdf_{2,4}_batch_avx2
+    // gathers from one contiguous CDF table.
 
     internal static void av1_cost_tokens_from_cdf_2_batch(int[][] costs, int costs_stride,
                                                           ushort[][] cdf, int cdf_stride, int n) =>

@@ -31,7 +31,8 @@ internal static partial class avg
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static uint aom_avg_4x4(Ptr<byte> s, int p) => aom_avg_4x4_c(s, p);
+    internal static uint aom_avg_4x4(Ptr<byte> s, int p) =>
+        Simd.UseAvx2 ? aom_avg_4x4_sse2(s, p) : aom_avg_4x4_c(s, p);
 
     internal static uint aom_avg_8x8_c(Ptr<byte> s, int p)
     {
@@ -46,7 +47,8 @@ internal static partial class avg
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static uint aom_avg_8x8(Ptr<byte> s, int p) => aom_avg_8x8_c(s, p);
+    internal static uint aom_avg_8x8(Ptr<byte> s, int p) =>
+        Simd.UseAvx2 ? aom_avg_8x8_sse2(s, p) : aom_avg_8x8_c(s, p);
 
     internal static void aom_avg_8x8_quad_c(Ptr<byte> s, int p, int x16_idx, int y16_idx,
                                             Ptr<int> avg)
@@ -62,8 +64,11 @@ internal static partial class avg
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void aom_avg_8x8_quad(Ptr<byte> s, int p, int x16_idx, int y16_idx,
-                                          Ptr<int> avg) =>
-        aom_avg_8x8_quad_c(s, p, x16_idx, y16_idx, avg);
+                                          Ptr<int> avg)
+    {
+        if (Simd.UseAvx2) aom_avg_8x8_quad_avx2(s, p, x16_idx, y16_idx, avg);
+        else aom_avg_8x8_quad_c(s, p, x16_idx, y16_idx, avg);
+    }
 
     // src_diff: first pass, 9 bit, dynamic range [-255, 255]
     //           second pass, 12 bit, dynamic range [-2040, 2040]
@@ -142,8 +147,11 @@ internal static partial class avg
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void aom_hadamard_lp_8x8(Ptr<short> src_diff, int src_stride,
-                                             Ptr<short> coeff) =>
-        aom_hadamard_lp_8x8_c(src_diff, src_stride, coeff);
+                                             Ptr<short> coeff)
+    {
+        if (Simd.UseAvx2) aom_hadamard_lp_8x8_sse2(src_diff, src_stride, coeff);
+        else aom_hadamard_lp_8x8_c(src_diff, src_stride, coeff);
+    }
 
     internal static void aom_hadamard_lp_8x8_dual_c(Ptr<short> src_diff, int src_stride,
                                                     Ptr<short> coeff)
@@ -157,8 +165,11 @@ internal static partial class avg
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void aom_hadamard_lp_8x8_dual(Ptr<short> src_diff, int src_stride,
-                                                  Ptr<short> coeff) =>
-        aom_hadamard_lp_8x8_dual_c(src_diff, src_stride, coeff);
+                                                  Ptr<short> coeff)
+    {
+        if (Simd.UseAvx2) aom_hadamard_lp_8x8_dual_avx2(src_diff, src_stride, coeff);
+        else aom_hadamard_lp_8x8_dual_c(src_diff, src_stride, coeff);
+    }
 
     internal static void aom_hadamard_lp_16x16_c(Ptr<short> src_diff, int src_stride,
                                                  Ptr<short> coeff)
@@ -194,8 +205,11 @@ internal static partial class avg
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void aom_hadamard_lp_16x16(Ptr<short> src_diff, int src_stride,
-                                               Ptr<short> coeff) =>
-        aom_hadamard_lp_16x16_c(src_diff, src_stride, coeff);
+                                               Ptr<short> coeff)
+    {
+        if (Simd.UseAvx2) aom_hadamard_lp_16x16_avx2(src_diff, src_stride, coeff);
+        else aom_hadamard_lp_16x16_c(src_diff, src_stride, coeff);
+    }
 
     internal static int aom_satd_lp_c(Ptr<short> coeff, int length)
     {
@@ -207,7 +221,8 @@ internal static partial class avg
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int aom_satd_lp(Ptr<short> coeff, int length) => aom_satd_lp_c(coeff, length);
+    internal static int aom_satd_lp(Ptr<short> coeff, int length) =>
+        Simd.UseAvx2 ? aom_satd_lp_avx2(coeff, length) : aom_satd_lp_c(coeff, length);
 
     // Integer projection onto row vectors.
     // height: value range {16, 32, 64, 128}.
@@ -228,8 +243,11 @@ internal static partial class avg
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void aom_int_pro_row(Ptr<short> hbuf, Ptr<byte> @ref, int ref_stride,
-                                         int width, int height, int norm_factor) =>
-        aom_int_pro_row_c(hbuf, @ref, ref_stride, width, height, norm_factor);
+                                         int width, int height, int norm_factor)
+    {
+        if (Simd.UseAvx2) aom_int_pro_row_avx2(hbuf, @ref, ref_stride, width, height, norm_factor);
+        else aom_int_pro_row_c(hbuf, @ref, ref_stride, width, height, norm_factor);
+    }
 
     // width: value range {16, 32, 64, 128}.
     internal static void aom_int_pro_col_c(Ptr<short> vbuf, Ptr<byte> @ref, int ref_stride,
@@ -247,8 +265,11 @@ internal static partial class avg
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void aom_int_pro_col(Ptr<short> vbuf, Ptr<byte> @ref, int ref_stride,
-                                         int width, int height, int norm_factor) =>
-        aom_int_pro_col_c(vbuf, @ref, ref_stride, width, height, norm_factor);
+                                         int width, int height, int norm_factor)
+    {
+        if (Simd.UseAvx2) aom_int_pro_col_avx2(vbuf, @ref, ref_stride, width, height, norm_factor);
+        else aom_int_pro_col_c(vbuf, @ref, ref_stride, width, height, norm_factor);
+    }
 
     // ref: [0 - 510]
     // src: [0 - 510]
@@ -276,5 +297,5 @@ internal static partial class avg
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int aom_vector_var(Ptr<short> @ref, Ptr<short> src, int bwl) =>
-        aom_vector_var_c(@ref, src, bwl);
+        Simd.UseAvx2 ? aom_vector_var_avx2(@ref, src, bwl) : aom_vector_var_c(@ref, src, bwl);
 }
