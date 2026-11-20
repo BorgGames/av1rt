@@ -646,12 +646,14 @@ internal sealed partial class MACROBLOCK
     internal int sb_energy_level;
 
     // The rate needed to signal a mode to the bitstream.
-    internal readonly ModeCosts mode_costs = new();
+    // [port] Not readonly: CopyFrom shares the source's table (see there).
+    internal ModeCosts mode_costs = new();
     // The rate needed to encode a new motion vector to the bitstream and some
     // multipliers for motion search.
     internal MvCosts mv_costs;
     // The rate needed to signal the txfm coefficients to the bitstream.
-    internal readonly CoeffCosts coeff_costs = new();
+    // [port] Not readonly: CopyFrom shares the source's table (see there).
+    internal CoeffCosts coeff_costs = new();
 
     /*****************************************************************************
      * \name Rate to Distortion Multipliers
@@ -854,9 +856,14 @@ internal sealed partial class MACROBLOCK
         rb = o.rb;
         mb_energy = o.mb_energy;
         sb_energy_level = o.sb_energy_level;
-        mode_costs.CopyFrom(o.mode_costs);
+        // [port] C copies the embedded ModeCosts/CoeffCosts tables. In the subset they are
+        // written only by av1_initialize_rd_consts on cpi->td.mb before the workers are
+        // prepared (SB-level cost updates are not supported, see av1_set_cost_upd_freq), so
+        // the copies are read-only and share the source's tables instead of deep-copying
+        // ~100 KB per worker twice per frame.
+        mode_costs = o.mode_costs;
         mv_costs = o.mv_costs;
-        coeff_costs.CopyFrom(o.coeff_costs);
+        coeff_costs = o.coeff_costs;
         errorperbit = o.errorperbit;
         sadperbit = o.sadperbit;
         seg_skip_block = o.seg_skip_block;

@@ -543,7 +543,12 @@ internal static partial class ethread
                 }
                 else
                 {
-                    td.mb.e_mbd.tile_ctx.CopyFrom(this_tile.tctx);
+                    // [port] C: memcpy(td->mb.e_mbd.tile_ctx, &this_tile->tctx, sizeof(*tctx))
+                    // into the worker's own context, once per SB row. Without
+                    // allow_update_cdf (always the case here, see above) nothing writes the
+                    // tile context while encoding, so the row reads the tile's context in
+                    // place: same contents, no 20 KB copy per row.
+                    td.mb.e_mbd.tile_ctx = this_tile.tctx;
                 }
 
                 av1_init_above_context(cm.above_contexts, av1_num_planes(cm), tile_row,
