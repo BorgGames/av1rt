@@ -177,8 +177,11 @@ internal static partial class encodetxb
     // RTCD: av1_txb_init_levels is av1_txb_init_levels_c in the pure-C oracle build.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void av1_txb_init_levels(Ptr<tran_low_t> coeff, int width,
-                                             int height, Ptr<byte> levels) =>
-        av1_txb_init_levels_c(coeff, width, height, levels);
+                                             int height, Ptr<byte> levels)
+    {
+        if (Simd.UseAvx2) av1_txb_init_levels_avx2(coeff, width, height, levels);
+        else av1_txb_init_levels_c(coeff, width, height, levels);
+    }
 
     internal static void av1_get_nz_map_contexts_c(Ptr<byte> levels,
                                                    Ptr<short> scan, int eob,
@@ -200,8 +203,11 @@ internal static partial class encodetxb
     internal static void av1_get_nz_map_contexts(Ptr<byte> levels,
                                                  Ptr<short> scan, int eob,
                                                  TX_SIZE tx_size, TX_CLASS tx_class,
-                                                 Ptr<sbyte> coeff_contexts) =>
-        av1_get_nz_map_contexts_c(levels, scan, eob, tx_size, tx_class, coeff_contexts);
+                                                 Ptr<sbyte> coeff_contexts)
+    {
+        if (Simd.UseAvx2) av1_get_nz_map_contexts_sse2(levels, scan, eob, tx_size, tx_class, coeff_contexts);
+        else av1_get_nz_map_contexts_c(levels, scan, eob, tx_size, tx_class, coeff_contexts);
+    }
 
     // [port] C stack arrays of av1_write_coeffs_txb (uint8_t levels_buf[TX_PAD_2D],
     // int8_t coeff_contexts[MAX_TX_SQUARE], tran_low_t nz_coeffs[32 * 32]): per-thread scratch.

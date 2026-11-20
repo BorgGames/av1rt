@@ -8,3 +8,5 @@ obj/
 *.yuv
 *.y4m
 /artifacts/
+# The port mirrors libaom's x86 SIMD directories; keep them even if a global ignore lists x86/.
+!x86/
