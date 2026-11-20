@@ -978,6 +978,7 @@ internal static partial class av1_common_int
 
         for (int i = 0; i < num_planes; ++i)
         {
+            xd.plane[i].seg_qm_level.AsSpan().Fill(-1);  // [port] see macroblockd_plane.seg_qm_level
             if (xd.plane[i].plane_type == PLANE_TYPE_Y)
             {
                 av1_copy(xd.plane[i].seg_dequant_QTX, quant_params.y_dequant_QTX);

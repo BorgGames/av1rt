@@ -136,11 +136,14 @@ internal static class txfm_common_avx2
         }
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_transpose2_8x8_avx2_t;
+    [ThreadStatic] private static __m256i[] t_transpose2_8x8_avx2_u;
     [MethodImpl(AI)]
     internal static void transpose2_8x8_avx2(Span<__m256i> @in, Span<__m256i> @out)
     {
-        Span<__m256i> t = stackalloc __m256i[16];
-        Span<__m256i> u = stackalloc __m256i[16];
+        Span<__m256i> t = t_transpose2_8x8_avx2_t ??= new __m256i[16];
+        Span<__m256i> u = t_transpose2_8x8_avx2_u ??= new __m256i[16];
         // (1st, 2nd) ==> (lo, hi)
         //   (0, 1)   ==>  (0, 1)
         //   (2, 3)   ==>  (2, 3)
@@ -181,10 +184,12 @@ internal static class txfm_common_avx2
         }
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_transpose_16bit_16x16_avx2_t;
     [MethodImpl(AI)]
     internal static void transpose_16bit_16x16_avx2(Span<__m256i> @in, Span<__m256i> @out)
     {
-        Span<__m256i> t = stackalloc __m256i[16];
+        Span<__m256i> t = t_transpose_16bit_16x16_avx2_t ??= new __m256i[16];
 
         // [port] LOADL(idx) / LOADR(idx) macros: `_mm_load_si128((__m128i const *)&in[idx])` is
         // the low 128 bits of in[idx], `... + 1` the high 128 bits.

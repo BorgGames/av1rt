@@ -14,6 +14,8 @@ namespace Av1rt.Aom;
 // used by the realtime-only subset (their table entries are null).
 internal static partial class av1_fwd_txfm2d_avx2
 {
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_fdct16x16_new_avx2_x1;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void fdct16x16_new_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
@@ -40,7 +42,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         __m256i cospi_m52_p12 = pair_set_w16_epi16(-cospi[52], cospi[12]);
 
         // stage 1
-        Span<__m256i> x1 = stackalloc __m256i[16];
+        Span<__m256i> x1 = t_fdct16x16_new_avx2_x1 ??= new __m256i[16];
         btf_16_adds_subs_out_avx2(ref x1[0], ref x1[15], input[0], input[15]);
         btf_16_adds_subs_out_avx2(ref x1[1], ref x1[14], input[1], input[14]);
         btf_16_adds_subs_out_avx2(ref x1[2], ref x1[13], input[2], input[13]);
@@ -122,6 +124,8 @@ internal static partial class av1_fwd_txfm2d_avx2
         fdct16x16_new_avx2(input, output, 12);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_fdct16x32_avx2_x1;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void fdct16x32_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
@@ -166,7 +170,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         __m256i cospi_m58_p06 = pair_set_w16_epi16(-cospi[58], cospi[6]);
 
         // stage 1
-        Span<__m256i> x1 = stackalloc __m256i[32];
+        Span<__m256i> x1 = t_fdct16x32_avx2_x1 ??= new __m256i[32];
         btf_16_adds_subs_out_avx2(ref x1[0], ref x1[31], input[0], input[31]);
         btf_16_adds_subs_out_avx2(ref x1[1], ref x1[30], input[1], input[30]);
         btf_16_adds_subs_out_avx2(ref x1[2], ref x1[29], input[2], input[29]);
@@ -328,6 +332,8 @@ internal static partial class av1_fwd_txfm2d_avx2
         fdct16x32_avx2(input, output, 13);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_fadst16x16_new_avx2_x1;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void fadst16x16_new_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
@@ -364,7 +370,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         __m256i cospi_p06_m58 = pair_set_w16_epi16(cospi[6], -cospi[58]);
 
         // stage 1
-        Span<__m256i> x1 = stackalloc __m256i[16];
+        Span<__m256i> x1 = t_fadst16x16_new_avx2_x1 ??= new __m256i[16];
         x1[0] = input[0];
         x1[1] = _mm256_subs_epi16(__zero, input[15]);
         x1[2] = _mm256_subs_epi16(__zero, input[7]);
@@ -899,13 +905,16 @@ internal static partial class av1_fwd_txfm2d_avx2
         store_buffer_16bit_to_32bit_w8_avx2(buf1, output, 8, 8);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x16_non_dct_avx2_buf0;
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x16_non_dct_avx2_buf1;
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void lowbd_fwd_txfm2d_16x16_non_dct_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
         TX_SIZE tx_size = TX_16X16;
-        Span<__m256i> buf0 = stackalloc __m256i[16];
-        Span<__m256i> buf1 = stackalloc __m256i[16];
+        Span<__m256i> buf0 = t_lowbd_fwd_txfm2d_16x16_non_dct_avx2_buf0 ??= new __m256i[16];
+        Span<__m256i> buf1 = t_lowbd_fwd_txfm2d_16x16_non_dct_avx2_buf1 ??= new __m256i[16];
         Ptr<sbyte> shift = av1_fwd_txfm_shift_ls[tx_size];
         int width = tx_size_wide[tx_size];
         int height = tx_size_high[tx_size];
@@ -947,6 +956,9 @@ internal static partial class av1_fwd_txfm2d_avx2
         store_buffer_16bit_to_32bit_w16_avx2(buf, output + i * 16, height, width);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x16_avx2_buf0;
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x16_avx2_buf1;
     private static void lowbd_fwd_txfm2d_16x16_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         if ((tx_type != DCT_DCT))
@@ -956,8 +968,8 @@ internal static partial class av1_fwd_txfm2d_avx2
         }
         _ = bd;
         TX_SIZE tx_size = TX_16X16;
-        Span<__m256i> buf0 = stackalloc __m256i[16];
-        Span<__m256i> buf1 = stackalloc __m256i[16];
+        Span<__m256i> buf0 = t_lowbd_fwd_txfm2d_16x16_avx2_buf0 ??= new __m256i[16];
+        Span<__m256i> buf1 = t_lowbd_fwd_txfm2d_16x16_avx2_buf1 ??= new __m256i[16];
         Ptr<sbyte> shift = av1_fwd_txfm_shift_ls[tx_size];
         int width = tx_size_wide[tx_size];
         int height = tx_size_high[tx_size];
@@ -971,12 +983,15 @@ internal static partial class av1_fwd_txfm2d_avx2
         store_buffer_16bit_to_32bit_w16_avx2(buf1, output, height, width);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_32x32_avx2_buf0;
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_32x32_avx2_buf1;
     private static void lowbd_fwd_txfm2d_32x32_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
         TX_SIZE tx_size = TX_32X32;
-        Span<__m256i> buf0 = stackalloc __m256i[32];
-        Span<__m256i> buf1 = stackalloc __m256i[64];
+        Span<__m256i> buf0 = t_lowbd_fwd_txfm2d_32x32_avx2_buf0 ??= new __m256i[32];
+        Span<__m256i> buf1 = t_lowbd_fwd_txfm2d_32x32_avx2_buf1 ??= new __m256i[64];
         Ptr<sbyte> shift = av1_fwd_txfm_shift_ls[tx_size];
         int width = tx_size_wide[tx_size];
         int height = tx_size_high[tx_size];
@@ -1048,12 +1063,15 @@ internal static partial class av1_fwd_txfm2d_avx2
         }
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x32_avx2_buf0;
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x32_avx2_buf1;
     private static void lowbd_fwd_txfm2d_16x32_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
         TX_SIZE tx_size = TX_16X32;
-        Span<__m256i> buf0 = stackalloc __m256i[32];
-        Span<__m256i> buf1 = stackalloc __m256i[32];
+        Span<__m256i> buf0 = t_lowbd_fwd_txfm2d_16x32_avx2_buf0 ??= new __m256i[32];
+        Span<__m256i> buf1 = t_lowbd_fwd_txfm2d_16x32_avx2_buf1 ??= new __m256i[32];
         Ptr<sbyte> shift = av1_fwd_txfm_shift_ls[tx_size];
         int txw_idx = get_txw_idx(tx_size);
         int txh_idx = get_txh_idx(tx_size);
@@ -1100,11 +1118,14 @@ internal static partial class av1_fwd_txfm2d_avx2
         }
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_32x16_avx2_buf0;
+    [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_32x16_avx2_buf1;
     private static void lowbd_fwd_txfm2d_32x16_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
-        Span<__m256i> buf0 = stackalloc __m256i[32];
-        Span<__m256i> buf1 = stackalloc __m256i[64];
+        Span<__m256i> buf0 = t_lowbd_fwd_txfm2d_32x16_avx2_buf0 ??= new __m256i[32];
+        Span<__m256i> buf1 = t_lowbd_fwd_txfm2d_32x16_avx2_buf1 ??= new __m256i[64];
         Ptr<sbyte> shift = av1_fwd_txfm_shift_ls[TX_32X16];
         int txw_idx = get_txw_idx(TX_32X16);
         int txh_idx = get_txh_idx(TX_32X16);
@@ -1544,6 +1565,8 @@ internal static partial class av1_fwd_txfm2d_avx2
                                 out output[11], out output[13], out output[3], in __rounding_256, ref cos_bit);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m256i[] t_fadst8x16_new_avx2_cospi_arr;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void fadst8x16_new_avx2(Span<__m128i> input, Span<__m128i> output, sbyte cos_bit_arg)
     {
@@ -1583,7 +1606,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         __m128i cospi_p58_p06 = pair_set_epi16(cospi[58], cospi[6]);
         __m128i cospi_p06_m58 = pair_set_epi16(cospi[6], -cospi[58]);
 
-        Span<__m256i> cospi_arr = stackalloc __m256i[20];
+        Span<__m256i> cospi_arr = t_fadst8x16_new_avx2_cospi_arr ??= new __m256i[20];
 
         cospi_arr[0] = _mm256_insertf128_si256(_mm256_castsi128_si256(cospi_p32_p32),
                                                                                       cospi_p32_p32, 0x1);

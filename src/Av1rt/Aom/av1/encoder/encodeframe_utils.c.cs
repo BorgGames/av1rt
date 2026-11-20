@@ -2,6 +2,8 @@
 using System;
 using System.Diagnostics;
 
+using System.Runtime.Intrinsics;
+
 namespace Av1rt.Aom;
 
 internal static partial class encodeframe_utils
@@ -507,10 +509,19 @@ internal static partial class encodeframe_utils
 
                 for (int i = 0; i < (h >> shift_y); ++i)
                 {
-                    for (int j = 0; j < (w >> shift_x); ++j)
+                    // [port] C: for (j) src[j] = (last_src[j] + src[j]) >> 1; vectorised with
+                    // the exact floor average (a & b) + ((a ^ b) >> 1).
+                    int bw = w >> shift_x;
+                    Span<byte> s = src.AsSpan(bw);
+                    ReadOnlySpan<byte> l = last_src.AsSpan(bw);
+                    int j = 0;
+                    for (; j + 32 <= bw; j += 32)
                     {
-                        src[j] = (byte)((last_src[j] + src[j]) >> 1);
+                        Vector256<byte> a = Vector256.Create<byte>(s.Slice(j, 32));
+                        Vector256<byte> b = Vector256.Create<byte>(l.Slice(j, 32));
+                        ((a & b) + Vector256.ShiftRightLogical(a ^ b, 1)).CopyTo(s.Slice(j, 32));
                     }
+                    for (; j < bw; ++j) s[j] = (byte)((l[j] + s[j]) >> 1);
                     src += src_stride;
                     last_src += last_src_stride;
                 }

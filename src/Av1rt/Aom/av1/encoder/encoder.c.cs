@@ -3,6 +3,8 @@
 using System;
 using System.Diagnostics;
 
+using Av1rt.Diagnostics;
+
 namespace Av1rt.Aom;
 
 // [subset] Only the functions executed by the one-pass realtime (CONFIG_REALTIME_ONLY) encode
@@ -1570,13 +1572,16 @@ internal static partial class encoder
         {
             int num_workers = cpi.mt_info.num_mod_workers[MOD_CDEF];
             // Find CDEF parameters
+            long t0 = StageTimes.Start();
             av1_cdef_search(cpi);
+            StageTimes.Stop(StageTimes.Stage.CdefSearch, t0);
 
             // Apply the filter
             if ((skip_apply_postproc_filters & SKIP_APPLY_CDEF) == 0)
             {
                 Debug.Assert(cpi.ppi.rtc_ref.non_reference_frame == 0 ||
                              cpi.ppi.b_calculate_psnr != 0);
+                t0 = StageTimes.Start();
                 if (num_workers > 1)
                 {
                     // Extension of frame borders is multi-threaded along with cdef.
@@ -1591,6 +1596,7 @@ internal static partial class encoder
                 {
                     av1_cdef_frame(cm.cur_frame.buf, cm, xd, av1_cdef_init_fb_row);
                 }
+                StageTimes.Stop(StageTimes.Stage.CdefApply, t0);
             }
         }
 
@@ -1649,7 +1655,9 @@ internal static partial class encoder
 
         if (use_loopfilter != 0)
         {
+            long t0 = StageTimes.Start();
             av1_pick_filter_level(cpi.source, cpi, cpi.sf.lpf_sf.lpf_pick);
+            StageTimes.Stop(StageTimes.Stage.PickLpf, t0);
             loopfilter lf = cm.lf;
             if ((lf.filter_level[0] != 0 || lf.filter_level[1] != 0) &&
                 (skip_apply_postproc_filters & SKIP_APPLY_LOOPFILTER) == 0)
@@ -1665,9 +1673,11 @@ internal static partial class encoder
                 // pick method is LPF_PICK_FROM_Q as u and v plane filter levels are
                 // equal.
                 int lpf_opt_level = get_lpf_opt_level(cpi.sf);
+                long t1 = StageTimes.Start();
                 av1_loop_filter_frame_mt(cm.cur_frame.buf, cm, xd, 0, num_planes, 0,
                                          mt_info.workers, num_workers,
                                          mt_info.lf_row_sync, lpf_opt_level);
+                StageTimes.Stop(StageTimes.Stage.LoopFilter, t1);
             }
         }
 
@@ -1998,7 +2008,9 @@ internal static partial class encoder
         }
 
         // transform / motion compensation build reconstruction frame
+        long tEnc = StageTimes.Start();
         av1_encode_frame(cpi);
+        StageTimes.Stop(StageTimes.Stage.EncodeTiles, tEnc);
 
         if (cpi.rc.rtc_external_ratectrl == 0 && frame_is_intra_only(cm) == 0)
             update_motion_stat(cpi);
@@ -2096,7 +2108,9 @@ internal static partial class encoder
 
         if (cpi.oxcf.mode != ALLINTRA && cpi.ppi.rtc_ref.non_reference_frame == 0)
         {
+            long tExt = StageTimes.Start();
             extend_frame_borders(cpi);
+            StageTimes.Stop(StageTimes.Stage.ExtendBorders, tExt);
         }
 
         if (cpi.oxcf.tune_cfg.content == AOM_CONTENT_FILM)
@@ -2107,9 +2121,11 @@ internal static partial class encoder
 
         av1_finalize_encoded_frame(cpi);
         cpi.rc.coefficient_size = 0;
+        long tPack = StageTimes.Start();
         if (av1_pack_bitstream(cpi, dest, dest_size, ref size, ref largest_tile_id) !=
             AOM_CODEC_OK)
             return AOM_CODEC_ERROR;
+        StageTimes.Stop(StageTimes.Stage.PackBitstream, tPack);
 
         if (cpi.rc.postencode_drop != 0 && allow_postencode_drop_rtc(cpi) != 0 &&
             av1_postencode_drop_cbr(cpi, ref size) != 0)

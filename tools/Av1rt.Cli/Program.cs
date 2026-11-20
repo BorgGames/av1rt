@@ -118,6 +118,7 @@ static int Bench(string[] args)
         {
             alloc0 = GC.GetTotalAllocatedBytes(true);
             gc0 = GC.CollectionCount(0);
+            Av1rt.Diagnostics.StageTimes.Reset();
             sw.Start();
         }
         // Ping-pong through the clip so there's no artificial scene cut at the loop point.
@@ -125,7 +126,9 @@ static int Bench(string[] args)
         int k = i % period;
         int idx = k < frames.Count ? k : period - k;
         output.ResetWrittenCount();
+        long t0 = Av1rt.Diagnostics.StageTimes.Start();
         var r = enc.Encode(I420Frame.FromPacked(frames[idx], o.Width, o.Height), output);
+        Av1rt.Diagnostics.StageTimes.Stop(Av1rt.Diagnostics.StageTimes.Stage.Total, t0);
         if (i >= warmup) bytes += r.Length;
     }
     sw.Stop();
@@ -136,5 +139,6 @@ static int Bench(string[] args)
         $"{o.Width}x{o.Height} speed {o.Speed}: {fps:F2} fps over {timed} frames, {kbps:F0} kbps at {o.FrameRate} fps nominal"));
     Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture,
         $"allocated {(GC.GetTotalAllocatedBytes(true) - alloc0) / (double)timed / 1024:F0} KiB/frame, {GC.CollectionCount(0) - gc0} gen0 collections"));
+    Console.Error.Write(Av1rt.Diagnostics.StageTimes.Report());
     return 0;
 }

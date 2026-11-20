@@ -334,6 +334,10 @@ internal static partial class av1_quantize
         for (int i = 0; i < MAX_MB_PLANE; ++i)
         {
             int qmlevel = qmlevel_ls[i];
+            // [port] The rows only depend on qmlevel (av1_qm_init fills them deterministically),
+            // so skip the copy when this segment already holds them.
+            if (xd.plane[i].seg_qm_level[segment_id] == qmlevel) continue;
+            xd.plane[i].seg_qm_level[segment_id] = qmlevel;
             copy_array(xd.plane[i].seg_qmatrix[segment_id],
                        quant_params.gqmatrix[qmlevel][i]);
             copy_array(xd.plane[i].seg_iqmatrix[segment_id],

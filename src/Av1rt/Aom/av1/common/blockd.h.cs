@@ -246,6 +246,12 @@ internal sealed partial class macroblockd_plane
     public readonly Ptr<qm_val_t>[][] seg_iqmatrix = new_jagged<Ptr<qm_val_t>>(MAX_SEGMENTS, TX_SIZES_ALL);
     public readonly Ptr<qm_val_t>[][] seg_qmatrix = new_jagged<Ptr<qm_val_t>>(MAX_SEGMENTS, TX_SIZES_ALL);
 
+    // [port] Not in C. The qm level whose gqmatrix/giqmatrix rows seg_qmatrix[s]/seg_iqmatrix[s]
+    // currently hold (-1: unknown), so set_qmatrix can skip re-copying identical rows (the copy
+    // of ref-holding structs is costly in .NET and runs on every segment change). Reset by every
+    // other writer of the rows.
+    public readonly int[] seg_qm_level = [-1, -1, -1, -1, -1, -1, -1, -1];
+
     /// <summary>C struct assignment: copies every field (arrays element-wise).</summary>
     public void CopyFrom(macroblockd_plane other)
     {
@@ -263,6 +269,7 @@ internal sealed partial class macroblockd_plane
         height = other.height;
         av1_copy(seg_iqmatrix, other.seg_iqmatrix);
         av1_copy(seg_qmatrix, other.seg_qmatrix);
+        other.seg_qm_level.AsSpan().CopyTo(seg_qm_level);
     }
 }
 

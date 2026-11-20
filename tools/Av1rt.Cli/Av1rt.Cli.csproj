@@ -13,6 +13,17 @@
     <IlcInstructionSet>x86-64-v3</IlcInstructionSet>
   </PropertyGroup>
 
+  <!-- The SIMD kernels are large AggressiveInlining bodies behind thin dispatch forwarders. The
+       JIT's inline budget is a multiple of the root method's size, so with the default (10) the
+       kernels' own helper intrinsics stop being inlined; 50 lets every forced inline through
+       (+12% at 4K; 100 and 200 produce the identical binary). -->
+  <PropertyGroup>
+    <JitInlineBudget Condition="'$(JitInlineBudget)' == ''">50</JitInlineBudget>
+  </PropertyGroup>
+  <ItemGroup>
+    <IlcArg Include="--codegenopt:JitInlineBudget=$(JitInlineBudget)" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Av1rt\Av1rt.csproj" />
   </ItemGroup>

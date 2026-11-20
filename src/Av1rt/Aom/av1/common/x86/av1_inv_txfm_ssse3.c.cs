@@ -594,6 +594,8 @@ internal static partial class av1_inv_txfm_ssse3
         output[16] = x[0];
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_idct32_low8_ssse3_x;
     private static void idct32_low8_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -601,7 +603,7 @@ internal static partial class av1_inv_txfm_ssse3
         __m128i __rounding = _mm_set1_epi32(1 << (INV_COS_BIT - 1));
 
         // stage 1
-        Span<__m128i> x = stackalloc __m128i[32];
+        Span<__m128i> x = t_idct32_low8_ssse3_x ??= new __m128i[32];
         x[0] = input[0];
         x[4] = input[4];
         x[8] = input[2];
@@ -652,6 +654,8 @@ internal static partial class av1_inv_txfm_ssse3
         idct32_stage9_sse2(output, x);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_idct32_low16_ssse3_x;
     private static void idct32_low16_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -659,7 +663,7 @@ internal static partial class av1_inv_txfm_ssse3
         __m128i __rounding = _mm_set1_epi32(1 << (INV_COS_BIT - 1));
 
         // stage 1
-        Span<__m128i> x = stackalloc __m128i[32];
+        Span<__m128i> x = t_idct32_low16_ssse3_x ??= new __m128i[32];
         x[0] = input[0];
         x[2] = input[8];
         x[4] = input[4];
@@ -719,6 +723,8 @@ internal static partial class av1_inv_txfm_ssse3
         idct32_stage9_sse2(output, x);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_idct32_sse2_x;
     private static void idct32_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -759,7 +765,7 @@ internal static partial class av1_inv_txfm_ssse3
         __m128i cospi_p16_p48 = pair_set_epi16(cospi[16], cospi[48]);
 
         // stage 1
-        Span<__m128i> x = stackalloc __m128i[32];
+        Span<__m128i> x = t_idct32_sse2_x ??= new __m128i[32];
         x[0] = input[0];
         x[1] = input[16];
         x[2] = input[8];
@@ -1081,12 +1087,14 @@ internal static partial class av1_inv_txfm_ssse3
         btf_16_adds_subs_out_sse2(ref output[31], ref output[32], x[31], x[32]);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_idct64_low1_ssse3_x;
     private static void idct64_low1_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
 
         // stage 1
-        Span<__m128i> x = stackalloc __m128i[32];
+        Span<__m128i> x = t_idct64_low1_ssse3_x ??= new __m128i[32];
         x[0] = input[0];
 
         // stage 2
@@ -1167,6 +1175,8 @@ internal static partial class av1_inv_txfm_ssse3
         output[32] = x[0];
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_idct64_low8_ssse3_x;
     private static void idct64_low8_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1190,7 +1200,7 @@ internal static partial class av1_inv_txfm_ssse3
         __m128i cospi_m32_p32 = pair_set_epi16(-cospi[32], cospi[32]);
 
         // stage 1
-        Span<__m128i> x = stackalloc __m128i[64];
+        Span<__m128i> x = t_idct64_low8_ssse3_x ??= new __m128i[64];
         x[0] = input[0];
         x[8] = input[4];
         x[16] = input[2];
@@ -1287,6 +1297,8 @@ internal static partial class av1_inv_txfm_ssse3
         idct64_stage11_sse2(output, x);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_idct64_low16_ssse3_x;
     private static void idct64_low16_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1300,7 +1312,7 @@ internal static partial class av1_inv_txfm_ssse3
         __m128i cospi_m32_p32 = pair_set_epi16(-cospi[32], cospi[32]);
 
         // stage 1
-        Span<__m128i> x = stackalloc __m128i[64];
+        Span<__m128i> x = t_idct64_low16_ssse3_x ??= new __m128i[64];
         x[0] = input[0];
         x[4] = input[8];
         x[8] = input[4];
@@ -1403,6 +1415,8 @@ internal static partial class av1_inv_txfm_ssse3
         idct64_stage11_sse2(output, x);
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_idct64_low32_ssse3_x;
     private static void idct64_low32_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1416,7 +1430,7 @@ internal static partial class av1_inv_txfm_ssse3
         __m128i cospi_m32_p32 = pair_set_epi16(-cospi[32], cospi[32]);
 
         // stage 1
-        Span<__m128i> x = stackalloc __m128i[64];
+        Span<__m128i> x = t_idct64_low32_ssse3_x ??= new __m128i[64];
         x[0] = input[0];
         x[2] = input[16];
         x[4] = input[8];
@@ -2402,6 +2416,8 @@ internal static partial class av1_inv_txfm_ssse3
     // 8 KB, so one per-thread buffer instead of zeroing a stack buffer on every call.
     [ThreadStatic] private static __m128i[] s_no_identity_buf1;
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_lowbd_inv_txfm2d_add_no_identity_ssse3_buf0;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void lowbd_inv_txfm2d_add_no_identity_ssse3(
         Ptr<int> input, Ptr<byte> output, int stride, TX_TYPE tx_type,
@@ -2480,7 +2496,7 @@ internal static partial class av1_inv_txfm_ssse3
         get_flip_cfg(tx_type, ref ud_flip, ref lr_flip);
         // [port] C declares buf0 and temp inside the loops; one stack buffer each serves every
         // iteration (stackalloc in a loop would grow the stack).
-        Span<__m128i> buf0 = stackalloc __m128i[64];
+        Span<__m128i> buf0 = t_lowbd_inv_txfm2d_add_no_identity_ssse3_buf0 ??= new __m128i[64];
         Span<__m128i> temp = stackalloc __m128i[8];
         for (int i = 0; i < buf_size_nonzero_h_div8; i++)
         {
@@ -2531,6 +2547,8 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_av1_lowbd_inv_txfm2d_add_h_identity_ssse3_buf0;
     internal static void av1_lowbd_inv_txfm2d_add_h_identity_ssse3(Ptr<int> input,
                                                                    Ptr<byte> output, int stride,
                                                                    TX_TYPE tx_type, TX_SIZE tx_size,
@@ -2558,7 +2576,7 @@ internal static partial class av1_inv_txfm_ssse3
         int ud_flip = 0, lr_flip = 0;
         get_flip_cfg(tx_type, ref ud_flip, ref lr_flip);
         // [port] C declares buf0 inside the loop; one stack buffer serves every iteration.
-        Span<__m128i> buf0 = stackalloc __m128i[64];
+        Span<__m128i> buf0 = t_av1_lowbd_inv_txfm2d_add_h_identity_ssse3_buf0 ??= new __m128i[64];
         for (int i = 0; i < buf_size_w_div8; i++)
         {
             for (int j = 0; j < buf_size_h_div8; j++)
@@ -2585,12 +2603,15 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
+    [ThreadStatic] private static __m128i[] t_av1_lowbd_inv_txfm2d_add_v_identity_ssse3_buf1;
+    [ThreadStatic] private static __m128i[] t_av1_lowbd_inv_txfm2d_add_v_identity_ssse3_buf0;
     internal static void av1_lowbd_inv_txfm2d_add_v_identity_ssse3(Ptr<int> input,
                                                                    Ptr<byte> output, int stride,
                                                                    TX_TYPE tx_type, TX_SIZE tx_size,
                                                                    int eob)
     {
-        Span<__m128i> buf1 = stackalloc __m128i[64];
+        Span<__m128i> buf1 = t_av1_lowbd_inv_txfm2d_add_v_identity_ssse3_buf1 ??= new __m128i[64];
         int eobx = 0, eoby = 0;
         get_eobx_eoby_scan_v_identity(ref eobx, ref eoby, tx_size, eob);
         Ptr<sbyte> shift = av1_inv_txfm_shift_ls[tx_size];
@@ -2613,7 +2634,7 @@ internal static partial class av1_inv_txfm_ssse3
         get_flip_cfg(tx_type, ref ud_flip, ref lr_flip);
         // [port] C declares buf0 and temp inside the loops; one stack buffer each serves every
         // iteration.
-        Span<__m128i> buf0 = stackalloc __m128i[64];
+        Span<__m128i> buf0 = t_av1_lowbd_inv_txfm2d_add_v_identity_ssse3_buf0 ??= new __m128i[64];
         Span<__m128i> temp = stackalloc __m128i[8];
         for (int i = 0; i < buf_size_h_div8; i++)
         {
