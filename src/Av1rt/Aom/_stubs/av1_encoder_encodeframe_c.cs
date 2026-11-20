@@ -12,4 +12,8 @@ internal static partial class stubs_av1_encoder_encodeframe_c
                                               int mi_row, int mi_col, int num_planes,
                                               BLOCK_SIZE bsize) =>
         throw new NotImplementedException();
+
+    // av1/encoder/encodeframe.c (f4), called from encoder.c (g1)
+    internal static void av1_encode_frame(AV1_COMP cpi) =>
+        throw new NotImplementedException();
 }
