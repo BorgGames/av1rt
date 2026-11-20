@@ -14,7 +14,9 @@ internal static partial class cdef_block
     first index is offset +/-2. This removes the need to constrain the first
     index to the same range using e.g., & 7.
     */
-    private static readonly int[][] cdef_directions_padded = {
+    // [port] Also read directly (index + 2) by the SIMD filters: indexing the Ptr<int[]> view
+    // below takes a covariance-checked element address on every lookup.
+    internal static readonly int[][] cdef_directions_padded = {
         /* Padding: cdef_directions[6] */
         new[] { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE + 0 },
         /* Padding: cdef_directions[7] */

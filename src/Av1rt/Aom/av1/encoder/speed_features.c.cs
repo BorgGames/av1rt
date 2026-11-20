@@ -1236,6 +1236,9 @@ internal static partial class speed_features
                 sf.inter_sf.mv_cost_upd_level = INTERNAL_COST_UPD_SBROW;
             }
         }
+    
+        if (Av1rt.Diagnostics.SpeedFeatureOverrides.Any)
+            Av1rt.Diagnostics.SpeedFeatureOverrides.Apply(cpi.sf);  // [port] experiment hook (AV1RT_SF)
     }
 
     internal static void av1_set_speed_features_framesize_independent(AV1_COMP cpi, int speed)
@@ -1402,6 +1405,9 @@ internal static partial class speed_features
         // gf_cbr_boost_pct that is set by the user is larger than 0.
         if (cpi.oxcf.rc_cfg.gf_cbr_boost_pct > 0)
             sf.rt_sf.gf_refresh_based_on_qp = 0;
+    
+        if (Av1rt.Diagnostics.SpeedFeatureOverrides.Any)
+            Av1rt.Diagnostics.SpeedFeatureOverrides.Apply(cpi.sf);  // [port] experiment hook (AV1RT_SF)
     }
 
     // [subset] set_good_speed_features_lc_dec_qindex_dependent: GOOD mode only.
@@ -1435,6 +1441,8 @@ internal static partial class speed_features
                         ? 0
                         : B(cm.quant_params.base_qindex > qindex_thresh);
             }
+            if (Av1rt.Diagnostics.SpeedFeatureOverrides.Any)
+                Av1rt.Diagnostics.SpeedFeatureOverrides.Apply(cpi.sf);  // [port] experiment hook (AV1RT_SF)
             return;
         }
 

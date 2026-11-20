@@ -117,7 +117,7 @@ public sealed class AV1VideoEncoder : IVideoEncoder
                 _forceKeyFrame = false;
                 encoder.ForceKeyFrame();
             }
-            Av1EncodeResult result = encoder.Encode(I420Frame.FromPacked(_i420, width, height), output, timestamp);
+            Av1EncodeResult result = encoder.Encode(_i420, output, timestamp);
             if (!result.Dropped) FrameEncoded?.Invoke(result);
             return result;
         }

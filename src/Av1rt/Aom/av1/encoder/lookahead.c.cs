@@ -131,7 +131,7 @@ internal static partial class lookahead
                                          alloc_pyramid, 0) != 0)
                 return 1;
         }
-        av1_copy_and_extend_frame(src, buf.img);
+        av1_copy_and_extend_frame(src, buf.img, ctx.copy_threads);
 
         buf.ts_start = ts_start;
         buf.ts_end = ts_end;

@@ -2071,40 +2071,58 @@ internal static partial class ratectrl
                 cpi.src_sad_blk_alloc_size = sb_cols * sb_rows;
             }
         }
-        // Avoid bottom and right border.
-        for (int sbi_row = 0; sbi_row < sb_rows - border; ++sbi_row)
+        if (cpi.active_map.enabled != 0 && rc.percent_blocks_inactive > 0)
         {
+            // [subset] set_block_is_active: active maps are never set.
+            throw new NotSupportedException("active maps are out of the subset");
+        }
+        // Avoid bottom and right border.
+        // [port] The per-block SADs are independent and only summed, counted and maxed, so
+        // the block rows are spread over the encoder's thread budget (bit-exact with the C
+        // loop; the frame-wide pass is memory bound and on the critical path).
+        int scan_rows = sb_rows - border;
+        aom_sad_fn_t sdf = cpi.ppi.fn_ptr[bsize].sdf;
+        Ptr<ulong> blk_sad = cpi.src_sad_blk_64x64;
+        Ptr<byte> src_y0 = src_y, last_src_y0 = last_src_y;
+        void scan_row(int sbi_row, ref ulong row_sad, ref int row_zero, ref ulong row_max)
+        {
+            Ptr<byte> s = src_y0 + (sbi_row << 6) * src_ystride;
+            Ptr<byte> l = last_src_y0 + (sbi_row << 6) * last_src_ystride;
             for (int sbi_col = 0; sbi_col < sb_cols; ++sbi_col)
             {
-                int block_is_active = 1;
-                if (cpi.active_map.enabled != 0 && rc.percent_blocks_inactive > 0)
-                {
-                    // [subset] set_block_is_active: active maps are never set.
-                    throw new NotSupportedException("active maps are out of the subset");
-                }
-                if (block_is_active != 0)
-                {
-                    tmp_sad = cpi.ppi.fn_ptr[bsize].sdf(src_y, src_ystride, last_src_y,
-                                                        last_src_ystride);
-                }
-                else
-                {
-                    tmp_sad = 0;
-                }
-                if (!cpi.src_sad_blk_64x64.IsNull)
-                    cpi.src_sad_blk_64x64[sbi_col + sbi_row * sb_cols] = tmp_sad;
-                avg_sad += tmp_sad;
-                num_samples++;
-                if (tmp_sad == 0) num_zero_temp_sad++;
-                if (tmp_sad > rc.max_block_source_sad)
-                    rc.max_block_source_sad = tmp_sad;
-
-                src_y += 64;
-                last_src_y += 64;
+                ulong sad = sdf(s, src_ystride, l, last_src_ystride);
+                if (!blk_sad.IsNull) blk_sad[sbi_col + sbi_row * sb_cols] = sad;
+                row_sad += sad;
+                if (sad == 0) row_zero++;
+                if (sad > row_max) row_max = sad;
+                s += 64;
+                l += 64;
             }
-            src_y += (src_ystride << 6) - (sb_cols << 6);
-            last_src_y += (last_src_ystride << 6) - (sb_cols << 6);
         }
+        int scan_threads = AOMMIN(cpi.oxcf.max_threads, scan_rows >> 2);
+        if (scan_threads > 1)
+        {
+            var row_sads = new ulong[scan_rows];
+            var row_zeros = new int[scan_rows];
+            var row_maxes = new ulong[scan_rows];
+            System.Threading.Tasks.Parallel.For(0, scan_rows,
+                new System.Threading.Tasks.ParallelOptions { MaxDegreeOfParallelism = scan_threads },
+                r => scan_row(r, ref row_sads[r], ref row_zeros[r], ref row_maxes[r]));
+            for (int r = 0; r < scan_rows; ++r)
+            {
+                avg_sad += row_sads[r];
+                num_zero_temp_sad += row_zeros[r];
+                if (row_maxes[r] > rc.max_block_source_sad) rc.max_block_source_sad = row_maxes[r];
+            }
+        }
+        else
+        {
+            ulong row_max = rc.max_block_source_sad;
+            for (int r = 0; r < scan_rows; ++r) scan_row(r, ref avg_sad, ref num_zero_temp_sad, ref row_max);
+            rc.max_block_source_sad = row_max;
+        }
+        num_samples = scan_rows * sb_cols;
+        _ = tmp_sad;
         if (num_samples > 0) avg_sad = avg_sad / (ulong)num_samples;
         // Set high_source_sad flag if we detect very high increase in avg_sad
         // between current and previous frame value(s). Use minimum threshold

@@ -45,4 +45,7 @@ internal sealed partial class lookahead_ctx
     public lookahead_entry[] buf;                            /* Buffer list */
     public int push_frame_count; /* Number of frames that have been pushed in the queue*/
     public byte max_pre_frames;  /* Maximum number of past frames allowed in the queue */
+    // [port] Not in C: threads av1_lookahead_push may use for the source copy (set by the
+    // encoder from max_threads; the copy is memory bound and on the critical path).
+    public int copy_threads = 1;
 }

@@ -127,7 +127,7 @@ static int Bench(string[] args)
         int idx = k < frames.Count ? k : period - k;
         output.ResetWrittenCount();
         long t0 = Av1rt.Diagnostics.StageTimes.Start();
-        var r = enc.Encode(I420Frame.FromPacked(frames[idx], o.Width, o.Height), output);
+        var r = enc.Encode(frames[idx], output);
         Av1rt.Diagnostics.StageTimes.Stop(Av1rt.Diagnostics.StageTimes.Stage.Total, t0);
         if (i >= warmup) bytes += r.Length;
     }

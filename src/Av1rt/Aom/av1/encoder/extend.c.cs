@@ -7,12 +7,20 @@ namespace Av1rt.Aom;
 // [subset] highbd_copy_and_extend_plane: CONFIG_AV1_HIGHBITDEPTH == 0 (source frames are 8-bit).
 internal static partial class extend
 {
+    // [port] threads > 1 (not in C) splits the row copy and then the border rows into bands;
+    // every byte written is the same as in the serial loops.
     private static void copy_and_extend_plane(Ptr<byte> src, int src_pitch,
                                               Ptr<byte> dst, int dst_pitch, int w, int h,
                                               int extend_top, int extend_left,
                                               int extend_bottom, int extend_right,
-                                              int chroma_step)
+                                              int chroma_step, int threads = 1)
     {
+        if (threads > 1 && chroma_step == 1 && h >= 256)
+        {
+            copy_and_extend_plane_mt(src, src_pitch, dst, dst_pitch, w, h, extend_top,
+                                     extend_left, extend_bottom, extend_right, threads);
+            return;
+        }
         int i, linesize;
         // copy the left and right most columns out
         Ptr<byte> src_ptr1 = src;
@@ -63,8 +71,46 @@ internal static partial class extend
         }
     }
 
+    private static void copy_and_extend_plane_mt(Ptr<byte> src, int src_pitch,
+                                                 Ptr<byte> dst, int dst_pitch, int w, int h,
+                                                 int extend_top, int extend_left,
+                                                 int extend_bottom, int extend_right,
+                                                 int threads)
+    {
+        const int band = 64;
+        int linesize = extend_left + extend_right + w;
+        Debug.Assert(linesize <= dst_pitch);
+        var po = new System.Threading.Tasks.ParallelOptions { MaxDegreeOfParallelism = threads };
+        System.Threading.Tasks.Parallel.For(0, (h + band - 1) / band, po, b =>
+        {
+            int r1 = AOMMIN(h, (b + 1) * band);
+            for (int i = b * band; i < r1; i++)
+            {
+                Ptr<byte> s = src + i * src_pitch;
+                Ptr<byte> d = dst + i * dst_pitch;
+                memset(d - extend_left, s[0], extend_left);
+                memcpy(d, s, w);
+                memset(d + w, s[w - 1], extend_right);
+            }
+        });
+        Ptr<byte> top = dst - extend_left;
+        Ptr<byte> bottom = dst + dst_pitch * (h - 1) - extend_left;
+        int border_rows = extend_top + extend_bottom;
+        System.Threading.Tasks.Parallel.For(0, (border_rows + band - 1) / band, po, b =>
+        {
+            int r1 = AOMMIN(border_rows, (b + 1) * band);
+            for (int i = b * band; i < r1; i++)
+            {
+                if (i < extend_top)
+                    memcpy(dst + dst_pitch * (i - extend_top) - extend_left, top, linesize);
+                else
+                    memcpy(dst + dst_pitch * (h + i - extend_top) - extend_left, bottom, linesize);
+            }
+        });
+    }
+
     internal static void av1_copy_and_extend_frame(YV12_BUFFER_CONFIG src,
-                                                   YV12_BUFFER_CONFIG dst)
+                                                   YV12_BUFFER_CONFIG dst, int threads = 1)
     {
         // Extend src frame in buffer
         int et_y = dst.border;
@@ -88,7 +134,7 @@ internal static partial class extend
 
         copy_and_extend_plane(src.y_buffer, src.y_stride, dst.y_buffer,
                               dst.y_stride, src.y_crop_width, src.y_crop_height,
-                              et_y, el_y, eb_y, er_y, 1);
+                              et_y, el_y, eb_y, er_y, 1, threads);
         if (src.monochrome == 0)
         {
             // detect nv12 format
@@ -98,11 +144,11 @@ internal static partial class extend
             copy_and_extend_plane(src.u_buffer, src.uv_stride, dst.u_buffer,
                                   dst.uv_stride, src.uv_crop_width,
                                   src.uv_crop_height, et_uv, el_uv, eb_uv, er_uv,
-                                  chroma_step);
+                                  chroma_step, threads);
             copy_and_extend_plane(src_v_buffer, src.uv_stride, dst.v_buffer,
                                   dst.uv_stride, src.uv_crop_width,
                                   src.uv_crop_height, et_uv, el_uv, eb_uv, er_uv,
-                                  chroma_step);
+                                  chroma_step, threads);
         }
     }
 }

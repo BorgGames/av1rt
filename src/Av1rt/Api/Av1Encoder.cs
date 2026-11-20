@@ -185,7 +185,54 @@ public sealed class Av1Encoder : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(output);
         CopyIn(frame);
+        return EncodeImage(output, timestamp);
+    }
 
+    /// <summary>
+    /// Encodes one tightly packed I420 picture (Y, then U, then V, no row padding; see
+    /// <see cref="I420Frame.PackedSize"/>) without copying it first: the encoder reads the planes
+    /// straight from <paramref name="i420"/> during the call and keeps no reference afterwards.
+    /// </summary>
+    /// <param name="i420">The packed picture, <see cref="Width"/> by <see cref="Height"/>.</param>
+    /// <param name="output">Receives the temporal unit.</param>
+    /// <param name="timestamp">As in <see cref="Encode(in I420Frame, IBufferWriter{byte}, long)"/>.</param>
+    public Av1EncodeResult Encode(byte[] i420, IBufferWriter<byte> output, long timestamp = -1)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(i420);
+        ArgumentNullException.ThrowIfNull(output);
+        int w = _options.Width, h = _options.Height, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
+        int size = I420Frame.PackedSize(w, h);
+        if (i420.Length < size)
+            throw new ArgumentException($"An I420 frame of {w}x{h} needs {size} bytes, got {i420.Length}.", nameof(i420));
+
+        // aom_codec_encode copies the picture into its lookahead buffer before returning, so the
+        // image can borrow the caller's array for the duration of the call.
+        Ptr<byte> ownY = _image.planes[AOM_PLANE_Y], ownU = _image.planes[AOM_PLANE_U], ownV = _image.planes[AOM_PLANE_V];
+        int strideY = _image.stride[AOM_PLANE_Y], strideU = _image.stride[AOM_PLANE_U], strideV = _image.stride[AOM_PLANE_V];
+        try
+        {
+            _image.planes[AOM_PLANE_Y] = new Ptr<byte>(i420, 0);
+            _image.planes[AOM_PLANE_U] = new Ptr<byte>(i420, w * h);
+            _image.planes[AOM_PLANE_V] = new Ptr<byte>(i420, w * h + cw * ch);
+            _image.stride[AOM_PLANE_Y] = w;
+            _image.stride[AOM_PLANE_U] = cw;
+            _image.stride[AOM_PLANE_V] = cw;
+            return EncodeImage(output, timestamp);
+        }
+        finally
+        {
+            _image.planes[AOM_PLANE_Y] = ownY;
+            _image.planes[AOM_PLANE_U] = ownU;
+            _image.planes[AOM_PLANE_V] = ownV;
+            _image.stride[AOM_PLANE_Y] = strideY;
+            _image.stride[AOM_PLANE_U] = strideU;
+            _image.stride[AOM_PLANE_V] = strideV;
+        }
+    }
+
+    private Av1EncodeResult EncodeImage(IBufferWriter<byte> output, long timestamp)
+    {
         long duration = TimestampRate / _options.FrameRate;
         long pts = timestamp >= 0 ? timestamp : _nextTimestamp;
         _nextTimestamp = pts + duration;

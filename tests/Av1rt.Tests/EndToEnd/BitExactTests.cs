@@ -46,7 +46,11 @@ public class BitExactTests
         while ((limit == 0 || framesIn < limit) && y4m.ReadFrame(frame))
         {
             output.ResetWrittenCount();
-            Av1EncodeResult r = encoder.Encode(I420Frame.FromPacked(frame, options.Width, options.Height), output);
+            // The q352 cases go through the copying I420Frame overload, the rest through the
+            // zero-copy byte[] overload.
+            Av1EncodeResult r = name.StartsWith("q352", StringComparison.Ordinal)
+                ? encoder.Encode(I420Frame.FromPacked(frame, options.Width, options.Height), output)
+                : encoder.Encode(frame, output);
             framesIn++;
             if (r.Dropped) continue;
             Assert.True(framesOut < expected.Count, $"{name}: encoder produced more frames than the oracle ({expected.Count})");
