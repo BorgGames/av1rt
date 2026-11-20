@@ -498,6 +498,6 @@ internal static partial class cdef
                             xd.error_info);
     }
 
-    // ---- RTCD dispatch (av1_rtcd.h, pure-C build) ------------------------------------------
-    internal static void cdef_copy_rect8_8bit_to_16bit(Ptr<ushort> dst, int dstride, Ptr<byte> src, int sstride, int width, int height) => cdef_copy_rect8_8bit_to_16bit_c(dst, dstride, src, sstride, width, height);
+    // ---- RTCD dispatch (av1_rtcd.h): AVX2 (av1/common/x86/cdef_block_avx2.c) or C ----------
+    internal static void cdef_copy_rect8_8bit_to_16bit(Ptr<ushort> dst, int dstride, Ptr<byte> src, int sstride, int width, int height) { if (Simd.UseAvx2) cdef_copy_rect8_8bit_to_16bit_avx2(dst, dstride, src, sstride, width, height); else cdef_copy_rect8_8bit_to_16bit_c(dst, dstride, src, sstride, width, height); }
 }
