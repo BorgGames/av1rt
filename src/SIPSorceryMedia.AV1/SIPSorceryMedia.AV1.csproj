@@ -1,16 +1,40 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>SIPSorceryMedia.AV1</RootNamespace>
-    <IsAotCompatible>true</IsAotCompatible>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
+
     <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+
+    <RootNamespace>SIPSorceryMedia.AV1</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Description>A realtime AV1 video encoder for SIPSorcery, built on av1rt (a safe, Native AOT compatible C# port of libaom's realtime encoder).</Description>
     <PackageTags>AV1;WebRTC;SIPSorcery;video;encoder</PackageTags>
+
+    <!-- Package stuff -->
+    <!-- libaom's license, as for av1rt. PATENTS carries the AOM patent grant. -->
+    <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
+    <PackageLicenseFile Condition="$(PackageLicenseExpression) == ''">LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- The following is recommended for public projects -->
+    <!-- Source Link is part of the .NET SDK since 8.0; no package reference is needed. -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SIPSorceryMedia.Abstractions" Version="10.0.10" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+    <None Include="..\..\PATENTS" Pack="true" PackagePath="" />
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SIPSorceryMedia.Abstractions" Version="10.0.17" />
   </ItemGroup>
 
   <ItemGroup>

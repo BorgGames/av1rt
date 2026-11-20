@@ -6,5 +6,7 @@
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
+    <!-- Both packages share it; CI packs with the version from the v* tag. -->
+    <VersionPrefix>0.1.0</VersionPrefix>
   </PropertyGroup>
 </Project>

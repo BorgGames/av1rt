@@ -1,16 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <!-- The port under Aom/ follows libaom's nullable-oblivious C; the public API in Api/ opts in
+         with #nullable enable. -->
+    <Nullable>disable</Nullable>
+
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+
     <RootNamespace>Av1rt</RootNamespace>
     <AssemblyName>Av1rt</AssemblyName>
-    <IsAotCompatible>true</IsAotCompatible>
-    <IsTrimmable>true</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- The port under Aom/ keeps libaom's C names (snake_case, ALL_CAPS types and
          lowercase class names), so naming and missing-doc warnings are noise there. -->
     <NoWarn>$(NoWarn);CS1591;CS8981;CS0649;CS0169;CS0414;CS0162;CS0219;CS1587;CS1570;CS1572;CS1573;IDE1006;CA1857</NoWarn>
-    <Description>A safe, Native AOT compatible C# port of the realtime subset of the libaom AV1 encoder.</Description>
+    <Description>A safe, Native AOT compatible C# port of the realtime subset of the libaom AV1 encoder, bit-exact with libaom 3.15.3+232 (d03d2c63a1).</Description>
+    <PackageTags>AV1;video;encoder;libaom;realtime</PackageTags>
+
+    <!-- Package stuff -->
+    <!-- libaom's license: the port is a derivative of it. PATENTS carries the AOM patent grant. -->
+    <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
+    <PackageLicenseFile Condition="$(PackageLicenseExpression) == ''">LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- The following is recommended for public projects -->
+    <!-- Source Link is part of the .NET SDK since 8.0; no package reference is needed. -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+    <None Include="..\..\PATENTS" Pack="true" PackagePath="" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Av1rt.Tests" />
