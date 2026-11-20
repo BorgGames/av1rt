@@ -9,6 +9,9 @@
     <IsAotCompatible>true</IsAotCompatible>
 
     <RootNamespace>SIPSorceryMedia.AV1</RootNamespace>
+    <!-- The SIPSorceryMedia prefix is reserved on nuget.org, so the package is published under the
+         Borg prefix for now; the assembly and namespace keep the SIPSorcery naming. -->
+    <PackageId>Borg.SIPSorcery.Media.AV1</PackageId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Description>A realtime AV1 video encoder for SIPSorcery, built on av1rt (a safe, Native AOT compatible C# port of libaom's realtime encoder).</Description>
     <PackageTags>AV1;WebRTC;SIPSorcery;video;encoder</PackageTags>

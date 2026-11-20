@@ -1,4 +1,4 @@
-# SIPSorceryMedia.AV1
+# Borg.SIPSorcery.Media.AV1
 
 A realtime AV1 video encoder for SIPSorcery, built on av1rt (a safe C# port of libaom's realtime encoder).
 
