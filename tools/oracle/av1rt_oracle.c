@@ -126,6 +126,8 @@ static void write_image(FILE *f, const aom_image_t *img) {
 }
 
 static int webrtc_threads(int w, int h, int cores) {
+  /* From about 4K, all logical processors up to 16 (Av1EncoderOptions.WebRtcThreads). */
+  if ((long long)w * h >= 3840LL * 2160 * 3 / 4 && cores > 8) return cores < 16 ? cores : 16;
   if (w * h > 1280 * 720 && cores > 8) return 8;
   if (w * h >= 640 * 360 && cores > 4) return 4;
   if (w * h >= 320 * 180 && cores > 2) return 2;
@@ -213,6 +215,10 @@ int main(int argc, char **argv) {
   if (tile_cols >= 0 || tile_rows >= 0) {
     CTRL(AV1E_SET_TILE_COLUMNS, tile_cols < 0 ? 0 : tile_cols);
     CTRL(AV1E_SET_TILE_ROWS, tile_rows < 0 ? 0 : tile_rows);
+  } else if (threads >= 8 && (long long)y4m.w * y4m.h >= 3840LL * 2160 * 3 / 4) {
+    /* 4K with 8+ threads: 8x4 tiles (Av1Encoder's automatic tile policy). */
+    CTRL(AV1E_SET_TILE_COLUMNS, 3);
+    CTRL(AV1E_SET_TILE_ROWS, 2);
   } else {
     CTRL(AV1E_SET_AUTO_TILES, 1);
   }
