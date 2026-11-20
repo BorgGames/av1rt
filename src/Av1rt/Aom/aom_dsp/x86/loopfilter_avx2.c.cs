@@ -3,6 +3,7 @@
 global using static Av1rt.Aom.loopfilter_avx2;
 
 using System;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
 namespace Av1rt.Aom;
@@ -20,38 +21,124 @@ internal static partial class loopfilter_avx2
                                                         Ptr<byte> _limit0,
                                                         Ptr<byte> _thresh0)
     {
-        __m256i p256_2, q256_2, p256_1, q256_1, p256_0, q256_0;
-        __m128i p2, p1, p0, q0, q1, q2;
-        __m128i mask, flat;
-
         __m128i thresh_v =
             _mm_broadcastb_epi8(_mm_cvtsi32_si128((int)_thresh0[0]));
         __m128i limit_v =
             _mm_broadcastb_epi8(_mm_cvtsi32_si128((int)_limit0[0]));
         __m128i blimit_v =
             _mm_broadcastb_epi8(_mm_cvtsi32_si128((int)_blimit0[0]));
+
+        // [av1rt] The six lines p2..q2 (C loads each broadcast to both lanes of a 256-bit
+        // register, for the widening in the flat filter: see lpf_6_quad_core).
+        Span<byte> rows = (s - 3 * p).AsSpan(0, 5 * p + 16);
+        __m128i p2 = _mm_loadu_si128(rows);
+        __m128i p1 = _mm_loadu_si128(rows.Slice(p));
+        __m128i p0 = _mm_loadu_si128(rows.Slice(2 * p));
+        __m128i q0 = _mm_loadu_si128(rows.Slice(3 * p));
+        __m128i q1 = _mm_loadu_si128(rows.Slice(4 * p));
+        __m128i q2 = _mm_loadu_si128(rows.Slice(5 * p));
+
+        if (!lpf_6_quad_core(p2, ref p1, ref p0, ref q0, ref q1, q2, blimit_v, limit_v,
+                             thresh_v))
+            return;
+
+        // C also stores p2 and q2 on the flat path: unchanged.
+        _mm_storeu_si128(rows.Slice(p), p1);
+        _mm_storeu_si128(rows.Slice(2 * p), p0);
+        _mm_storeu_si128(rows.Slice(3 * p), q0);
+        _mm_storeu_si128(rows.Slice(4 * p), q1);
+    }
+
+    // [av1rt] aom_lpf_vertical_6_quad_sse2 (libaom has no AVX2 version) without its transpose
+    // buffer: the 16 rows of 8 pixels across the edge are transposed into registers (as
+    // transpose_16x8 does into the buffer), filtered by lpf_6_quad_core, and the four columns it
+    // changes are written back. Same output.
+    internal static void aom_lpf_vertical_6_quad_avx2(Ptr<byte> s, int pitch,
+                                                      Ptr<byte> _blimit0,
+                                                      Ptr<byte> _limit0,
+                                                      Ptr<byte> _thresh0)
+    {
+        __m128i thresh_v =
+            _mm_broadcastb_epi8(_mm_cvtsi32_si128((int)_thresh0[0]));
+        __m128i limit_v =
+            _mm_broadcastb_epi8(_mm_cvtsi32_si128((int)_limit0[0]));
+        __m128i blimit_v =
+            _mm_broadcastb_epi8(_mm_cvtsi32_si128((int)_blimit0[0]));
+
+        // Rows of columns -4..3: p3 p2 p1 p0 q0 q1 q2 q3 (a..h below; digits are rows).
+        Span<byte> b = (s - 4).AsSpan(0, 15 * pitch + 8);
+        // a0 a1 b0 b1 .. h0 h1, and so on for each row pair
+        __m128i x0 = _mm_unpacklo_epi8(_mm_loadl_epi64(b), _mm_loadl_epi64(b.Slice(pitch)));
+        __m128i x1 = _mm_unpacklo_epi8(_mm_loadl_epi64(b.Slice(2 * pitch)),
+                                       _mm_loadl_epi64(b.Slice(3 * pitch)));
+        __m128i x2 = _mm_unpacklo_epi8(_mm_loadl_epi64(b.Slice(4 * pitch)),
+                                       _mm_loadl_epi64(b.Slice(5 * pitch)));
+        __m128i x3 = _mm_unpacklo_epi8(_mm_loadl_epi64(b.Slice(6 * pitch)),
+                                       _mm_loadl_epi64(b.Slice(7 * pitch)));
+        __m128i x8 = _mm_unpacklo_epi8(_mm_loadl_epi64(b.Slice(8 * pitch)),
+                                       _mm_loadl_epi64(b.Slice(9 * pitch)));
+        __m128i x9 = _mm_unpacklo_epi8(_mm_loadl_epi64(b.Slice(10 * pitch)),
+                                       _mm_loadl_epi64(b.Slice(11 * pitch)));
+        __m128i x10 = _mm_unpacklo_epi8(_mm_loadl_epi64(b.Slice(12 * pitch)),
+                                        _mm_loadl_epi64(b.Slice(13 * pitch)));
+        __m128i x11 = _mm_unpacklo_epi8(_mm_loadl_epi64(b.Slice(14 * pitch)),
+                                        _mm_loadl_epi64(b.Slice(15 * pitch)));
+
+        // Columns a..d: a0..a3 b0..b3 c0..c3 d0..d3 (rows 0-3), then rows 4-7, 8-11, 12-15.
+        __m128i lo03 = _mm_unpacklo_epi16(x0, x1), lo47 = _mm_unpacklo_epi16(x2, x3);
+        __m128i lo8b = _mm_unpacklo_epi16(x8, x9), locf = _mm_unpacklo_epi16(x10, x11);
+        // Columns e..h likewise.
+        __m128i hi03 = _mm_unpackhi_epi16(x0, x1), hi47 = _mm_unpackhi_epi16(x2, x3);
+        __m128i hi8b = _mm_unpackhi_epi16(x8, x9), hicf = _mm_unpackhi_epi16(x10, x11);
+
+        // a0..a7 b0..b7 / c0..c7 d0..d7, and the same for rows 8-15 and for columns e..h.
+        __m128i ab07 = _mm_unpacklo_epi32(lo03, lo47), cd07 = _mm_unpackhi_epi32(lo03, lo47);
+        __m128i ab8f = _mm_unpacklo_epi32(lo8b, locf), cd8f = _mm_unpackhi_epi32(lo8b, locf);
+        __m128i ef07 = _mm_unpacklo_epi32(hi03, hi47), gh07 = _mm_unpackhi_epi32(hi03, hi47);
+        __m128i ef8f = _mm_unpacklo_epi32(hi8b, hicf), gh8f = _mm_unpackhi_epi32(hi8b, hicf);
+
+        __m128i p2 = _mm_unpackhi_epi64(ab07, ab8f);
+        __m128i p1 = _mm_unpacklo_epi64(cd07, cd8f);
+        __m128i p0 = _mm_unpackhi_epi64(cd07, cd8f);
+        __m128i q0 = _mm_unpacklo_epi64(ef07, ef8f);
+        __m128i q1 = _mm_unpackhi_epi64(ef07, ef8f);
+        __m128i q2 = _mm_unpacklo_epi64(gh07, gh8f);
+
+        if (!lpf_6_quad_core(p2, ref p1, ref p0, ref q0, ref q1, q2, blimit_v, limit_v,
+                             thresh_v))
+            return;
+
+        // Back to rows: p1 p0 q0 q1 of each row as one dword, rows 0-3 / 4-7 / 8-11 / 12-15.
+        __m128i pp_lo = _mm_unpacklo_epi8(p1, p0), qq_lo = _mm_unpacklo_epi8(q0, q1);
+        __m128i pp_hi = _mm_unpackhi_epi8(p1, p0), qq_hi = _mm_unpackhi_epi8(q0, q1);
+        store_rows4(b.Slice(2), pitch, _mm_unpacklo_epi16(pp_lo, qq_lo));
+        store_rows4(b.Slice(4 * pitch + 2), pitch, _mm_unpackhi_epi16(pp_lo, qq_lo));
+        store_rows4(b.Slice(8 * pitch + 2), pitch, _mm_unpacklo_epi16(pp_hi, qq_hi));
+        store_rows4(b.Slice(12 * pitch + 2), pitch, _mm_unpackhi_epi16(pp_hi, qq_hi));
+    }
+
+    // [av1rt] The four dwords of v to the starts of four rows.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void store_rows4(Span<byte> d, int pitch, __m128i v)
+    {
+        BinaryPrimitives.WriteInt32LittleEndian(d, _mm_cvtsi128_si32(v));
+        BinaryPrimitives.WriteInt32LittleEndian(d.Slice(pitch), _mm_extract_epi32(v, 1));
+        BinaryPrimitives.WriteInt32LittleEndian(d.Slice(2 * pitch), _mm_extract_epi32(v, 2));
+        BinaryPrimitives.WriteInt32LittleEndian(d.Slice(3 * pitch), _mm_extract_epi32(v, 3));
+    }
+
+    // [av1rt] The filter of aom_lpf_horizontal_6_quad_avx2 on its six lines p2..q2 of 16 pixels,
+    // shared with aom_lpf_vertical_6_quad_avx2. Returns false when the mask selects no pixel;
+    // otherwise p1, p0, q0 and q1 are the filtered lines (the 6-tap filter keeps p2 and q2).
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool lpf_6_quad_core(__m128i p2, ref __m128i p1_ref, ref __m128i p0_ref,
+                                        ref __m128i q0_ref, ref __m128i q1_ref, __m128i q2,
+                                        __m128i blimit_v, __m128i limit_v, __m128i thresh_v)
+    {
+        __m128i p1 = p1_ref, p0 = p0_ref, q0 = q0_ref, q1 = q1_ref;
+        __m128i mask, flat;
         __m128i zero = _mm_setzero_si128();
         __m128i ff = _mm_cmpeq_epi8(zero, zero);
-
-        p256_2 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s - 3 * p));
-        p256_1 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s - 2 * p));
-        p256_0 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s - 1 * p));
-        q256_0 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s - 0 * p));
-        q256_1 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s + 1 * p));
-        q256_2 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s + 2 * p));
-
-        p2 = _mm256_castsi256_si128(p256_2);
-        p1 = _mm256_castsi256_si128(p256_1);
-        p0 = _mm256_castsi256_si128(p256_0);
-        q0 = _mm256_castsi256_si128(q256_0);
-        q1 = _mm256_castsi256_si128(q256_1);
-        q2 = _mm256_castsi256_si128(q256_2);
 
         {
             __m128i work;
@@ -83,7 +170,7 @@ internal static partial class loopfilter_avx2
             mask = _mm_cmpeq_epi8(mask, zero);
         }
 
-        if (0xffff == _mm_movemask_epi8(_mm_cmpeq_epi8(mask, zero))) return;
+        if (0xffff == _mm_movemask_epi8(_mm_cmpeq_epi8(mask, zero))) return false;
 
         // loop filter
         {
@@ -157,15 +244,14 @@ internal static partial class loopfilter_avx2
                 __m256i four = _mm256_set1_epi16(4);
                 __m256i pixetFilter, add, res;
 
-                __m256i filter =
-                    _mm256_load_si256(filt_loopfilter_avx2);
-
-                p256_2 = _mm256_shuffle_epi8(p256_2, filter);
-                p256_1 = _mm256_shuffle_epi8(p256_1, filter);
-                p256_0 = _mm256_shuffle_epi8(p256_0, filter);
-                q256_0 = _mm256_shuffle_epi8(q256_0, filter);
-                q256_1 = _mm256_shuffle_epi8(q256_1, filter);
-                q256_2 = _mm256_shuffle_epi8(q256_2, filter);
+                // PORT-NOTE: C shuffles the lines, broadcast to both lanes, with
+                // filt_loopfilter_avx2: the same 16 words as zero-extending them.
+                __m256i p256_2 = _mm256_cvtepu8_epi16(p2);
+                __m256i p256_1 = _mm256_cvtepu8_epi16(p1);
+                __m256i p256_0 = _mm256_cvtepu8_epi16(p0);
+                __m256i q256_0 = _mm256_cvtepu8_epi16(q0);
+                __m256i q256_1 = _mm256_cvtepu8_epi16(q1);
+                __m256i q256_2 = _mm256_cvtepu8_epi16(q2);
 
                 pixetFilter = _mm256_slli_epi16(
                     _mm256_add_epi16(p256_2, _mm256_add_epi16(p256_1, p256_0)), 1);
@@ -209,22 +295,22 @@ internal static partial class loopfilter_avx2
                 flat_q1 = _mm_and_si128(flat, flat_q1);
                 q1 = _mm_or_si128(flat_q1, q1);
 
-                _mm_storeu_si128(s - 3 * p, p2);
-                _mm_storeu_si128(s - 2 * p, p1);
-                _mm_storeu_si128(s - 1 * p, p0);
-                _mm_storeu_si128(s - 0 * p, q0);
-                _mm_storeu_si128(s + 1 * p, q1);
-                _mm_storeu_si128(s + 2 * p, q2);
             }
             else
             {
-                _mm_storeu_si128(s - 2 * p, ps1);
-                _mm_storeu_si128(s - 1 * p, ps0);
-                _mm_storeu_si128(s - 0 * p, qs0);
-                _mm_storeu_si128(s + 1 * p, qs1);
+                p1 = ps1;
+                p0 = ps0;
+                q0 = qs0;
+                q1 = qs1;
             }
         }
+        p1_ref = p1;
+        p0_ref = p0;
+        q0_ref = q0;
+        q1_ref = q1;
+        return true;
     }
+
 
     internal static void aom_lpf_horizontal_8_quad_avx2(Ptr<byte> s, int p,
                                                         Ptr<byte> _blimit0,

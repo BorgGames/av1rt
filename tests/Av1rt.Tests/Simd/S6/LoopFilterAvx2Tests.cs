@@ -12,17 +12,20 @@ public class LoopFilterAvx2Tests
 {
     private delegate void Quad(Ptr<byte> s, int p, Ptr<byte> blimit, Ptr<byte> limit, Ptr<byte> thresh);
 
-    // kind: 0 horizontal_6_quad, 1 horizontal_8_quad, 2 horizontal_14_quad, 3 vertical_14_quad.
+    // kind: 0 horizontal_6_quad, 1 horizontal_8_quad, 2 horizontal_14_quad, 3 vertical_14_quad,
+    // 4 vertical_6_quad (an av1rt kernel: libaom's is SSE2, through a transpose buffer).
     private static readonly Quad[] Avx2Kernels =
     {
         aom_lpf_horizontal_6_quad_avx2, aom_lpf_horizontal_8_quad_avx2,
         aom_lpf_horizontal_14_quad_avx2, aom_lpf_vertical_14_quad_avx2,
+        aom_lpf_vertical_6_quad_avx2,
     };
 
     private static readonly Quad[] C =
     {
         aom_lpf_horizontal_6_quad_c, aom_lpf_horizontal_8_quad_c,
         aom_lpf_horizontal_14_quad_c, aom_lpf_vertical_14_quad_c,
+        aom_lpf_vertical_6_quad_c,
     };
 
     private const int Rows = 40, Stride = 48, Origin = 16 * Stride + 16;
@@ -106,11 +109,12 @@ public class LoopFilterAvx2Tests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
+    [InlineData(4)]
     public void MatchesC(int kind)
     {
         if (!Avx2.IsSupported) return;
         var rng = new Random(6000 + kind);
-        bool vertical = kind == 3;
+        bool vertical = kind >= 3;
         int filtered = 0, flat = 0, flat2 = 0;
 
         for (int iter = 0; iter < 20000; iter++)
@@ -149,7 +153,7 @@ public class LoopFilterAvx2Tests
             {
                 int q0 = Origin + lane * lane_step;
                 if (expected[q0] != buf[q0] || expected[q0 - step] != buf[q0 - step]) filtered++;
-                if (kind == 0)
+                if (kind is 0 or 4)
                 {
                     // The 6-tap flat path writes p1..q1 only: count filtered lanes whose input is flat.
                     int p2v = buf[q0 - 3 * step], p1v = buf[q0 - 2 * step], p0v = buf[q0 - step];
@@ -159,13 +163,13 @@ public class LoopFilterAvx2Tests
                     if (isFlat && (expected[q0] != buf[q0] || expected[q0 - step] != buf[q0 - step])) flat++;
                 }
                 else if (expected[q0 + 2 * step] != buf[q0 + 2 * step] || expected[q0 - 3 * step] != buf[q0 - 3 * step]) flat++;
-                if (kind >= 2 && (expected[q0 + 5 * step] != buf[q0 + 5 * step] || expected[q0 - 6 * step] != buf[q0 - 6 * step])) flat2++;
+                if (kind is 2 or 3 && (expected[q0 + 5 * step] != buf[q0 + 5 * step] || expected[q0 - 6 * step] != buf[q0 - 6 * step])) flat2++;
             }
         }
         int lanes = 20000 * 16;
         Assert.True(filtered > lanes / 20, $"filter4 reached on {filtered} of {lanes} lanes");
         Assert.True(flat > lanes / 100, $"flat reached on {flat} of {lanes} lanes");
-        if (kind >= 2) Assert.True(flat2 > lanes / 200, $"flat2 reached on {flat2} of {lanes} lanes");
+        if (kind is 2 or 3) Assert.True(flat2 > lanes / 200, $"flat2 reached on {flat2} of {lanes} lanes");
     }
 
     /// <summary>
@@ -178,6 +182,7 @@ public class LoopFilterAvx2Tests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
+    [InlineData(4)]
     public void StaysInFootprint(int kind)
     {
         if (!Avx2.IsSupported) return;
@@ -188,7 +193,7 @@ public class LoopFilterAvx2Tests
             byte[][] t = Realistic[rng.Next(8)][rng.Next(MaxLoopFilter + 1)];
             byte[] buf;
             int origin, stride = 16;
-            if (kind != 3)
+            if (kind < 3)
             {
                 buf = new byte[2 * half * stride];
                 origin = half * stride;

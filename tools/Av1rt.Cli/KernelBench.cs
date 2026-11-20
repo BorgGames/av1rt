@@ -119,6 +119,25 @@ internal static class KernelBench
             });
         }
 
+        {
+            // Loop filters on a smooth, slightly noisy picture (mostly flat edges: the full
+            // filters run), the same in kbench.c. Thresholds of a mid filter level.
+            const int ls = 256;
+            var lpf = new byte[ls * 64];
+            uint lr = 7;
+            for (int i = 0; i < lpf.Length; i++) { lr = lr * 1103515245 + 12345; lpf[i] = (byte)(120 + (i % ls) / 32 + ((lr >> 16) & 1)); }
+            var bl = new byte[16]; var li = new byte[16]; var th = new byte[16];
+            Array.Fill(bl, (byte)53); Array.Fill(li, (byte)9); Array.Fill(th, (byte)1);
+            Ptr<byte> B = new(bl), L = new(li), H = new(th);
+            Ptr<byte> P(int off) => new Ptr<byte>(lpf, off);
+            T("lpf_h14_quad", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_horizontal_14_quad_avx2(P(ls * 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
+            T("lpf_v14_quad", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_vertical_14_quad_avx2(P(ls * 8 + 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
+            T("lpf_h8_quad", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_horizontal_8_quad_avx2(P(ls * 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
+            T("lpf_h6_quad", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_horizontal_6_quad_avx2(P(ls * 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
+            T("lpf_v6_quad", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_vertical_6_quad_avx2(P(ls * 8 + 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
+            T("lpf_v6_quad sse2", () => { for (int i = 0; i < 128; i++) loopfilter_sse2.aom_lpf_vertical_6_quad_sse2(P(ls * 8 + 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
+        }
+
         if (only == null)
         {
             T("aom_sad32x32_c", () =>
