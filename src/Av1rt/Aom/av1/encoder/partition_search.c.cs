@@ -1234,7 +1234,7 @@ internal static partial class partition_search
                 {
                     if (pc_tree.split[i] == null)
                     {
-                        pc_tree.split[i] = av1_alloc_pc_tree_node(subsize);
+                        pc_tree.split[i] = av1_alloc_pc_tree_node(subsize, td.shared_coeff_buf);
                         if (pc_tree.split[i] == null)
                             throw new AomException(AOM_CODEC_MEM_ERROR,
                                                    "Failed to allocate PC_TREE");

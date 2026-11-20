@@ -27,6 +27,12 @@ internal sealed partial class PC_TREE_SHARED_BUFFERS
     internal readonly Ptr<int>[] qcoeff_buf = new Ptr<int>[MAX_MB_PLANE];
     internal readonly Ptr<int>[] dqcoeff_buf = new Ptr<int>[MAX_MB_PLANE];
 
+    // [av1rt] Free lists of this thread's partition tree objects (see av1_alloc_pmc): C mallocs
+    // the tree of every frame and frees it at the end of the frame.
+    internal readonly System.Collections.Generic.Stack<PICK_MODE_CONTEXT>[] pmc_pool =
+        new System.Collections.Generic.Stack<PICK_MODE_CONTEXT>[BLOCK_SIZES_ALL];
+    internal readonly System.Collections.Generic.Stack<PC_TREE> pc_tree_pool = new();
+
     internal void CopyFrom(PC_TREE_SHARED_BUFFERS o)
     {
         EncArrays.Copy1(coeff_buf, o.coeff_buf);
@@ -63,6 +69,12 @@ internal sealed partial class PICK_MODE_CONTEXT
 
     internal int rd_mode_is_ready; // Flag to indicate whether rd pick mode decision has
     // been made.
+
+    // [av1rt] The free list av1_free_pmc returns this context to (null: none, or freed), and
+    // the allocation it was made for.
+    internal PC_TREE_SHARED_BUFFERS pool;
+    internal BLOCK_SIZE pool_bsize;
+    internal int pool_num_planes;
     // [subset] #if CONFIG_AV1_TEMPORAL_DENOISING is false here.
 }
 
@@ -78,6 +90,10 @@ internal sealed partial class PC_TREE
     // [subset] #if !CONFIG_REALTIME_ONLY is false here.
     internal readonly PC_TREE[] split = new PC_TREE[4];
     internal int index;
+
+    // [av1rt] The free list av1_free_pc_tree_recursive returns this node to (null: none, or
+    // freed).
+    internal PC_TREE_SHARED_BUFFERS pool;
 }
 
 // Class: elements of td->sms_tree[] linked by pointers.

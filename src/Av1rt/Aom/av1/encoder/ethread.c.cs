@@ -495,7 +495,8 @@ internal static partial class ethread
             // allocation.
             if (cpi.sf.rt_sf.use_nonrd_pick_mode != 0)
             {
-                thread_data.td.pc_root = av1_alloc_pc_tree_node(cm.seq_params.sb_size);
+                thread_data.td.pc_root = av1_alloc_pc_tree_node(cm.seq_params.sb_size,
+                                                                 thread_data.td.shared_coeff_buf);
                 if (thread_data.td.pc_root == null)
                     throw new AomException(AOM_CODEC_MEM_ERROR, "Failed to allocate PC_TREE");
             }
@@ -708,7 +709,10 @@ internal static partial class ethread
                 PrimaryMultiThreadInfo p_mt_info = cpi.ppi.p_mt_info;
                 int num_lf_workers = av1_get_num_mod_workers_for_alloc(p_mt_info, MOD_LPF);
 
-                if (lf_sync.sync_range == 0 || sb_rows != lf_sync.rows ||
+                // [av1rt] C reallocates when the row count differs: the encoder's setup counts 128-pixel
+                // rows and the loop filter pipelined with encoding 64-pixel rows, so it reallocated
+                // twice per frame. lf_sync.rows only sizes the arrays; keep the larger allocation.
+                if (lf_sync.sync_range == 0 || sb_rows > lf_sync.rows ||
                     num_lf_workers > lf_sync.num_workers)
                 {
                     av1_loop_filter_dealloc(lf_sync);

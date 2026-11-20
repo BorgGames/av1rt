@@ -61,7 +61,25 @@ internal static partial class context_tree
             use_palette ? ((num_pix * sizeof(byte) + 31) & ~31) : 0;
         int tx_type_sz = num_blk * sizeof(byte);
 
+        // [av1rt] Reuse a context of this size that this thread freed, reset to the state of a
+        // new one (the managed arrays of a new context are zeroed).
+        if (!use_palette && shared_bufs.pmc_pool[bsize] is { Count: > 0 } free)
+        {
+            PICK_MODE_CONTEXT reused = free.Pop();
+            if (reused.pool_num_planes == num_planes)
+            {
+                reset_pooled_pmc(reused, shared_bufs, num_planes, num_blk);
+                return reused;
+            }
+        }
+
         PICK_MODE_CONTEXT ctx = new PICK_MODE_CONTEXT();
+        if (!use_palette)
+        {
+            ctx.pool = shared_bufs;
+            ctx.pool_bsize = bsize;
+            ctx.pool_num_planes = num_planes;
+        }
         ctx.rd_mode_is_ready = 0;
         ctx.num_4x4_blk = num_blk;
 
@@ -92,6 +110,29 @@ internal static partial class context_tree
         return ctx;
     }
 
+    // [av1rt] A context from the free list as av1_alloc_pmc makes a new one (without palette).
+    private static void reset_pooled_pmc(PICK_MODE_CONTEXT ctx, PC_TREE_SHARED_BUFFERS shared_bufs,
+                                         int num_planes, int num_blk)
+    {
+        ctx.pool = shared_bufs;
+        ctx.mic.Clear();
+        ctx.mbmi_ext_best = default;
+        for (int i = 0; i < num_planes; ++i)
+        {
+            ctx.coeff[i] = shared_bufs.coeff_buf[i];
+            ctx.qcoeff[i] = shared_bufs.qcoeff_buf[i];
+            ctx.dqcoeff[i] = shared_bufs.dqcoeff_buf[i];
+            ctx.eobs[i].AsSpan().Clear();
+            ctx.txb_entropy_ctx[i].AsSpan().Clear();
+        }
+        ctx.tx_type_map.AsSpan().Clear();
+        ctx.num_4x4_blk = num_blk;
+        ctx.skippable = 0;
+        ctx.rd_stats = default;
+        ctx.rd_mode_is_ready = 0;
+        av1_invalid_rd_stats(ref ctx.rd_stats);
+    }
+
     internal static void av1_reset_pmc(PICK_MODE_CONTEXT ctx)
     {
         av1_zero_array(ctx.tx_type_map, ctx.num_4x4_blk);
@@ -102,7 +143,11 @@ internal static partial class context_tree
     {
         _ = num_planes;
         if (ctx == null) return;
-        // aom_free(ctx): the managed object is released by the GC once unreferenced.
+        // aom_free(ctx): [av1rt] back to the free list of the thread that allocated it.
+        PC_TREE_SHARED_BUFFERS pool = ctx.pool;
+        if (pool == null) return;
+        ctx.pool = null;
+        (pool.pmc_pool[ctx.pool_bsize] ??= new()).Push(ctx);
     }
 
     internal static PC_TREE av1_alloc_pc_tree_node(BLOCK_SIZE bsize)
@@ -113,6 +158,41 @@ internal static partial class context_tree
         pc_tree.block_size = bsize;
 
         return pc_tree;
+    }
+
+    // [av1rt] av1_alloc_pc_tree_node from the free list of the thread whose buffers these are.
+    internal static PC_TREE av1_alloc_pc_tree_node(BLOCK_SIZE bsize, PC_TREE_SHARED_BUFFERS pool)
+    {
+        PC_TREE pc_tree;
+        if (pool.pc_tree_pool.Count > 0)
+        {
+            // Freed nodes have no children left; reset the rest as new.
+            pc_tree = pool.pc_tree_pool.Pop();
+            pc_tree.none = null;
+            pc_tree.horizontal[0] = pc_tree.horizontal[1] = null;
+            pc_tree.vertical[0] = pc_tree.vertical[1] = null;
+            pc_tree.split[0] = pc_tree.split[1] = pc_tree.split[2] = pc_tree.split[3] = null;
+            pc_tree.index = 0;
+        }
+        else
+        {
+            pc_tree = new PC_TREE();
+        }
+        pc_tree.pool = pool;
+
+        pc_tree.partitioning = PARTITION_NONE;
+        pc_tree.block_size = bsize;
+
+        return pc_tree;
+    }
+
+    // aom_free(pc_tree): [av1rt] back to its free list, if it came from one.
+    private static void free_pc_tree_node(PC_TREE pc_tree)
+    {
+        PC_TREE_SHARED_BUFFERS pool = pc_tree.pool;
+        if (pool == null) return;
+        pc_tree.pool = null;
+        pool.pc_tree_pool.Push(pc_tree);
     }
 
     // C: #define FREE_PMC_NODE(CTX) do { av1_free_pmc(CTX, num_planes); CTX = NULL; } while (0)
@@ -153,6 +233,7 @@ internal static partial class context_tree
                 }
             }
             // aom_free(pc_tree)
+            free_pc_tree_node(pc_tree);
             return;
         }
 
@@ -182,7 +263,7 @@ internal static partial class context_tree
             }
         }
 
-        // if (!keep_best && !keep_none) aom_free(pc_tree): nothing to do for a managed object.
+        if (keep_best == 0 && keep_none == 0) free_pc_tree_node(pc_tree);
     }
 
     internal static int av1_setup_sms_tree(AV1_COMP cpi, ThreadData td)

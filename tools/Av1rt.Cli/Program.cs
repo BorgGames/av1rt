@@ -114,10 +114,12 @@ static int Bench(string[] args)
     int gc0 = 0;
     TimeSpan user0 = default, kernel0 = default;
     using var self = Process.GetCurrentProcess();
+    using var allocTrace = AllocTrace.Enabled ? new AllocTrace() : null;
     for (int i = 0; i < total; i++)
     {
         if (i == warmup)
         {
+            allocTrace?.Start();
             alloc0 = GC.GetTotalAllocatedBytes(true);
             gc0 = GC.CollectionCount(0);
             self.Refresh();
@@ -148,5 +150,6 @@ static int Bench(string[] args)
     Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture,
         $"cpu {(self.UserProcessorTime - user0).TotalMilliseconds / timed:F1} ms user + {(self.PrivilegedProcessorTime - kernel0).TotalMilliseconds / timed:F1} ms kernel per frame"));
     Console.Error.Write(Av1rt.Diagnostics.StageTimes.Report());
+    if (allocTrace != null) Console.Error.Write(allocTrace.Report(timed));
     return 0;
 }

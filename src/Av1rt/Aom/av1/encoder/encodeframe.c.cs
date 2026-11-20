@@ -1271,7 +1271,7 @@ internal static partial class encodeframe
                 int use_nonrd_mode = cpi.sf.rt_sf.use_nonrd_pick_mode;
                 if (use_nonrd_mode != 0)
                 {
-                    td.pc_root = av1_alloc_pc_tree_node(cm.seq_params.sb_size);
+                    td.pc_root = av1_alloc_pc_tree_node(cm.seq_params.sb_size, td.shared_coeff_buf);
                     if (td.pc_root == null)
                         throw new AomException(AOM_CODEC_MEM_ERROR, "Failed to allocate PC_TREE");
                 }

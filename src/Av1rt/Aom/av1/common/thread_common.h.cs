@@ -217,7 +217,10 @@ internal static partial class thread_common
         int sb_rows =
             CEIL_POWER_OF_TWO(cm.mi_params.mi_rows, num_mis_in_lpf_unit_height_log2);
 
-        if (lf_sync.sync_range == 0 || sb_rows != lf_sync.rows ||
+        // [av1rt] C reallocates when the row count differs: the encoder's setup counts 128-pixel
+        // rows and the loop filter pipelined with encoding 64-pixel rows, so it reallocated
+        // twice per frame. lf_sync.rows only sizes the arrays; keep the larger allocation.
+        if (lf_sync.sync_range == 0 || sb_rows > lf_sync.rows ||
             num_workers > lf_sync.num_workers)
         {
             av1_loop_filter_dealloc(lf_sync);
