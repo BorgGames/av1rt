@@ -8,3 +8,6 @@ obj/
 *.yuv
 *.y4m
 /artifacts/
+
+# The user-global gitignore ignores x86/ (build dirs); the SIMD ports live in x86/ folders.
+!x86/
