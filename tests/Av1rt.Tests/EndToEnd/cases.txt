@@ -1,0 +1,13 @@
+# End-to-end bit-exactness cases: name | clip in .testdata | encoder options.
+# Options use the names of tools/oracle/av1rt_oracle.c and the Av1rt.Cli. Threads are explicit
+# because the automatic tile layout depends on the thread count.
+# tools/oracle/make-refs.sh encodes each case with the oracle into .oracle/ref/<name>.ivf/.log.
+q352        | dota352.y4m       | --limit 30 --threads 2
+q352_low    | dota352.y4m       | --limit 30 --threads 2 --bitrate 150 --drop 30
+q1366       | dota1366x766.y4m  | --limit 30 --threads 8
+q1080       | dota1080.y4m      | --limit 60 --threads 8 --bitrate 8000
+q1080_kf    | dota1080.y4m      | --limit 30 --threads 8 --kf-interval 10
+synth1080   | synth1080.y4m     | --limit 60 --threads 8 --bitrate 6000
+q4k         | dota4k.y4m        | --limit 60 --threads 8
+q4k_1t      | dota4k.y4m        | --limit 20 --threads 1 --tile-cols 2 --tile-rows 1
+desk4k      | desk4k.y4m        | --limit 40 --threads 8

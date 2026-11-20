@@ -50,7 +50,7 @@ public sealed class Y4mReader : IDisposable
                     }
                     break;
                 case 'C':
-                    if (!token.StartsWith("C420", StringComparison.Ordinal) || token.Contains('p'))
+                    if (token is not ("C420" or "C420jpeg" or "C420paldv" or "C420mpeg2"))
                     {
                         throw new InvalidDataException($"Only 8-bit 4:2:0 Y4M is supported, got {token}.");
                     }

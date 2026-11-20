@@ -16,6 +16,10 @@
     <ProjectReference Include="..\..\src\Av1rt\Av1rt.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="EndToEnd\cases.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <!-- Native shims exporting libaom internals for differential tests (docs/TESTING.md). -->
   <ItemGroup>
     <None Include="..\..\.oracle\shims\*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
