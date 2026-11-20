@@ -81,132 +81,184 @@ internal static class sse_avx2
     internal static long aom_sse_avx2(Ptr<byte> a, int a_stride, Ptr<byte> b,
                                       int b_stride, int width, int height)
     {
-        int y = 0;
-        long sse = 0;
-        __m256i sum = _mm256_setzero_si256();
-        __m256i zero = _mm256_setzero_si256();
         switch (width)
         {
             case 4:
-                do
-                {
-                    sse_w4x4_avx2(a, a_stride, b, b_stride, ref sum);
-                    a += a_stride << 2;
-                    b += b_stride << 2;
-                    y += 4;
-                } while (y < height);
-                sse = summary_all_avx2(sum);
-                break;
+                return sse_w4_avx2_rows(a, a_stride, b, b_stride, width, height);
             case 8:
-                do
-                {
-                    sse_w8x2_avx2(a, a_stride, b, b_stride, ref sum);
-                    a += a_stride << 1;
-                    b += b_stride << 1;
-                    y += 2;
-                } while (y < height);
-                sse = summary_all_avx2(sum);
-                break;
+                return sse_w8_avx2_rows(a, a_stride, b, b_stride, width, height);
             case 16:
-                do
-                {
-                    __m128i v_a0 = xx_loadu_128(a);
-                    __m128i v_a1 = xx_loadu_128(a + a_stride);
-                    __m128i v_b0 = xx_loadu_128(b);
-                    __m128i v_b1 = xx_loadu_128(b + b_stride);
-                    __m256i v_a =
-                        _mm256_insertf128_si256(_mm256_castsi128_si256(v_a0), v_a1, 0x01);
-                    __m256i v_b =
-                        _mm256_insertf128_si256(_mm256_castsi128_si256(v_b0), v_b1, 0x01);
-                    __m256i v_al = _mm256_unpacklo_epi8(v_a, zero);
-                    __m256i v_au = _mm256_unpackhi_epi8(v_a, zero);
-                    __m256i v_bl = _mm256_unpacklo_epi8(v_b, zero);
-                    __m256i v_bu = _mm256_unpackhi_epi8(v_b, zero);
-                    __m256i v_asub = _mm256_sub_epi16(v_al, v_bl);
-                    __m256i v_bsub = _mm256_sub_epi16(v_au, v_bu);
-                    __m256i temp =
-                        _mm256_add_epi32(_mm256_madd_epi16(v_asub, v_asub),
-                                         _mm256_madd_epi16(v_bsub, v_bsub));
-                    sum = _mm256_add_epi32(sum, temp);
-                    a += a_stride << 1;
-                    b += b_stride << 1;
-                    y += 2;
-                } while (y < height);
-                sse = summary_all_avx2(sum);
-                break;
+                return sse_w16_avx2_rows(a, a_stride, b, b_stride, width, height);
             case 32:
-                do
-                {
-                    sse_w32_avx2(ref sum, a, b);
-                    a += a_stride;
-                    b += b_stride;
-                    y += 1;
-                } while (y < height);
-                sse = summary_all_avx2(sum);
-                break;
+                return sse_w32_avx2_rows(a, a_stride, b, b_stride, width, height);
             case 64:
-                do
-                {
-                    sse_w32_avx2(ref sum, a, b);
-                    sse_w32_avx2(ref sum, a + 32, b + 32);
-                    a += a_stride;
-                    b += b_stride;
-                    y += 1;
-                } while (y < height);
-                sse = summary_all_avx2(sum);
-                break;
+                return sse_w64_avx2_rows(a, a_stride, b, b_stride, width, height);
             case 128:
+                return sse_w128_avx2_rows(a, a_stride, b, b_stride, width, height);
+            default:
+                return sse_wn_avx2_rows(a, a_stride, b, b_stride, width, height);
+        }
+    }
+
+    // [port] One method per width (the C switch cases): in one method the JIT kept a, b and sum in
+    // memory, reloading and bounds-checking the Ptr fields and write-barriering a += stride.
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.AggressiveOptimization)]
+    private static long sse_w4_avx2_rows(Ptr<byte> a, int a_stride, Ptr<byte> b, int b_stride, int width, int height)
+    {
+        int y = 0;
+        __m256i sum = _mm256_setzero_si256();
+        _ = width;
+        do
+        {
+            sse_w4x4_avx2(a, a_stride, b, b_stride, ref sum);
+            a += a_stride << 2;
+            b += b_stride << 2;
+            y += 4;
+        } while (y < height);
+        return summary_all_avx2(sum);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.AggressiveOptimization)]
+    private static long sse_w8_avx2_rows(Ptr<byte> a, int a_stride, Ptr<byte> b, int b_stride, int width, int height)
+    {
+        int y = 0;
+        __m256i sum = _mm256_setzero_si256();
+        _ = width;
+        do
+        {
+            sse_w8x2_avx2(a, a_stride, b, b_stride, ref sum);
+            a += a_stride << 1;
+            b += b_stride << 1;
+            y += 2;
+        } while (y < height);
+        return summary_all_avx2(sum);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.AggressiveOptimization)]
+    private static long sse_w16_avx2_rows(Ptr<byte> a, int a_stride, Ptr<byte> b, int b_stride, int width, int height)
+    {
+        int y = 0;
+        __m256i sum = _mm256_setzero_si256();
+        __m256i zero = _mm256_setzero_si256();
+        _ = width;
+        do
+        {
+            __m128i v_a0 = xx_loadu_128(a);
+            __m128i v_a1 = xx_loadu_128(a + a_stride);
+            __m128i v_b0 = xx_loadu_128(b);
+            __m128i v_b1 = xx_loadu_128(b + b_stride);
+            __m256i v_a =
+                _mm256_insertf128_si256(_mm256_castsi128_si256(v_a0), v_a1, 0x01);
+            __m256i v_b =
+                _mm256_insertf128_si256(_mm256_castsi128_si256(v_b0), v_b1, 0x01);
+            __m256i v_al = _mm256_unpacklo_epi8(v_a, zero);
+            __m256i v_au = _mm256_unpackhi_epi8(v_a, zero);
+            __m256i v_bl = _mm256_unpacklo_epi8(v_b, zero);
+            __m256i v_bu = _mm256_unpackhi_epi8(v_b, zero);
+            __m256i v_asub = _mm256_sub_epi16(v_al, v_bl);
+            __m256i v_bsub = _mm256_sub_epi16(v_au, v_bu);
+            __m256i temp =
+                _mm256_add_epi32(_mm256_madd_epi16(v_asub, v_asub),
+                                 _mm256_madd_epi16(v_bsub, v_bsub));
+            sum = _mm256_add_epi32(sum, temp);
+            a += a_stride << 1;
+            b += b_stride << 1;
+            y += 2;
+        } while (y < height);
+        return summary_all_avx2(sum);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.AggressiveOptimization)]
+    private static long sse_w32_avx2_rows(Ptr<byte> a, int a_stride, Ptr<byte> b, int b_stride, int width, int height)
+    {
+        int y = 0;
+        __m256i sum = _mm256_setzero_si256();
+        _ = width;
+        do
+        {
+            sse_w32_avx2(ref sum, a, b);
+            a += a_stride;
+            b += b_stride;
+            y += 1;
+        } while (y < height);
+        return summary_all_avx2(sum);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.AggressiveOptimization)]
+    private static long sse_w64_avx2_rows(Ptr<byte> a, int a_stride, Ptr<byte> b, int b_stride, int width, int height)
+    {
+        int y = 0;
+        __m256i sum = _mm256_setzero_si256();
+        _ = width;
+        do
+        {
+            sse_w32_avx2(ref sum, a, b);
+            sse_w32_avx2(ref sum, a + 32, b + 32);
+            a += a_stride;
+            b += b_stride;
+            y += 1;
+        } while (y < height);
+        return summary_all_avx2(sum);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.AggressiveOptimization)]
+    private static long sse_w128_avx2_rows(Ptr<byte> a, int a_stride, Ptr<byte> b, int b_stride, int width, int height)
+    {
+        int y = 0;
+        __m256i sum = _mm256_setzero_si256();
+        _ = width;
+        do
+        {
+            sse_w32_avx2(ref sum, a, b);
+            sse_w32_avx2(ref sum, a + 32, b + 32);
+            sse_w32_avx2(ref sum, a + 64, b + 64);
+            sse_w32_avx2(ref sum, a + 96, b + 96);
+            a += a_stride;
+            b += b_stride;
+            y += 1;
+        } while (y < height);
+        return summary_all_avx2(sum);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.AggressiveOptimization)]
+    private static long sse_wn_avx2_rows(Ptr<byte> a, int a_stride, Ptr<byte> b, int b_stride, int width, int height)
+    {
+        int y = 0;
+        __m256i sum = _mm256_setzero_si256();
+        if ((width & 0x07) == 0)
+        {
+            do
+            {
+                int i = 0;
                 do
                 {
-                    sse_w32_avx2(ref sum, a, b);
-                    sse_w32_avx2(ref sum, a + 32, b + 32);
-                    sse_w32_avx2(ref sum, a + 64, b + 64);
-                    sse_w32_avx2(ref sum, a + 96, b + 96);
-                    a += a_stride;
-                    b += b_stride;
-                    y += 1;
-                } while (y < height);
-                sse = summary_all_avx2(sum);
-                break;
-            default:
-                if ((width & 0x07) == 0)
-                {
-                    do
-                    {
-                        int i = 0;
-                        do
-                        {
-                            sse_w8x2_avx2(a + i, a_stride, b + i, b_stride, ref sum);
-                            i += 8;
-                        } while (i < width);
-                        a += a_stride << 1;
-                        b += b_stride << 1;
-                        y += 2;
-                    } while (y < height);
-                }
-                else
-                {
-                    do
-                    {
-                        int i = 0;
-                        do
-                        {
-                            sse_w8x2_avx2(a + i, a_stride, b + i, b_stride, ref sum);
-                            Ptr<byte> a2 = a + i + (a_stride << 1);
-                            Ptr<byte> b2 = b + i + (b_stride << 1);
-                            sse_w8x2_avx2(a2, a_stride, b2, b_stride, ref sum);
-                            i += 8;
-                        } while (i + 4 < width);
-                        sse_w4x4_avx2(a + i, a_stride, b + i, b_stride, ref sum);
-                        a += a_stride << 2;
-                        b += b_stride << 2;
-                        y += 4;
-                    } while (y < height);
-                }
-                sse = summary_all_avx2(sum);
-                break;
+                    sse_w8x2_avx2(a + i, a_stride, b + i, b_stride, ref sum);
+                    i += 8;
+                } while (i < width);
+                a += a_stride << 1;
+                b += b_stride << 1;
+                y += 2;
+            } while (y < height);
         }
-
-        return sse;
+        else
+        {
+            do
+            {
+                int i = 0;
+                do
+                {
+                    sse_w8x2_avx2(a + i, a_stride, b + i, b_stride, ref sum);
+                    Ptr<byte> a2 = a + i + (a_stride << 1);
+                    Ptr<byte> b2 = b + i + (b_stride << 1);
+                    sse_w8x2_avx2(a2, a_stride, b2, b_stride, ref sum);
+                    i += 8;
+                } while (i + 4 < width);
+                sse_w4x4_avx2(a + i, a_stride, b + i, b_stride, ref sum);
+                a += a_stride << 2;
+                b += b_stride << 2;
+                y += 4;
+            } while (y < height);
+        }
+        return summary_all_avx2(sum);
     }
 }
