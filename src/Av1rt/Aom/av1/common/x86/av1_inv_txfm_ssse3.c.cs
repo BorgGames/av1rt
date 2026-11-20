@@ -20,6 +20,7 @@ internal static partial class av1_inv_txfm_ssse3
 
     // TODO(binpengsmail@gmail.com): replace some for loop with do {} while
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct4_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -47,6 +48,7 @@ internal static partial class av1_inv_txfm_ssse3
         btf_16_adds_subs_out_sse2(ref output[1], ref output[2], x[1], x[2]);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct4_w4_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -74,16 +76,19 @@ internal static partial class av1_inv_txfm_ssse3
         btf_16_adds_subs_out_sse2(ref output[1], ref output[2], x[1], x[2]);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_idct8_low1_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         idct8_low1_ssse3_inline(input, output);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_idct8_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         idct8_sse2_inline(input, output);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct8_w4_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -173,6 +178,7 @@ internal static partial class av1_inv_txfm_ssse3
         btf_16_adds_subs_out_sse2(ref output[7], ref output[8], x[7], x[8]);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct16_low1_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -207,6 +213,7 @@ internal static partial class av1_inv_txfm_ssse3
         output[8] = x[0];
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct16_low8_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -254,6 +261,7 @@ internal static partial class av1_inv_txfm_ssse3
         idct16_stage7_sse2(output, x);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct16_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -327,6 +335,7 @@ internal static partial class av1_inv_txfm_ssse3
         idct16_stage7_sse2(output, x);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct16_w4_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -542,6 +551,7 @@ internal static partial class av1_inv_txfm_ssse3
         btf_16_adds_subs_out_sse2(ref output[15], ref output[16], x[15], x[16]);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct32_low1_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -596,6 +606,7 @@ internal static partial class av1_inv_txfm_ssse3
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m128i[] t_idct32_low8_ssse3_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct32_low8_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -656,6 +667,7 @@ internal static partial class av1_inv_txfm_ssse3
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m128i[] t_idct32_low16_ssse3_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct32_low16_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -725,6 +737,7 @@ internal static partial class av1_inv_txfm_ssse3
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m128i[] t_idct32_sse2_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct32_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1089,6 +1102,7 @@ internal static partial class av1_inv_txfm_ssse3
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m128i[] t_idct64_low1_ssse3_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct64_low1_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -1177,6 +1191,7 @@ internal static partial class av1_inv_txfm_ssse3
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m128i[] t_idct64_low8_ssse3_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct64_low8_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1299,6 +1314,7 @@ internal static partial class av1_inv_txfm_ssse3
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m128i[] t_idct64_low16_ssse3_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct64_low16_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1417,6 +1433,7 @@ internal static partial class av1_inv_txfm_ssse3
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m128i[] t_idct64_low32_ssse3_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct64_low32_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1566,6 +1583,7 @@ internal static partial class av1_inv_txfm_ssse3
         idct64_stage11_sse2(output, x);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst4_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         Ptr<int> sinpi = sinpi_arr(INV_COS_BIT);
@@ -1628,6 +1646,7 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst4_w4_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         Ptr<int> sinpi = sinpi_arr(INV_COS_BIT);
@@ -1674,16 +1693,19 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_iadst8_low1_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         iadst8_low1_ssse3_inline(input, output);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_iadst8_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         iadst8_sse2_inline(input, output);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst8_w4_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1852,6 +1874,7 @@ internal static partial class av1_inv_txfm_ssse3
         output[15] = _mm_subs_epi16(__zero, x[1]);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst16_low1_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1901,6 +1924,7 @@ internal static partial class av1_inv_txfm_ssse3
         iadst16_stage9_ssse3(output, x);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst16_low8_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1937,6 +1961,7 @@ internal static partial class av1_inv_txfm_ssse3
         iadst16_stage8_ssse3(x, cospi, __rounding, cos_bit);
         iadst16_stage9_ssse3(output, x);
     }
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst16_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -1998,6 +2023,7 @@ internal static partial class av1_inv_txfm_ssse3
         iadst16_stage9_ssse3(output, x);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst16_w4_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         sbyte cos_bit = INV_COS_BIT;
@@ -2092,6 +2118,7 @@ internal static partial class av1_inv_txfm_ssse3
         iadst16_stage9_ssse3(output, x);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iidentity4_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         short scale_fractional = (NewSqrt2 - (1 << NewSqrt2Bits));
@@ -2103,6 +2130,7 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iidentity8_sse2(Span<__m128i> input, Span<__m128i> output)
     {
         for (int i = 0; i < 8; ++i)
@@ -2111,6 +2139,7 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iidentity16_ssse3(Span<__m128i> input, Span<__m128i> output)
     {
         short scale_fractional = 2 * (NewSqrt2 - (1 << NewSqrt2Bits));
@@ -2296,6 +2325,7 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_lowbd_inv_txfm2d_add_idtx_ssse3(Ptr<int> input, Ptr<byte> output,
                                                              int stride, TX_SIZE tx_size)
     {
@@ -2324,6 +2354,7 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_inv_txfm2d_add_4x4_ssse3(Ptr<int> input,
                                                        Ptr<byte> output, int stride,
                                                        TX_TYPE tx_type, TX_SIZE tx_size_,
@@ -2549,6 +2580,7 @@ internal static partial class av1_inv_txfm_ssse3
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m128i[] t_av1_lowbd_inv_txfm2d_add_h_identity_ssse3_buf0;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_lowbd_inv_txfm2d_add_h_identity_ssse3(Ptr<int> input,
                                                                    Ptr<byte> output, int stride,
                                                                    TX_TYPE tx_type, TX_SIZE tx_size,
@@ -2606,6 +2638,7 @@ internal static partial class av1_inv_txfm_ssse3
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m128i[] t_av1_lowbd_inv_txfm2d_add_v_identity_ssse3_buf1;
     [ThreadStatic] private static __m128i[] t_av1_lowbd_inv_txfm2d_add_v_identity_ssse3_buf0;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_lowbd_inv_txfm2d_add_v_identity_ssse3(Ptr<int> input,
                                                                    Ptr<byte> output, int stride,
                                                                    TX_TYPE tx_type, TX_SIZE tx_size,
@@ -2705,6 +2738,7 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_inv_txfm2d_add_4x8_ssse3(Ptr<int> input,
                                                        Ptr<byte> output, int stride,
                                                        TX_TYPE tx_type, TX_SIZE tx_size_,
@@ -2746,6 +2780,7 @@ internal static partial class av1_inv_txfm_ssse3
         lowbd_write_buffer_4xn_sse2(buf, output, stride, ud_flip, txfm_size_row);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_inv_txfm2d_add_8x4_ssse3(Ptr<int> input,
                                                        Ptr<byte> output, int stride,
                                                        TX_TYPE tx_type, TX_SIZE tx_size_,
@@ -2787,6 +2822,7 @@ internal static partial class av1_inv_txfm_ssse3
         lowbd_write_buffer_8xn_sse2(buf, output, stride, ud_flip, txfm_size_row);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_inv_txfm2d_add_4x16_ssse3(Ptr<int> input,
                                                         Ptr<byte> output, int stride,
                                                         TX_TYPE tx_type, TX_SIZE tx_size_,
@@ -2855,6 +2891,7 @@ internal static partial class av1_inv_txfm_ssse3
         lowbd_write_buffer_4xn_sse2(buf, output, stride, ud_flip, txfm_size_row);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_inv_txfm2d_add_16x4_ssse3(Ptr<int> input,
                                                         Ptr<byte> output, int stride,
                                                         TX_TYPE tx_type, TX_SIZE tx_size_,
@@ -2922,6 +2959,7 @@ internal static partial class av1_inv_txfm_ssse3
         lowbd_write_buffer_8xn_sse2(buf.Slice(8), output + 8, stride, ud_flip, 4);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_lowbd_inv_txfm2d_add_ssse3(Ptr<int> input, Ptr<byte> output,
                                                         int stride, TX_TYPE tx_type,
                                                         TX_SIZE tx_size, int eob)
@@ -2955,6 +2993,7 @@ internal static partial class av1_inv_txfm_ssse3
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_inv_txfm_add_ssse3(Ptr<tran_low_t> dqcoeff, Ptr<byte> dst, int stride,
                                                 in TxfmParam txfm_param)
     {

@@ -16,7 +16,7 @@ internal static partial class loopfilter_avx2
         8, 128, 9, 128, 10, 128, 11, 128, 12, 128, 13, 128, 14, 128, 15, 128
     };
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_6_quad_avx2(Ptr<byte> s, int p,
                                                         Ptr<byte> _blimit0,
                                                         Ptr<byte> _limit0,
@@ -54,7 +54,7 @@ internal static partial class loopfilter_avx2
     // buffer: the 16 rows of 8 pixels across the edge are transposed into registers (as
     // transpose_16x8 does into the buffer), filtered by lpf_6_quad_core, and the four columns it
     // changes are written back. Same output.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_6_quad_avx2(Ptr<byte> s, int pitch,
                                                       Ptr<byte> _blimit0,
                                                       Ptr<byte> _limit0,
@@ -314,7 +314,7 @@ internal static partial class loopfilter_avx2
     }
 
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_8_quad_avx2(Ptr<byte> s, int p,
                                                         Ptr<byte> _blimit0,
                                                         Ptr<byte> _limit0,
@@ -692,7 +692,7 @@ internal static partial class loopfilter_avx2
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_14_quad_avx2(Ptr<byte> s, int p,
                                                          Ptr<byte> _blimit0,
                                                          Ptr<byte> _limit0,
@@ -1105,7 +1105,7 @@ internal static partial class loopfilter_avx2
     // [port] DECLARE_ALIGNED(16, unsigned char, t_dst[256]): per-thread scratch (leaf use).
     [ThreadStatic] private static byte[] s_t_dst;
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_14_quad_avx2(Ptr<byte> s, int pitch,
                                                        Ptr<byte> _blimit0,
                                                        Ptr<byte> _limit0,

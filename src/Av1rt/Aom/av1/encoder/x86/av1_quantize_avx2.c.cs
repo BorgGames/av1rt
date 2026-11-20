@@ -81,7 +81,7 @@ internal static partial class av1_quantize_avx2
         eob = _mm256_max_epi16(eob, nz_iscan);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_quantize_lp_avx2(Ptr<short> coeff_ptr, int n_coeffs,
                                               Ptr<short> round_ptr, Ptr<short> quant_ptr,
                                               Ptr<short> qcoeff_ptr, Ptr<short> dqcoeff_ptr,

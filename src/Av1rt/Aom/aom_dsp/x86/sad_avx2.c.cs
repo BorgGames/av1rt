@@ -45,20 +45,20 @@ internal static partial class sad_avx2
     }
 
     // FSAD64_H(64), FSAD64_H(32)
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad64x64_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad64xh_avx2(src_ptr, src_stride, ref_ptr, ref_stride, 64);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad64x32_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad64xh_avx2(src_ptr, src_stride, ref_ptr, ref_stride, 32);
 
     // FSADS64_H(64), FSADS64_H(32)
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad_skip_64x64_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         2 * sad64xh_avx2(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, 64 / 2);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad_skip_64x32_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         2 * sad64xh_avx2(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, 32 / 2);
 
@@ -94,12 +94,12 @@ internal static partial class sad_avx2
         return res;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad64x64_avg_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr,
                                                int ref_stride, Ptr<byte> second_pred) =>
         FSADAVG64_H(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 64);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad64x32_avg_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr,
                                                int ref_stride, Ptr<byte> second_pred) =>
         FSADAVG64_H(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 32);
@@ -141,28 +141,28 @@ internal static partial class sad_avx2
     }
 
     // FSAD32_H(64), FSAD32_H(32), FSAD32_H(16)
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad32x64_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad32xh_avx2(src_ptr, src_stride, ref_ptr, ref_stride, 64);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad32x32_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad32xh_avx2(src_ptr, src_stride, ref_ptr, ref_stride, 32);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad32x16_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad32xh_avx2(src_ptr, src_stride, ref_ptr, ref_stride, 16);
 
     // FSADS32_H(64), FSADS32_H(32), FSADS32_H(16)
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad_skip_32x64_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         2 * sad32xh_avx2(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, 64 / 2);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad_skip_32x32_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         2 * sad32xh_avx2(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, 32 / 2);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad_skip_32x16_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         2 * sad32xh_avx2(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, 16 / 2);
 
@@ -201,17 +201,17 @@ internal static partial class sad_avx2
         return res;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad32x64_avg_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr,
                                                int ref_stride, Ptr<byte> second_pred) =>
         FSADAVG32_H(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 64);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad32x32_avg_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr,
                                                int ref_stride, Ptr<byte> second_pred) =>
         FSADAVG32_H(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 32);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad32x16_avg_avx2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr,
                                                int ref_stride, Ptr<byte> second_pred) =>
         FSADAVG32_H(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 16);

@@ -337,7 +337,7 @@ internal static class loopfilter_sse2
         filter4_dual_sse2(ref p1p0, ref q1q0, ref hev, ref mask, ref q1q0_out, ref p1p0_out);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_4_sse2(Ptr<byte> s, int p /* pitch */,
                                                    Ptr<byte> _blimit, Ptr<byte> _limit,
                                                    Ptr<byte> _thresh)
@@ -364,7 +364,7 @@ internal static class loopfilter_sse2
         xx_storel_32(s + 1 * p, _mm_srli_si128(qs1qs0, 4));
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_4_sse2(Ptr<byte> s, int p /* pitch */,
                                                  Ptr<byte> _blimit, Ptr<byte> _limit,
                                                  Ptr<byte> _thresh)
@@ -986,7 +986,7 @@ internal static class loopfilter_sse2
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_14_sse2(Ptr<byte> s, int p,
                                                     Ptr<byte> _blimit,
                                                     Ptr<byte> _limit,
@@ -1288,7 +1288,7 @@ internal static class loopfilter_sse2
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_6_sse2(Ptr<byte> s, int p,
                                                    Ptr<byte> _blimit,
                                                    Ptr<byte> _limit,
@@ -1316,7 +1316,7 @@ internal static class loopfilter_sse2
         xx_storel_32(s + 1 * p, _mm_srli_si128(q1q0, 4));
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_6_dual_sse2(Ptr<byte> s, int p,
                                                         Ptr<byte> _blimit0,
                                                         Ptr<byte> _limit0,
@@ -1656,7 +1656,7 @@ internal static class loopfilter_sse2
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_8_sse2(Ptr<byte> s, int p,
                                                    Ptr<byte> _blimit,
                                                    Ptr<byte> _limit,
@@ -1688,7 +1688,7 @@ internal static class loopfilter_sse2
         xx_storel_32(s + 2 * p, q2);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_14_dual_sse2(Ptr<byte> s, int p,
                                                          Ptr<byte> _blimit0,
                                                          Ptr<byte> _limit0,
@@ -1742,7 +1742,7 @@ internal static class loopfilter_sse2
         _mm_storel_epi64(s + 5 * p, _mm_srli_si128(q5p5, 8));
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_8_dual_sse2(Ptr<byte> s, int p, Ptr<byte> _blimit0,
                                                         Ptr<byte> _limit0,
                                                         Ptr<byte> _thresh0,
@@ -1780,7 +1780,7 @@ internal static class loopfilter_sse2
         _mm_storel_epi64(s + 2 * p, q2);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_4_dual_sse2(Ptr<byte> s, int p,
                                                         Ptr<byte> _blimit0,
                                                         Ptr<byte> _limit0,
@@ -1823,7 +1823,7 @@ internal static class loopfilter_sse2
         _mm_storel_epi64(s + 1 * p, _mm_srli_si128(qs1qs0, 8));
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_4_dual_sse2(Ptr<byte> s, int p, Ptr<byte> _blimit0,
                                                       Ptr<byte> _limit0,
                                                       Ptr<byte> _thresh0,
@@ -1884,7 +1884,7 @@ internal static class loopfilter_sse2
         xx_storel_32((s - 2 + 7 * p), d7);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_6_sse2(Ptr<byte> s, int p,
                                                  Ptr<byte> _blimit,
                                                  Ptr<byte> _limit,
@@ -1920,7 +1920,7 @@ internal static class loopfilter_sse2
         xx_storel_32(s + 3 * p - 2, d3);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_6_dual_sse2(Ptr<byte> s, int p, Ptr<byte> _blimit0,
                                                       Ptr<byte> _limit0,
                                                       Ptr<byte> _thresh0,
@@ -1977,7 +1977,7 @@ internal static class loopfilter_sse2
         xx_storel_32((s - 2 + 7 * p), d7);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_8_sse2(Ptr<byte> s, int p,
                                                  Ptr<byte> _blimit,
                                                  Ptr<byte> _limit,
@@ -2015,7 +2015,7 @@ internal static class loopfilter_sse2
         _mm_storel_epi64(s - 4 + 3 * p, d3);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_8_dual_sse2(Ptr<byte> s, int p, Ptr<byte> _blimit0,
                                                       Ptr<byte> _limit0,
                                                       Ptr<byte> _thresh0,
@@ -2072,7 +2072,7 @@ internal static class loopfilter_sse2
         _mm_storel_epi64(s - 4 + 7 * p, _mm_srli_si128(d6d7, 8));
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_14_sse2(Ptr<byte> s, int p,
                                                   Ptr<byte> _blimit,
                                                   Ptr<byte> _limit,
@@ -2104,7 +2104,7 @@ internal static class loopfilter_sse2
         _mm_storeu_si128(s - 8 + 3 * p, pq3);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_14_dual_sse2(
         Ptr<byte> s, int p, Ptr<byte> _blimit0, Ptr<byte> _limit0,
         Ptr<byte> _thresh0, Ptr<byte> _blimit1, Ptr<byte> _limit1,
@@ -2180,7 +2180,7 @@ internal static class loopfilter_sse2
 
     // [port] not ported: AVX2 variant is dispatched (aom_lpf_horizontal_6_quad_sse2).
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_horizontal_4_quad_sse2(Ptr<byte> s, int p,
                                                         Ptr<byte> _blimit0,
                                                         Ptr<byte> _limit0,
@@ -2297,7 +2297,7 @@ internal static class loopfilter_sse2
     // re-entered.
     [ThreadStatic] private static byte[] s_t_dst;
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_8_quad_sse2(Ptr<byte> s, int pitch,
                                                       Ptr<byte> _blimit0,
                                                       Ptr<byte> _limit0,
@@ -2315,6 +2315,7 @@ internal static class loopfilter_sse2
         transpose_16x8_to_8x16(t_dst, 16, s - 4, pitch);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_6_quad_sse2(Ptr<byte> s, int pitch,
                                                       Ptr<byte> _blimit0,
                                                       Ptr<byte> _limit0,
@@ -2332,7 +2333,7 @@ internal static class loopfilter_sse2
         transpose_16x8_to_8x16(t_dst, 16, s - 4, pitch);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_lpf_vertical_4_quad_sse2(Ptr<byte> s, int pitch,
                                                       Ptr<byte> _blimit0,
                                                       Ptr<byte> _limit0,

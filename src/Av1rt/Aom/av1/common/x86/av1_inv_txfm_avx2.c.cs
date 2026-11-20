@@ -60,6 +60,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_idct16_avx2_x1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct16_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -133,6 +134,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_idct16_low8_avx2_x1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct16_low8_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -180,6 +182,7 @@ internal static partial class av1_inv_txfm_avx2
         idct16_stage7_avx2(output, x1);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct16_low1_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -314,6 +317,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_iadst16_avx2_x1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst16_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -377,6 +381,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_iadst16_low8_avx2_x1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst16_low8_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -414,6 +419,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_iadst16_low1_avx2_x1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst16_low1_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -589,6 +595,7 @@ internal static partial class av1_inv_txfm_avx2
         btf_16_adds_subs_out_avx2(ref output[15], ref output[16], x[15], x[16]);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct32_low1_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -643,6 +650,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_idct32_low8_avx2_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct32_low8_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -702,6 +710,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_idct32_low16_avx2_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct32_low16_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -770,6 +779,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_idct32_avx2_x1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct32_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -1139,6 +1149,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_idct64_low1_avx2_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct64_low1_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -1227,6 +1238,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_idct64_low8_avx2_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct64_low8_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -1348,6 +1360,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_idct64_low16_avx2_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct64_low16_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -1465,6 +1478,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_idct64_low32_avx2_x;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct64_low32_avx2(Span<__m256i> input, Span<__m256i> output)
     {
         Ptr<int> cospi = cospi_arr(INV_COS_BIT);
@@ -2000,21 +2014,25 @@ internal static partial class av1_inv_txfm_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct8_low1_avx2(Span<__m128i> input, Span<__m128i> output)
     {
         idct8_low1_ssse3_inline(input, output);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void idct8_avx2(Span<__m128i> input, Span<__m128i> output)
     {
         idct8_sse2_inline(input, output);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst8_low1_avx2(Span<__m128i> input, Span<__m128i> output)
     {
         iadst8_low1_ssse3_inline(input, output);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void iadst8_avx2(Span<__m128i> input, Span<__m128i> output)
     {
         iadst8_sse2_inline(input, output);
@@ -2360,6 +2378,7 @@ internal static partial class av1_inv_txfm_avx2
 
     // AVX2 implementation of 8x8 inverse transform. Observed that coding AVX2 for
     // tx_type with identity in either of the direction has no advantage.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_inv_txfm2d_add_8x8_avx2(Ptr<int> input, Ptr<byte> output,
                                                       int stride, TX_TYPE tx_type,
                                                       TX_SIZE tx_size, int eob)
@@ -2432,6 +2451,7 @@ internal static partial class av1_inv_txfm_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_lowbd_inv_txfm2d_add_avx2(Ptr<int> input, Ptr<byte> output,
                                                        int stride, TX_TYPE tx_type, TX_SIZE tx_size,
                                                        int eob)
@@ -2462,7 +2482,7 @@ internal static partial class av1_inv_txfm_avx2
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_inv_txfm_add_avx2(Ptr<tran_low_t> dqcoeff, Ptr<byte> dst, int stride,
                                                in TxfmParam txfm_param)
     {

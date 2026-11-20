@@ -15,7 +15,7 @@ namespace Av1rt.Aom;
 internal static class intrapred_asm_sse2
 {
     // [port] cglobal dc_predictor_4x4: the 4 above and 4 left pixels in one register, one psadbw.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_predictor_4x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m2 = _mm_loadu_si32(left);      // movd      m2, [leftq]
@@ -35,7 +35,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_left_predictor_4x4.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_left_predictor_4x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m1 = _mm_setzero_si128();       // pxor      m1, m1
@@ -53,7 +53,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_top_predictor_4x4.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_top_predictor_4x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m1 = _mm_setzero_si128();       // pxor      m1, m1
@@ -71,7 +71,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_predictor_8x8.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_predictor_8x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m1 = _mm_setzero_si128();       // pxor      m1, m1
@@ -88,7 +88,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_top_predictor_8x8.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_top_predictor_8x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m1 = _mm_setzero_si128();       // pxor      m1, m1
@@ -102,7 +102,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_left_predictor_8x8.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_left_predictor_8x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m1 = _mm_setzero_si128();       // pxor      m1, m1
@@ -116,7 +116,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_128_predictor_4x4: movd of GLOBAL(dc_128).
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_128_predictor_4x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m0 = _mm_set1_epi8(unchecked((sbyte)128));
@@ -127,7 +127,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_128_predictor_8x8: movq of GLOBAL(dc_128).
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_128_predictor_8x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m0 = _mm_set1_epi8(unchecked((sbyte)128));
@@ -136,7 +136,7 @@ internal static class intrapred_asm_sse2
 
     // [port] cglobal dc_predictor_16x16. movhlps m2, m0 only feeds the low qword, which
     // _mm_unpackhi_epi64(m0, m0) reproduces.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_predictor_16x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m1 = _mm_setzero_si128();       // pxor      m1, m1
@@ -156,7 +156,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_top_predictor_16x16.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_top_predictor_16x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m1 = _mm_setzero_si128();       // pxor      m1, m1
@@ -173,7 +173,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_left_predictor_16x16.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_left_predictor_16x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m1 = _mm_setzero_si128();       // pxor      m1, m1
@@ -190,7 +190,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal dc_128_predictor_16x16: mova of GLOBAL(dc_128).
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_dc_128_predictor_16x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m0 = _mm_set1_epi8(unchecked((sbyte)128));
@@ -198,7 +198,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal v_predictor_4x4.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_v_predictor_4x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m0 = _mm_loadu_si32(above);     // movd      m0, [aboveq]
@@ -210,7 +210,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal v_predictor_8x8.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_v_predictor_8x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m0 = _mm_loadl_epi64(above);    // movq      m0, [aboveq]
@@ -218,7 +218,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal v_predictor_16x16.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_v_predictor_16x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m0 = _mm_load_si128(above);     // mova      m0, [aboveq]
@@ -226,7 +226,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal h_predictor_4x4: left[0..3] each repeated 4 times, one dword per row.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_h_predictor_4x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m0 = _mm_loadu_si32(left);      // movd      m0, [leftq]
@@ -243,7 +243,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal h_predictor_8x8: two iterations of 4 rows.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_h_predictor_8x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i m0 = _mm_loadl_epi64(left);     // movq      m0, [leftq]
@@ -264,7 +264,7 @@ internal static class intrapred_asm_sse2
     }
 
     // [port] cglobal h_predictor_16x16: four iterations of 4 rows, 4 left pixels each.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_h_predictor_16x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         for (int line = -4; line != 0; line++)

@@ -163,7 +163,7 @@ internal static partial class cdef_block_avx2
         return _mm256_sub_epi16(_mm256_sra_epi16(l, shift), c128);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void cdef_find_dir_dual_avx2(Ptr<ushort> img1, Ptr<ushort> img2,
                                                  int stride, ref int var_out_1st,
                                                  ref int var_out_2nd, int coeff_shift,
@@ -267,7 +267,7 @@ internal static partial class cdef_block_avx2
     // [av1rt] Per row, within one checked window per side: 32 / 16 / 8 pixels per step, then
     // the rest (C: the same widths column block by column block, two rows per step). Same
     // result: dst[i * dstride + k] = src[i * sstride + k].
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void cdef_copy_rect8_8bit_to_16bit_avx2(Ptr<ushort> dst, int dstride,
                                                             Ptr<byte> src, int sstride,
                                                             int width, int height)

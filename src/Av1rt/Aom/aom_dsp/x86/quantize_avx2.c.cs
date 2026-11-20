@@ -131,7 +131,7 @@ internal static partial class quantize_avx2
         return (short)_mm_extract_epi16(eob, 1);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_quantize_b_avx2(Ptr<tran_low_t> coeff_ptr, int n_coeffs,
                                              Ptr<short> zbin_ptr, Ptr<short> round_ptr,
                                              Ptr<short> quant_ptr,
@@ -266,7 +266,7 @@ internal static partial class quantize_avx2
         eob_ptr.Value = (ushort)accumulate_eob256(v_eobmax);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_quantize_b_32x32_avx2(Ptr<tran_low_t> coeff_ptr, int n_coeffs,
                                                    Ptr<short> zbin_ptr,
                                                    Ptr<short> round_ptr,

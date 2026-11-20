@@ -165,59 +165,59 @@ internal static class sad4d_avx2
 
     // SADMXN_AVX2(32, 16), (32, 32), (32, 64), (64, 32), (64, 64), (64, 128), (128, 64),
     // (128, 128)
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad32x16x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx4d_avx2(32, 16, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad32x16x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx3d_avx2(32, 16, src, src_stride, @ref, ref_stride, res);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad32x32x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx4d_avx2(32, 32, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad32x32x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx3d_avx2(32, 32, src, src_stride, @ref, ref_stride, res);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad32x64x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx4d_avx2(32, 64, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad32x64x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx3d_avx2(32, 64, src, src_stride, @ref, ref_stride, res);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad64x32x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx4d_avx2(64, 32, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad64x32x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx3d_avx2(64, 32, src, src_stride, @ref, ref_stride, res);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad64x64x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx4d_avx2(64, 64, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad64x64x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx3d_avx2(64, 64, src, src_stride, @ref, ref_stride, res);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad64x128x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx4d_avx2(64, 128, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad64x128x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx3d_avx2(64, 128, src, src_stride, @ref, ref_stride, res);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad128x64x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx4d_avx2(128, 64, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad128x64x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx3d_avx2(128, 64, src, src_stride, @ref, ref_stride, res);
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad128x128x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx4d_avx2(128, 128, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad128x128x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sadMxNx3d_avx2(128, 128, src, src_stride, @ref, ref_stride, res);
 
@@ -234,28 +234,28 @@ internal static class sad4d_avx2
         res[3] <<= 1;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_32x16x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_MXN_AVX2(32, 16, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_32x32x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_MXN_AVX2(32, 32, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_32x64x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_MXN_AVX2(32, 64, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_64x32x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_MXN_AVX2(64, 32, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_64x64x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_MXN_AVX2(64, 64, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_64x128x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_MXN_AVX2(64, 128, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_128x64x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_MXN_AVX2(128, 64, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_128x128x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_MXN_AVX2(128, 128, src, src_stride, @ref, ref_stride, res);
 
@@ -373,24 +373,24 @@ internal static class sad4d_avx2
     }
 
     // SAD16XNX4_AVX2(32), (16), (8)
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad16x32x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sad16xNx4d_avx2(32, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad16x16x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sad16xNx4d_avx2(16, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad16x8x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sad16xNx4d_avx2(8, src, src_stride, @ref, ref_stride, res);
 
     // SAD16XNX3_AVX2(32), (16), (8)
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad16x32x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sad16xNx3d_avx2(32, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad16x16x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sad16xNx3d_avx2(16, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad16x8x3d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         aom_sad16xNx3d_avx2(8, src, src_stride, @ref, ref_stride, res);
 
@@ -407,10 +407,10 @@ internal static class sad4d_avx2
         res[3] <<= 1;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_16x32x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_16XN_AVX2(32, src, src_stride, @ref, ref_stride, res);
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_sad_skip_16x16x4d_avx2(Ptr<byte> src, int src_stride, Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res) =>
         SAD_SKIP_16XN_AVX2(16, src, src_stride, @ref, ref_stride, res);
 }

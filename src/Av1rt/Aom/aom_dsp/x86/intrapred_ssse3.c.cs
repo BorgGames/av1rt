@@ -111,7 +111,7 @@ internal static class intrapred_ssse3
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_4x4_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         Arr3<__m128i> pixels = default;
@@ -124,7 +124,7 @@ internal static class intrapred_ssse3
         smooth_pred_4xh(pixels, wh, ww, 4, dst, stride, 0);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_4x8_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         Arr3<__m128i> pixels = default;
@@ -137,7 +137,7 @@ internal static class intrapred_ssse3
         smooth_pred_4xh(pixels, wh, ww, 8, dst, stride, 0);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_4x16_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         Arr3<__m128i> pixels = default;
@@ -297,7 +297,7 @@ internal static class intrapred_ssse3
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_8x4_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         Arr4<__m128i> pixels = default;
@@ -310,7 +310,7 @@ internal static class intrapred_ssse3
         smooth_pred_8xh(pixels, wh, ww, 4, dst, stride, 0);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_8x8_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         Arr4<__m128i> pixels = default;
@@ -323,7 +323,7 @@ internal static class intrapred_ssse3
         smooth_pred_8xh(pixels, wh, ww, 8, dst, stride, 0);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_8x16_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         Arr4<__m128i> pixels = default;
@@ -338,7 +338,7 @@ internal static class intrapred_ssse3
         smooth_pred_8xh(pixels, wh[2..], ww, 8, dst, stride, 1);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_8x32_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         Arr8<__m128i> pixels = default;
@@ -384,6 +384,7 @@ internal static class intrapred_ssse3
         return _mm_unpacklo_epi16((x), _mm_setzero_si128());
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void smooth_predictor_wxh(Ptr<byte> dst, int stride, Ptr<byte> top_row,
                                              Ptr<byte> left_column, int width, int height)
     {
@@ -443,73 +444,73 @@ internal static class intrapred_ssse3
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_16x4_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 16, 4);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_16x8_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 16, 8);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_16x16_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 16, 16);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_16x32_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 16, 32);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_16x64_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 16, 64);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_32x8_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 32, 8);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_32x16_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 32, 16);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_32x32_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 32, 32);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_32x64_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 32, 64);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_64x16_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 64, 16);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_64x32_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 64, 32);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_smooth_predictor_64x64_ssse3(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor_wxh(dst, stride, above, left, 64, 64);

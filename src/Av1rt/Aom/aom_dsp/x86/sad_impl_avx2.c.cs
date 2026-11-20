@@ -6,6 +6,7 @@ namespace Av1rt.Aom;
 
 internal static class sad_impl_avx2
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static uint sad32x32(Ptr<byte> src_ptr, int src_stride,
                                  Ptr<byte> ref_ptr, int ref_stride)
     {
@@ -31,6 +32,7 @@ internal static class sad_impl_avx2
         return (uint)_mm_cvtsi128_si32(sum_i128);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static uint sad64x32(Ptr<byte> src_ptr, int src_stride,
                                  Ptr<byte> ref_ptr, int ref_stride)
     {
@@ -42,6 +44,7 @@ internal static class sad_impl_avx2
         return sum;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static uint sad64x64(Ptr<byte> src_ptr, int src_stride,
                                  Ptr<byte> ref_ptr, int ref_stride)
     {
@@ -52,7 +55,7 @@ internal static class sad_impl_avx2
         return sum;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad128x64_avx2(Ptr<byte> src_ptr, int src_stride,
                                             Ptr<byte> ref_ptr, int ref_stride)
     {
@@ -64,7 +67,7 @@ internal static class sad_impl_avx2
         return sum;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad64x128_avx2(Ptr<byte> src_ptr, int src_stride,
                                             Ptr<byte> ref_ptr, int ref_stride)
     {
@@ -75,7 +78,7 @@ internal static class sad_impl_avx2
         return sum;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad128x128_avx2(Ptr<byte> src_ptr, int src_stride,
                                              Ptr<byte> ref_ptr, int ref_stride)
     {
@@ -86,7 +89,7 @@ internal static class sad_impl_avx2
         return sum;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad_skip_128x64_avx2(Ptr<byte> src_ptr, int src_stride,
                                                   Ptr<byte> ref_ptr, int ref_stride)
     {
@@ -98,7 +101,7 @@ internal static class sad_impl_avx2
         return 2 * sum;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad_skip_64x128_avx2(Ptr<byte> src_ptr, int src_stride,
                                                   Ptr<byte> ref_ptr, int ref_stride)
     {
@@ -107,7 +110,7 @@ internal static class sad_impl_avx2
         return 2 * sum;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad_skip_128x128_avx2(Ptr<byte> src_ptr, int src_stride,
                                                    Ptr<byte> ref_ptr, int ref_stride)
     {
@@ -116,6 +119,7 @@ internal static class sad_impl_avx2
         return 2 * sum;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static uint sad_w64_avg_avx2(Ptr<byte> src_ptr, int src_stride,
                                          Ptr<byte> ref_ptr, int ref_stride,
                                          int h, Ptr<byte> second_pred,
@@ -146,7 +150,7 @@ internal static class sad_impl_avx2
         return (uint)_mm_cvtsi128_si32(sum_sad128);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad64x128_avg_avx2(Ptr<byte> src_ptr, int src_stride,
                                                 Ptr<byte> ref_ptr, int ref_stride,
                                                 Ptr<byte> second_pred)
@@ -161,7 +165,7 @@ internal static class sad_impl_avx2
         return sum;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad128x64_avg_avx2(Ptr<byte> src_ptr, int src_stride,
                                                 Ptr<byte> ref_ptr, int ref_stride,
                                                 Ptr<byte> second_pred)
@@ -177,7 +181,7 @@ internal static class sad_impl_avx2
         return sum;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_sad128x128_avg_avx2(Ptr<byte> src_ptr, int src_stride,
                                                  Ptr<byte> ref_ptr, int ref_stride,
                                                  Ptr<byte> second_pred)

@@ -97,6 +97,7 @@ internal static partial class encodetxb_sse2
         return count;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void get_4_nz_map_contexts_2d(ReadOnlySpan<byte> levels,
                                                  int width,
                                                  int o0, int o1, int o2,
@@ -130,6 +131,7 @@ internal static partial class encodetxb_sse2
         coeff_contexts[0] = 0;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void get_4_nz_map_contexts_ver(ReadOnlySpan<byte> levels,
                                                   int width,
                                                   int o0, int o1, int o2,
@@ -163,6 +165,7 @@ internal static partial class encodetxb_sse2
         } while (col != 0);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void get_4_nz_map_contexts_hor(ReadOnlySpan<byte> levels,
                                                   int width,
                                                   int o0, int o1, int o2,
@@ -198,6 +201,7 @@ internal static partial class encodetxb_sse2
         } while (col != 0);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void get_8_coeff_contexts_2d(ReadOnlySpan<byte> levels,
                                                 int width,
                                                 int o0, int o1, int o2,
@@ -250,6 +254,7 @@ internal static partial class encodetxb_sse2
         coeff_contexts[0] = 0;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void get_8_coeff_contexts_ver(ReadOnlySpan<byte> levels,
                                                  int width,
                                                  int o0, int o1, int o2,
@@ -283,6 +288,7 @@ internal static partial class encodetxb_sse2
         } while (col != 0);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void get_8_coeff_contexts_hor(ReadOnlySpan<byte> levels,
                                                  int width,
                                                  int o0, int o1, int o2,
@@ -318,6 +324,7 @@ internal static partial class encodetxb_sse2
         } while (col != 0);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void get_16n_coeff_contexts_2d(ReadOnlySpan<byte> levels,
                                                   int real_width,
                                                   int real_height,
@@ -398,6 +405,7 @@ internal static partial class encodetxb_sse2
         coeff_contexts[0] = 0;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void get_16n_coeff_contexts_ver(ReadOnlySpan<byte> levels,
                                                    int width, int height,
                                                    int o0, int o1, int o2,
@@ -448,6 +456,7 @@ internal static partial class encodetxb_sse2
         } while (--col != 0);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void get_16n_coeff_contexts_hor(ReadOnlySpan<byte> levels,
                                                    int width, int height,
                                                    int o0, int o1, int o2,
@@ -487,7 +496,7 @@ internal static partial class encodetxb_sse2
     }
 
     // Note: levels[] must be in the range [0, 127], inclusive.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_get_nz_map_contexts_sse2(Ptr<byte> levels,
                                                       Ptr<short> scan, int eob,
                                                       TX_SIZE tx_size,

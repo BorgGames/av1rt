@@ -199,25 +199,30 @@ internal static class subpel_variance_ssse3
     }
 
     // INIT_XMM ssse3 / SUBPEL_VARIANCE 4 / SUBPEL_VARIANCE 8
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static int aom_sub_pixel_variance4xh_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                         Ptr<byte> dst, int dst_stride, int height, ref uint sse) =>
         SUBPEL_VARIANCE(4, false, src, src_stride, x_offset, y_offset, dst, dst_stride, default, 0, height, ref sse);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static int aom_sub_pixel_variance8xh_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                         Ptr<byte> dst, int dst_stride, int height, ref uint sse) =>
         SUBPEL_VARIANCE(8, false, src, src_stride, x_offset, y_offset, dst, dst_stride, default, 0, height, ref sse);
 
     // SUBPEL_VARIANCE 4, 1 / SUBPEL_VARIANCE 8, 1 / SUBPEL_VARIANCE 16, 1
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static int aom_sub_pixel_avg_variance4xh_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                             Ptr<byte> dst, int dst_stride, Ptr<byte> sec, int sec_stride,
                                                             int height, ref uint sse) =>
         SUBPEL_VARIANCE(4, true, src, src_stride, x_offset, y_offset, dst, dst_stride, sec, sec_stride, height, ref sse);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static int aom_sub_pixel_avg_variance8xh_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                             Ptr<byte> dst, int dst_stride, Ptr<byte> sec, int sec_stride,
                                                             int height, ref uint sse) =>
         SUBPEL_VARIANCE(8, true, src, src_stride, x_offset, y_offset, dst, dst_stride, sec, sec_stride, height, ref sse);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static int aom_sub_pixel_avg_variance16xh_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                              Ptr<byte> dst, int dst_stride, Ptr<byte> sec, int sec_stride,
                                                              int height, ref uint sse) =>

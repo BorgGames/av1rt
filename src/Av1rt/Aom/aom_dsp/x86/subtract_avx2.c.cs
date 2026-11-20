@@ -197,7 +197,7 @@ internal static class subtract_avx2
         } while (--j != 0);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_subtract_block_avx2(int rows, int cols, Ptr<short> diff_ptr,
                                                  int diff_stride, Ptr<byte> src_ptr,
                                                  int src_stride, Ptr<byte> pred_ptr,

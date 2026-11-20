@@ -45,7 +45,7 @@ internal static partial class cost_avx2
         return _mm256_add_epi32(tbl, lit);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_cost_tokens_from_cdf_4_batch_avx2(Ptr<int> costs, int costs_stride,
                                                                Ptr<ushort> cdf, int cdf_stride,
                                                                int n)
@@ -107,7 +107,7 @@ internal static partial class cost_avx2
             av1_cost_tokens_from_cdf_4(costs + c * costs_stride, cdf + c * cdf_stride);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_cost_tokens_from_cdf_2_batch_avx2(Ptr<int> costs, int costs_stride,
                                                                Ptr<ushort> cdf, int cdf_stride,
                                                                int n)

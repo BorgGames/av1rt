@@ -16,6 +16,7 @@ internal static partial class convolve_2d_avx2
     [ThreadStatic] private static short[] s_im_block_w4;
     [ThreadStatic] private static short[] s_im_block_buf;
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void convolve_2d_sr_w4_avx2(
         Ptr<byte> src, int src_stride, Ptr<byte> dst, int dst_stride,
         int w, int h, InterpFilterParams filter_params_x,
@@ -96,6 +97,7 @@ internal static partial class convolve_2d_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void convolve_2d_sr_avx2(Ptr<byte> src, int src_stride,
                                             Ptr<byte> dst, int dst_stride, int w, int h,
                                             InterpFilterParams filter_params_x,
@@ -115,7 +117,7 @@ internal static partial class convolve_2d_avx2
 
     // [port] The branches below are separate methods so that each is its own JIT root: as one
     // large method the JIT runs out of inlining room and calls the intrinsic wrappers.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void convolve_2d_sr_avx2_12tap(Ptr<byte> src, int src_stride,
                                             Ptr<byte> dst, int dst_stride, int w, int h,
                                             InterpFilterParams filter_params_x,
@@ -268,7 +270,7 @@ internal static partial class convolve_2d_avx2
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void convolve_2d_sr_avx2_lowbd(Ptr<byte> src, int src_stride,
                                             Ptr<byte> dst, int dst_stride, int w, int h,
                                             InterpFilterParams filter_params_x,
@@ -380,7 +382,7 @@ internal static partial class convolve_2d_avx2
     }
 
     // [port] The vertical pass of convolve_2d_sr_avx2_lowbd, its own JIT root for the same reason.
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void convolve_2d_sr_avx2_lowbd_vert(Ptr<short> im_block_buf, int strip_stride, int im_stride,
                                                        int w, int h, int vert_tap, Span<__m256i> coeffs_v,
                                                        Ptr<byte> dst, int dst_stride, __m256i round_const_v)
@@ -412,7 +414,7 @@ internal static partial class convolve_2d_avx2
         }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_convolve_2d_sr_avx2(
         Ptr<byte> src, int src_stride, Ptr<byte> dst, int dst_stride,
         int w, int h, InterpFilterParams filter_params_x,

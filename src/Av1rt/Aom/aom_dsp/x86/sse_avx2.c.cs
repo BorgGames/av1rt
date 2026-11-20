@@ -77,7 +77,7 @@ internal static class sse_avx2
         sum = _mm256_add_epi32(sum, _mm256_madd_epi16(v_d_w, v_d_w));
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static long aom_sse_avx2(Ptr<byte> a, int a_stride, Ptr<byte> b,
                                       int b_stride, int width, int height)
     {

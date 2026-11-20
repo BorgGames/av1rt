@@ -170,7 +170,7 @@ internal static partial class cdef_block_avx2
         res[0] = v128_ziphi_64(tr1_7, tr1_6);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static int cdef_find_dir_avx2(Ptr<ushort> img, int stride, ref int var,
                                            int coeff_shift)
     {
@@ -692,7 +692,7 @@ internal static partial class cdef_block_avx2
     // [av1rt] NoInlining: each kernel is compiled on its own, with the whole register file for
     // its loop. Inlined into av1_cdef_filter_fb (one call per 8x8 / 4x4 block, like C's function
     // pointer) the loop's invariants (offsets, span lengths, thresholds) lived in stack slots.
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void cdef_filter_8_0_avx2(Ptr<byte> dest, int dstride, Ptr<ushort> @in,
                                               int pri_strength, int sec_strength, int dir,
                                               int pri_damping, int sec_damping,
@@ -715,7 +715,7 @@ internal static partial class cdef_block_avx2
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void cdef_filter_8_1_avx2(Ptr<byte> dest, int dstride, Ptr<ushort> @in,
                                               int pri_strength, int sec_strength, int dir,
                                               int pri_damping, int sec_damping,
@@ -738,7 +738,7 @@ internal static partial class cdef_block_avx2
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void cdef_filter_8_2_avx2(Ptr<byte> dest, int dstride, Ptr<ushort> @in,
                                               int pri_strength, int sec_strength, int dir,
                                               int pri_damping, int sec_damping,
@@ -761,7 +761,7 @@ internal static partial class cdef_block_avx2
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void cdef_filter_8_3_avx2(Ptr<byte> dest, int dstride, Ptr<ushort> @in,
                                               int pri_strength, int sec_strength, int dir,
                                               int pri_damping, int sec_damping,

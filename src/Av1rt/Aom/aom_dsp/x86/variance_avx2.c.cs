@@ -231,7 +231,7 @@ internal static class variance_avx2
     }
 
     // AOM_VAR_NO_LOOP_AVX2(bw, bh, bits, max_pixel)
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance16x8_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -241,7 +241,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 7);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance16x16_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -251,7 +251,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 8);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance16x32_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -261,7 +261,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 9);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance32x16_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -271,7 +271,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 9);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance32x32_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -281,7 +281,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 10);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance32x64_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -291,7 +291,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 11);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance64x32_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -302,7 +302,7 @@ internal static class variance_avx2
     }
 
     // AOM_VAR_LOOP_AVX2(bw, bh, bits, uh)
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance64x64_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -320,7 +320,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 12);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance64x128_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -338,7 +338,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 13);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance128x64_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -356,7 +356,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 13);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_variance128x128_avx2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse)
     {
         __m256i vsse = _mm256_setzero_si256();
@@ -374,7 +374,7 @@ internal static class variance_avx2
         return sse - (uint)(((long)sum * sum) >> 14);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static uint aom_mse16x16_avx2(Ptr<byte> src, int src_stride,
                                            Ptr<byte> @ref, int ref_stride,
                                            ref uint sse)
@@ -383,7 +383,7 @@ internal static class variance_avx2
         return sse;
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_comp_avg_pred_avx2(Ptr<byte> comp_pred, Ptr<byte> pred, int width,
                                                 int height, Ptr<byte> @ref, int ref_stride)
     {
@@ -632,7 +632,7 @@ internal static class variance_avx2
         _mm_storel_epi64(var16x16, variance_16x16);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_get_var_sse_sum_8x8_quad_avx2(Ptr<byte> src_ptr,
                                                            int source_stride,
                                                            Ptr<byte> ref_ptr, int ref_stride,
@@ -644,7 +644,7 @@ internal static class variance_avx2
                                       sse8x8, sum8x8, ref tot_sse, ref tot_sum, var8x8);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void aom_get_var_sse_sum_16x16_dual_avx2(Ptr<byte> src_ptr,
                                                              int source_stride,
                                                              Ptr<byte> ref_ptr, int ref_stride,

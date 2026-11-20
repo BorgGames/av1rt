@@ -15,6 +15,7 @@ namespace Av1rt.Aom;
 // 32x8, 16x64, 64x16 and TX64 sizes are not used in the realtime-only subset.
 internal static partial class av1_fwd_txfm_sse2
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fdct4x4_new_sse2(Span<__m128i> input, Span<__m128i> output, sbyte cos_bit)
     {
         _ = cos_bit;
@@ -54,6 +55,7 @@ internal static partial class av1_fwd_txfm_sse2
         output[3] = _mm_srli_si128(output[1], 8);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fdct8x4_new_sse2(Span<__m128i> input, Span<__m128i> output, sbyte cos_bit)
     {
         Ptr<int> cospi = cospi_arr(cos_bit);
@@ -83,6 +85,7 @@ internal static partial class av1_fwd_txfm_sse2
         output[3] = x2[3];
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fdct4x8_new_sse2(Span<__m128i> input, Span<__m128i> output, sbyte cos_bit)
     {
         _ = cos_bit;
@@ -155,6 +158,7 @@ internal static partial class av1_fwd_txfm_sse2
         output[7] = x4[7];
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fadst4x4_new_sse2(Span<__m128i> input, Span<__m128i> output, sbyte cos_bit_arg)
     {
         _ = cos_bit_arg;
@@ -209,6 +213,7 @@ internal static partial class av1_fwd_txfm_sse2
         output[3] = _mm_srli_si128(output[1], 8);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fadst4x8_new_sse2(Span<__m128i> input, Span<__m128i> output, sbyte cos_bit_arg)
     {
         _ = cos_bit_arg;
@@ -308,6 +313,7 @@ internal static partial class av1_fwd_txfm_sse2
         output[7] = x6[0];
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fadst8x4_new_sse2(Span<__m128i> input, Span<__m128i> output, sbyte cos_bit)
     {
         Ptr<int> sinpi = sinpi_arr(cos_bit);
@@ -503,6 +509,7 @@ internal static partial class av1_fwd_txfm_sse2
         fadst4x8_new_sse2       // H_FLIPADST
     };
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_lowbd_fwd_txfm2d_4x4_sse2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
@@ -561,6 +568,7 @@ internal static partial class av1_fwd_txfm_sse2
         store_buffer_16bit_to_32bit_w4(buf, output, height, width);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_lowbd_fwd_txfm2d_4x8_sse2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = stride;
@@ -607,6 +615,7 @@ internal static partial class av1_fwd_txfm_sse2
         store_rect_buffer_16bit_to_32bit_w8(buf, output, height, width);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_lowbd_fwd_txfm2d_8x4_sse2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;

@@ -112,7 +112,7 @@ internal static partial class av1_fwd_txfm2d_avx2
 
     // [port] NoInlining: the kernel inlined into a 2D driver twice exhausts the JIT's inline
     // budget there, so each constant-cos_bit instance is its own root.
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fdct16x16_cb13_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
         _ = cos_bit;
@@ -121,7 +121,7 @@ internal static partial class av1_fwd_txfm2d_avx2
 
     // [port] NoInlining: the kernel inlined into a 2D driver twice exhausts the JIT's inline
     // budget there, so each constant-cos_bit instance is its own root.
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fdct16x16_cb12_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
         _ = cos_bit;
@@ -324,7 +324,7 @@ internal static partial class av1_fwd_txfm2d_avx2
 
     // [port] NoInlining: the kernel inlined into a 2D driver twice exhausts the JIT's inline
     // budget there, so each constant-cos_bit instance is its own root.
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fdct16x32_cb12_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
         _ = cos_bit;
@@ -333,7 +333,7 @@ internal static partial class av1_fwd_txfm2d_avx2
 
     // [port] NoInlining: the kernel inlined into a 2D driver twice exhausts the JIT's inline
     // budget there, so each constant-cos_bit instance is its own root.
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void fdct16x32_cb13_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
         _ = cos_bit;
@@ -850,7 +850,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_8x8_non_dct_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
@@ -895,6 +895,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         store_buffer_16bit_to_32bit_w8_avx2(buf1, output, 8, 8);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void av1_lowbd_fwd_txfm2d_8x8_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         if ((tx_type != DCT_DCT))
@@ -916,7 +917,7 @@ internal static partial class av1_fwd_txfm2d_avx2
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x16_non_dct_avx2_buf0;
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x16_non_dct_avx2_buf1;
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_16x16_non_dct_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
@@ -967,6 +968,7 @@ internal static partial class av1_fwd_txfm2d_avx2
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x16_avx2_buf0;
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x16_avx2_buf1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_16x16_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         if ((tx_type != DCT_DCT))
@@ -994,6 +996,7 @@ internal static partial class av1_fwd_txfm2d_avx2
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_32x32_avx2_buf0;
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_32x32_avx2_buf1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_32x32_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
@@ -1074,6 +1077,7 @@ internal static partial class av1_fwd_txfm2d_avx2
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x32_avx2_buf0;
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_16x32_avx2_buf1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_16x32_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
@@ -1129,6 +1133,7 @@ internal static partial class av1_fwd_txfm2d_avx2
     // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_32x16_avx2_buf0;
     [ThreadStatic] private static __m256i[] t_lowbd_fwd_txfm2d_32x16_avx2_buf1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_32x16_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
@@ -1891,7 +1896,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         fadst8x16_new_avx2       // H_FLIPADST
     };
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_8x16_non_dct_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
@@ -1943,6 +1948,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         store_rect_buffer_16bit_to_32bit_w16_avx2(buf2, output, height, width);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_8x16_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         if ((tx_type != DCT_DCT))
@@ -1966,7 +1972,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         store_rect_buffer_16bit_to_32bit_w16_avx2(buf2, output, 16, 8);
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_16x8_non_dct_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         _ = bd;
@@ -2018,6 +2024,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         store_rect_buffer_16bit_to_32bit_w8(buf, output, height, width);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     private static void lowbd_fwd_txfm2d_16x8_avx2(Ptr<short> input, Ptr<int> output, int stride, TX_TYPE tx_type, int bd)
     {
         if ((tx_type != DCT_DCT))
@@ -2064,7 +2071,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         null,  // [subset] lowbd_fwd_txfm2d_64x16_avx2, // 64x16 transform
     };
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining | System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
     internal static void av1_lowbd_fwd_txfm_avx2(Ptr<short> src_diff, Ptr<tran_low_t> coeff, int diff_stride, ref TxfmParam txfm_param)
     {
         FwdTxfm2dFunc fwd_txfm2d_func = fwd_txfm2d_func_ls[txfm_param.tx_size];
