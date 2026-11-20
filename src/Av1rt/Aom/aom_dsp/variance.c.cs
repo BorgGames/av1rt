@@ -146,9 +146,11 @@ internal static partial class variance_h
                                                       Ptr<byte> ref_ptr, int ref_stride,
                                                       Ptr<uint> sse8x8, Ptr<int> sum8x8,
                                                       ref uint tot_sse, ref int tot_sum,
-                                                      Ptr<uint> var8x8) =>
-        aom_get_var_sse_sum_8x8_quad_c(src_ptr, source_stride, ref_ptr, ref_stride, sse8x8,
-                                       sum8x8, ref tot_sse, ref tot_sum, var8x8);
+                                                      Ptr<uint> var8x8)
+    {
+        if (Simd.UseAvx2) aom_get_var_sse_sum_8x8_quad_avx2(src_ptr, source_stride, ref_ptr, ref_stride, sse8x8, sum8x8, ref tot_sse, ref tot_sum, var8x8);
+        else aom_get_var_sse_sum_8x8_quad_c(src_ptr, source_stride, ref_ptr, ref_stride, sse8x8, sum8x8, ref tot_sse, ref tot_sum, var8x8);
+    }
 
     internal static void aom_get_var_sse_sum_16x16_dual_c(Ptr<byte> src_ptr, int source_stride,
                                                           Ptr<byte> ref_ptr, int ref_stride,
@@ -175,9 +177,11 @@ internal static partial class variance_h
     internal static void aom_get_var_sse_sum_16x16_dual(Ptr<byte> src_ptr, int source_stride,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         Ptr<uint> sse16x16, ref uint tot_sse,
-                                                        ref int tot_sum, Ptr<uint> var16x16) =>
-        aom_get_var_sse_sum_16x16_dual_c(src_ptr, source_stride, ref_ptr, ref_stride, sse16x16,
-                                         ref tot_sse, ref tot_sum, var16x16);
+                                                        ref int tot_sum, Ptr<uint> var16x16)
+    {
+        if (Simd.UseAvx2) aom_get_var_sse_sum_16x16_dual_avx2(src_ptr, source_stride, ref_ptr, ref_stride, sse16x16, ref tot_sse, ref tot_sum, var16x16);
+        else aom_get_var_sse_sum_16x16_dual_c(src_ptr, source_stride, ref_ptr, ref_stride, sse16x16, ref tot_sse, ref tot_sum, var16x16);
+    }
 
     // <gen:variance_sizes>
     /* All three forms of the variance are available in the same sizes. */
@@ -194,7 +198,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance128x128(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance128x128_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance128x128_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance128x128_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance128x128_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -215,8 +220,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance128x128(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance128x128_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance128x128_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance128x128_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance128x128_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -242,8 +247,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance128x128_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance128x128_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance128x128_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(128, 64)
     internal static uint aom_variance128x64_c(Ptr<byte> a, int a_stride,
@@ -258,7 +263,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance128x64(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance128x64_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance128x64_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance128x64_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance128x64_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -279,8 +285,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance128x64(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance128x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance128x64_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance128x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance128x64_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -306,8 +312,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance128x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance128x64_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance128x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(64, 128)
     internal static uint aom_variance64x128_c(Ptr<byte> a, int a_stride,
@@ -322,7 +328,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance64x128(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance64x128_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance64x128_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance64x128_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance64x128_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -343,8 +350,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance64x128(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance64x128_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance64x128_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance64x128_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance64x128_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -370,8 +377,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance64x128_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance64x128_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance64x128_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(64, 64)
     internal static uint aom_variance64x64_c(Ptr<byte> a, int a_stride,
@@ -386,7 +393,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance64x64(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance64x64_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance64x64_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance64x64_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance64x64_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -407,8 +415,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance64x64(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance64x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance64x64_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance64x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance64x64_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -434,8 +442,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance64x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance64x64_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance64x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(64, 32)
     internal static uint aom_variance64x32_c(Ptr<byte> a, int a_stride,
@@ -450,7 +458,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance64x32(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance64x32_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance64x32_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance64x32_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance64x32_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -471,8 +480,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance64x32(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance64x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance64x32_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance64x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance64x32_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -498,8 +507,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance64x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance64x32_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance64x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(32, 64)
     internal static uint aom_variance32x64_c(Ptr<byte> a, int a_stride,
@@ -514,7 +523,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance32x64(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance32x64_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance32x64_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance32x64_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance32x64_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -535,8 +545,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance32x64(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance32x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance32x64_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance32x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance32x64_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -562,8 +572,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance32x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance32x64_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance32x64_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(32, 32)
     internal static uint aom_variance32x32_c(Ptr<byte> a, int a_stride,
@@ -578,7 +588,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance32x32(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance32x32_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance32x32_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance32x32_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance32x32_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -599,8 +610,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance32x32(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance32x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance32x32_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance32x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance32x32_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -626,8 +637,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance32x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance32x32_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance32x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(32, 16)
     internal static uint aom_variance32x16_c(Ptr<byte> a, int a_stride,
@@ -642,7 +653,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance32x16(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance32x16_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance32x16_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance32x16_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance32x16_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -663,8 +675,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance32x16(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance32x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance32x16_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance32x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance32x16_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -690,8 +702,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance32x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance32x16_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance32x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(16, 32)
     internal static uint aom_variance16x32_c(Ptr<byte> a, int a_stride,
@@ -706,7 +718,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance16x32(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance16x32_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance16x32_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance16x32_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance16x32_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -727,8 +740,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance16x32(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance16x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance16x32_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance16x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance16x32_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -754,8 +767,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance16x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance16x32_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance16x32_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(16, 16)
     internal static uint aom_variance16x16_c(Ptr<byte> a, int a_stride,
@@ -770,7 +783,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance16x16(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance16x16_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance16x16_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance16x16_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance16x16_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -791,8 +805,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance16x16(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance16x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance16x16_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance16x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance16x16_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -818,8 +832,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance16x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance16x16_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance16x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(16, 8)
     internal static uint aom_variance16x8_c(Ptr<byte> a, int a_stride,
@@ -834,7 +848,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance16x8(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance16x8_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance16x8_avx2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance16x8_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance16x8_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -855,8 +870,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance16x8(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance16x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance16x8_avx2(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance16x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance16x8_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -882,8 +897,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance16x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance16x8_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance16x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(8, 16)
     internal static uint aom_variance8x16_c(Ptr<byte> a, int a_stride,
@@ -898,7 +913,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance8x16(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance8x16_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance8x16_sse2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance8x16_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance8x16_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -919,8 +935,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance8x16(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance8x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance8x16_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance8x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance8x16_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -946,8 +962,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance8x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance8x16_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance8x16_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(8, 8)
     internal static uint aom_variance8x8_c(Ptr<byte> a, int a_stride,
@@ -962,7 +978,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance8x8(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance8x8_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance8x8_sse2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance8x8_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance8x8_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -983,8 +1000,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance8x8(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance8x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance8x8_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance8x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance8x8_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -1010,8 +1027,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance8x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance8x8_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance8x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(8, 4)
     internal static uint aom_variance8x4_c(Ptr<byte> a, int a_stride,
@@ -1026,7 +1043,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance8x4(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance8x4_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance8x4_sse2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance8x4_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance8x4_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -1047,8 +1065,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance8x4(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance8x4_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance8x4_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance8x4_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance8x4_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -1074,8 +1092,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance8x4_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance8x4_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance8x4_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(4, 8)
     internal static uint aom_variance4x8_c(Ptr<byte> a, int a_stride,
@@ -1090,7 +1108,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance4x8(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance4x8_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance4x8_sse2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance4x8_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance4x8_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -1111,8 +1130,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance4x8(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance4x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance4x8_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance4x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance4x8_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -1138,8 +1157,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance4x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance4x8_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance4x8_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     // VARIANCES(4, 4)
     internal static uint aom_variance4x4_c(Ptr<byte> a, int a_stride,
@@ -1154,7 +1173,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_variance4x4(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                           int ref_stride, ref uint sse) =>
-        aom_variance4x4_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_variance4x4_sse2(src_ptr, source_stride, ref_ptr, ref_stride, ref sse)
+                     : aom_variance4x4_c(src_ptr, source_stride, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_variance4x4_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -1175,8 +1195,8 @@ internal static partial class variance_h
     internal static uint aom_sub_pixel_variance4x4(Ptr<byte> src_ptr, int source_stride,
                                                     int xoffset, int yoffset, Ptr<byte> ref_ptr,
                                                     int ref_stride, ref uint sse) =>
-        aom_sub_pixel_variance4x4_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                       ref_stride, ref sse);
+        Simd.UseAvx2 ? aom_sub_pixel_variance4x4_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse)
+                     : aom_sub_pixel_variance4x4_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse);
 
     internal static uint aom_sub_pixel_avg_variance4x4_c(
         Ptr<byte> a, int a_stride, int xoffset, int yoffset,
@@ -1202,8 +1222,8 @@ internal static partial class variance_h
                                                         int xoffset, int yoffset,
                                                         Ptr<byte> ref_ptr, int ref_stride,
                                                         ref uint sse, Ptr<byte> second_pred) =>
-        aom_sub_pixel_avg_variance4x4_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr,
-                                           ref_stride, ref sse, second_pred);
+        Simd.UseAvx2 ? aom_sub_pixel_avg_variance4x4_ssse3(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred)
+                     : aom_sub_pixel_avg_variance4x4_c(src_ptr, source_stride, xoffset, yoffset, ref_ptr, ref_stride, ref sse, second_pred);
 
     /* Identical to the variance call except it does not calculate the
      * sse - sum^2 / w*h and returns sse in addtion to modifying the passed in
@@ -1221,7 +1241,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_mse16x16(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                      int recon_stride, ref uint sse) =>
-        aom_mse16x16_c(src_ptr, source_stride, ref_ptr, recon_stride, ref sse);
+        Simd.UseAvx2 ? aom_mse16x16_avx2(src_ptr, source_stride, ref_ptr, recon_stride, ref sse)
+                     : aom_mse16x16_c(src_ptr, source_stride, ref_ptr, recon_stride, ref sse);
 
     internal static uint aom_mse16x8_c(Ptr<byte> a, int a_stride,
                                        Ptr<byte> b, int b_stride,
@@ -1235,7 +1256,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_mse16x8(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                      int recon_stride, ref uint sse) =>
-        aom_mse16x8_c(src_ptr, source_stride, ref_ptr, recon_stride, ref sse);
+        Simd.UseAvx2 ? aom_mse16x8_sse2(src_ptr, source_stride, ref_ptr, recon_stride, ref sse)
+                     : aom_mse16x8_c(src_ptr, source_stride, ref_ptr, recon_stride, ref sse);
 
     internal static uint aom_mse8x16_c(Ptr<byte> a, int a_stride,
                                        Ptr<byte> b, int b_stride,
@@ -1249,7 +1271,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_mse8x16(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                      int recon_stride, ref uint sse) =>
-        aom_mse8x16_c(src_ptr, source_stride, ref_ptr, recon_stride, ref sse);
+        Simd.UseAvx2 ? aom_mse8x16_sse2(src_ptr, source_stride, ref_ptr, recon_stride, ref sse)
+                     : aom_mse8x16_c(src_ptr, source_stride, ref_ptr, recon_stride, ref sse);
 
     internal static uint aom_mse8x8_c(Ptr<byte> a, int a_stride,
                                        Ptr<byte> b, int b_stride,
@@ -1263,7 +1286,8 @@ internal static partial class variance_h
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint aom_mse8x8(Ptr<byte> src_ptr, int source_stride, Ptr<byte> ref_ptr,
                                      int recon_stride, ref uint sse) =>
-        aom_mse8x8_c(src_ptr, source_stride, ref_ptr, recon_stride, ref sse);
+        Simd.UseAvx2 ? aom_mse8x8_sse2(src_ptr, source_stride, ref_ptr, recon_stride, ref sse)
+                     : aom_mse8x8_c(src_ptr, source_stride, ref_ptr, recon_stride, ref sse);
     // </gen:variance_sizes>
 
     internal static void aom_comp_avg_pred_c(Ptr<byte> comp_pred, Ptr<byte> pred, int width,
@@ -1286,6 +1310,9 @@ internal static partial class variance_h
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void aom_comp_avg_pred(Ptr<byte> comp_pred, Ptr<byte> pred, int width,
-                                           int height, Ptr<byte> @ref, int ref_stride) =>
-        aom_comp_avg_pred_c(comp_pred, pred, width, height, @ref, ref_stride);
+                                           int height, Ptr<byte> @ref, int ref_stride)
+    {
+        if (Simd.UseAvx2) aom_comp_avg_pred_avx2(comp_pred, pred, width, height, @ref, ref_stride);
+        else aom_comp_avg_pred_c(comp_pred, pred, width, height, @ref, ref_stride);
+    }
 }

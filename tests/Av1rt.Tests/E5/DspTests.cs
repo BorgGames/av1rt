@@ -125,7 +125,10 @@ public class DspTests
                         for (int i = 0; i < 4; i++) refs[i] = new Ptr<byte>(@ref, offsets[i]);
                         uint[] actual = new uint[4];
                         fn(src, ss, refs, rs, actual);
-                        Assert.Equal(expected, actual);
+                        // x3d only defines sad_array[0..2] (libaom's SADx3Test checks 3 blocks;
+                        // its AVX2 version stores 0 in sad_array[3], the C one the 4th SAD).
+                        if (kind == 1) Assert.Equal(expected[..3], actual[..3]);
+                        else Assert.Equal(expected, actual);
                     }
                 }
             }
@@ -421,8 +424,13 @@ public class DspTests
                     int sa = width + 3, sb = width + 11;
                     byte[] a = Pixels(rng, sa * height, ma);
                     byte[] b = Pixels(rng, sb * height, mb);
+                    // aom_sse_avx2 (what aom_sse dispatches to) handles widths and heights that
+                    // are multiples of 4, as the encoder passes and libaom's SSETest checks;
+                    // other sizes check the C port only.
+                    bool simdSize = width % 4 == 0 && height % 4 == 0;
                     Assert.Equal(E5Shim.aomshim_e5_sse(a, sa, b, sb, width, height),
-                                 aom_sse(a, sa, b, sb, width, height));
+                                 simdSize ? aom_sse(a, sa, b, sb, width, height)
+                                          : aom_sse_c(a, sa, b, sb, width, height));
                 }
             }
         }
@@ -446,7 +454,13 @@ public class DspTests
                     short[] actual = new short[ds * rows];
                     for (int i = 0; i < expected.Length; i++) expected[i] = actual[i] = (short)i;
                     E5Shim.aomshim_e5_subtract_block(rows, cols, expected, ds, src, ss, pred, ps);
-                    aom_subtract_block(rows, cols, actual, ds, src, ss, pred, ps);
+                    // aom_subtract_block_avx2 (what aom_subtract_block dispatches to) handles
+                    // block widths 4..128 and even heights, as the encoder passes and libaom's
+                    // subtract test checks; other sizes check the C port only.
+                    if ((rows & 1) == 0 && cols is 4 or 8 or 16 or 32 or 64 or 128)
+                        aom_subtract_block(rows, cols, actual, ds, src, ss, pred, ps);
+                    else
+                        aom_subtract_block_c(rows, cols, actual, ds, src, ss, pred, ps);
                     Assert.Equal(expected, actual);
                 }
             }

@@ -37,5 +37,6 @@ internal static partial class sse
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static long aom_sse(Ptr<byte> a, int a_stride, Ptr<byte> b, int b_stride, int width,
                                  int height) =>
-        aom_sse_c(a, a_stride, b, b_stride, width, height);
+        Simd.UseAvx2 ? aom_sse_avx2(a, a_stride, b, b_stride, width, height)
+                     : aom_sse_c(a, a_stride, b, b_stride, width, height);
 }
