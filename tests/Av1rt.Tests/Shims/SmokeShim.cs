@@ -9,6 +9,9 @@ internal static class SmokeShim
 
     [DllImport(Dll)]
     public static extern int aomshim_smoke_get_msb(uint n);
+
+    [DllImport(Dll)]
+    public static extern int aomshim_smoke_ec(int[] symbols, int count, ushort[] icdf, int nsyms, byte[] output, int outputCapacity);
 }
 
 public class SmokeShimTests

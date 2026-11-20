@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace Av1rt.Aom;
 
 /// <summary>Raised where libaom calls aom_internal_error() or otherwise fails hard.</summary>
-public sealed class AomException : Exception
+public sealed partial class AomException : Exception
 {
     /// <summary>The libaom error code (an aom_codec_err_t value).</summary>
     public int ErrorCode { get; }
@@ -18,7 +18,7 @@ public sealed class AomException : Exception
 /// Replacements for the C runtime calls libaom makes. Counts are in elements, not bytes:
 /// a C <c>memcpy(d, s, n * sizeof(T))</c> becomes <c>memcpy(d, s, n)</c>.
 /// </summary>
-internal static class CRuntime
+internal static partial class CRuntime
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void memcpy<T>(Ptr<T> dst, Ptr<T> src, int count) =>

@@ -21,7 +21,7 @@ namespace Av1rt.Aom;
 /// </para>
 /// </remarks>
 [DebuggerDisplay("{Offset} of {Array == null ? 0 : Array.Length}")]
-internal readonly struct Ptr<T> : IEquatable<Ptr<T>>
+internal readonly partial struct Ptr<T> : IEquatable<Ptr<T>>
 {
     public readonly T[] Array;
     public readonly int Offset;
