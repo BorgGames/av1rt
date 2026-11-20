@@ -18,7 +18,10 @@ internal static class SpeedFeatureOverrides
 
     private static readonly (string Group, string Field, string Value)[] s_overrides = Parse();
 
-    internal static bool Any => s_overrides.Length != 0;
+    // AV1RT_SF_DUMP=N prints the speed features after the first N setter calls to stderr.
+    private static int s_dumps = int.TryParse(Environment.GetEnvironmentVariable("AV1RT_SF_DUMP"), out int n) ? n : 0;
+
+    internal static bool Any => s_overrides.Length != 0 || s_dumps > 0;
 
     private static (string, string, string)[] Parse()
     {
@@ -60,6 +63,30 @@ internal static class SpeedFeatureOverrides
                      : t == typeof(bool) ? value is "1" or "true"
                      : Convert.ChangeType(long.Parse(value, CultureInfo.InvariantCulture), t, CultureInfo.InvariantCulture);
             f.SetValue(target, v);
+        }
+        if (s_dumps > 0)
+        {
+            s_dumps--;
+            var sb = new System.Text.StringBuilder("--- speed features ---"+"\n");
+            Dump<HIGH_LEVEL_SPEED_FEATURES>(sb, "hl_sf", sf.hl_sf); Dump<PARTITION_SPEED_FEATURES>(sb, "part_sf", sf.part_sf);
+            Dump<MV_SPEED_FEATURES>(sb, "mv_sf", sf.mv_sf); Dump<INTER_MODE_SPEED_FEATURES>(sb, "inter_sf", sf.inter_sf);
+            Dump<INTERP_FILTER_SPEED_FEATURES>(sb, "interp_sf", sf.interp_sf); Dump<INTRA_MODE_SPEED_FEATURES>(sb, "intra_sf", sf.intra_sf);
+            Dump<TX_SPEED_FEATURES>(sb, "tx_sf", sf.tx_sf); Dump<RD_CALC_SPEED_FEATURES>(sb, "rd_sf", sf.rd_sf);
+            Dump<WINNER_MODE_SPEED_FEATURES>(sb, "winner_mode_sf", sf.winner_mode_sf); Dump<LOOP_FILTER_SPEED_FEATURES>(sb, "lpf_sf", sf.lpf_sf);
+            Dump<REAL_TIME_SPEED_FEATURES>(sb, "rt_sf", sf.rt_sf);
+            Console.Error.Write(sb.ToString());
+        }
+    }
+
+    private static void Dump<[DynamicallyAccessedMembers(Fields)] T>(System.Text.StringBuilder sb, string group, object o)
+    {
+        foreach (FieldInfo f in typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+        {
+            object v = f.GetValue(o);
+            string text = v is Array a
+                ? "[" + string.Join(",", System.Linq.Enumerable.Cast<object>(a)) + "]"
+                : Convert.ToString(v, CultureInfo.InvariantCulture);
+            sb.Append(group).Append('.').Append(f.Name).Append('=').Append(text).Append('\n');
         }
     }
 

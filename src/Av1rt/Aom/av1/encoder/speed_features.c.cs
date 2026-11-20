@@ -1195,6 +1195,24 @@ internal static partial class speed_features
         }
     }
 
+    // [av1rt] Not in libaom. libaom accepts realtime speed 12 but only uses it for one screen
+    // content tweak; av1rt's speed 12 is speed 11 plus these shortcuts, chosen for 4K cloud
+    // gaming where speed 11 is too slow. Measured at 4K (dota / desktop captures, single thread,
+    // BD-rate on PSNR): about +37% encoding speed for +1.3% / +9.6% bitrate.
+    // - CDEF strengths from the quantizer instead of searched (+16% speed; most of the cost),
+    // - no temporal source filtering (+3%, about rate neutral),
+    // - zero-MV variance for the partitioning (+4%, rate neutral with the fixed partitions),
+    // - half-pel motion vectors (+10%).
+    // Applied after each of the three setters, so it wins over their resolution and q rules.
+    private static void set_av1rt_speed12_features(AV1_COMP cpi, SPEED_FEATURES sf)
+    {
+        if (cpi.oxcf.mode != REALTIME || cpi.oxcf.speed < 12) return;
+        sf.lpf_sf.cdef_pick_method = CDEF_PICK_FROM_Q;
+        sf.rt_sf.use_rtc_tf = 0;
+        sf.rt_sf.estimate_motion_for_var_based_partition = 0;
+        sf.mv_sf.subpel_force_stop = AOMMAX(sf.mv_sf.subpel_force_stop, HALF_PEL);
+    }
+
     internal static void av1_set_speed_features_framesize_dependent(AV1_COMP cpi, int speed)
     {
         SPEED_FEATURES sf = cpi.sf;
@@ -1237,6 +1255,7 @@ internal static partial class speed_features
             }
         }
     
+        set_av1rt_speed12_features(cpi, sf);  // [av1rt]
         if (Av1rt.Diagnostics.SpeedFeatureOverrides.Any)
             Av1rt.Diagnostics.SpeedFeatureOverrides.Apply(cpi.sf);  // [port] experiment hook (AV1RT_SF)
     }
@@ -1406,6 +1425,7 @@ internal static partial class speed_features
         if (cpi.oxcf.rc_cfg.gf_cbr_boost_pct > 0)
             sf.rt_sf.gf_refresh_based_on_qp = 0;
     
+        set_av1rt_speed12_features(cpi, sf);  // [av1rt]
         if (Av1rt.Diagnostics.SpeedFeatureOverrides.Any)
             Av1rt.Diagnostics.SpeedFeatureOverrides.Apply(cpi.sf);  // [port] experiment hook (AV1RT_SF)
     }
@@ -1441,6 +1461,7 @@ internal static partial class speed_features
                         ? 0
                         : B(cm.quant_params.base_qindex > qindex_thresh);
             }
+            set_av1rt_speed12_features(cpi, sf);  // [av1rt]
             if (Av1rt.Diagnostics.SpeedFeatureOverrides.Any)
                 Av1rt.Diagnostics.SpeedFeatureOverrides.Apply(cpi.sf);  // [port] experiment hook (AV1RT_SF)
             return;

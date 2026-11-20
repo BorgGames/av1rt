@@ -9,6 +9,10 @@ configuration in code; it is the reference for bit-exactness.
 * Profile 0 (Main), 8-bit, 4:2:0 input, no high bitdepth anywhere.
 * `g_usage = AOM_USAGE_REALTIME`, one pass, `g_lag_in_frames = 0`, CBR.
 * Speed (`AOME_SET_CPUUSED`) **11**, `tune_content = default` (not screen).
+  Speed **12** is an av1rt extension (`set_av1rt_speed12_features`): speed 11 plus CDEF
+  strengths from the quantizer, half-pel motion vectors, no temporal source filter and zero-MV
+  partition variance. It has no libaom reference stream; `Speed12Tests` checks that libaom's
+  decoder accepts it.
 * `kf_mode = AOM_KF_DISABLED`: key frames only on request (`AOM_EFLAG_FORCE_KF`) and at start.
 * Rate control: `rc_min_quantizer 10`, `rc_max_quantizer` configurable (default 56),
   undershoot/overshoot 50 %, buffer initial/optimal/size 600/600/1000 ms,

@@ -112,12 +112,17 @@ static int Bench(string[] args)
     var sw = new Stopwatch();
     long alloc0 = 0;
     int gc0 = 0;
+    TimeSpan user0 = default, kernel0 = default;
+    using var self = Process.GetCurrentProcess();
     for (int i = 0; i < total; i++)
     {
         if (i == warmup)
         {
             alloc0 = GC.GetTotalAllocatedBytes(true);
             gc0 = GC.CollectionCount(0);
+            self.Refresh();
+            user0 = self.UserProcessorTime;
+            kernel0 = self.PrivilegedProcessorTime;
             Av1rt.Diagnostics.StageTimes.Reset();
             sw.Start();
         }
@@ -139,6 +144,9 @@ static int Bench(string[] args)
         $"{o.Width}x{o.Height} speed {o.Speed}: {fps:F2} fps over {timed} frames, {kbps:F0} kbps at {o.FrameRate} fps nominal"));
     Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture,
         $"allocated {(GC.GetTotalAllocatedBytes(true) - alloc0) / (double)timed / 1024:F0} KiB/frame, {GC.CollectionCount(0) - gc0} gen0 collections"));
+    self.Refresh();
+    Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture,
+        $"cpu {(self.UserProcessorTime - user0).TotalMilliseconds / timed:F1} ms user + {(self.PrivilegedProcessorTime - kernel0).TotalMilliseconds / timed:F1} ms kernel per frame"));
     Console.Error.Write(Av1rt.Diagnostics.StageTimes.Report());
     return 0;
 }

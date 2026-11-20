@@ -41,8 +41,10 @@ public sealed class Av1EncoderOptions
     public int TargetBitrateKbps { get; set; } = 35_000;
 
     /// <summary>
-    /// libaom realtime speed (cpu-used), 5 to 11. Higher is faster. 11 is libwebrtc's choice for
-    /// high resolutions.
+    /// libaom realtime speed (cpu-used), 5 to 12. Higher is faster. 11 is libwebrtc's choice for
+    /// high resolutions and produces the same bitstream as libaom. 12 is an av1rt extension for
+    /// 4K: speed 11 plus quantizer-derived CDEF strengths, half-pel motion vectors and no
+    /// temporal source filter, about a third faster for a few percent more bitrate.
     /// </summary>
     public int Speed { get; set; } = 11;
 
@@ -90,8 +92,8 @@ public sealed class Av1EncoderOptions
             throw new ArgumentOutOfRangeException(nameof(FrameRate));
         if (TargetBitrateKbps <= 0)
             throw new ArgumentOutOfRangeException(nameof(TargetBitrateKbps));
-        if (Speed < 5 || Speed > 11)
-            throw new ArgumentOutOfRangeException(nameof(Speed), "Realtime speed must be 5 to 11.");
+        if (Speed < 5 || Speed > 12)
+            throw new ArgumentOutOfRangeException(nameof(Speed), "Realtime speed must be 5 to 12.");
         if (Threads < 0 || Threads > 64)
             throw new ArgumentOutOfRangeException(nameof(Threads));
         if (TileColumnsLog2 < -1 || TileColumnsLog2 > 6)
