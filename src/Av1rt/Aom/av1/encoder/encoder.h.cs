@@ -1943,6 +1943,13 @@ internal sealed partial class MultiThreadInfo
     /// loop-filtering after encoding.
     public int pipeline_lpf_mt_with_enc;
 
+    // [av1rt] CDEF filtering deferred into the bitstream packing's worker launch (see
+    // cdef_restoration_frame): the number of workers it was set up for (0: none pending), and the
+    // av1_cdef_frame_mt arguments for running it on its own if the packing does not take it.
+    public int av1rt_cdef_pending;
+    public MACROBLOCKD av1rt_cdef_xd;
+    public int av1rt_cdef_do_extend_border;
+
     // [port] Not in C: av1_write_tile_obu_mt's stack arrays (PackBSParams pack_bs_params[MAX_TILES],
     // unsigned int tile_size[MAX_TILES]), kept across frames.
     public PackBSParams[] pack_bs_params_buf;

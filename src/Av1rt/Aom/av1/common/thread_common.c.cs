@@ -574,6 +574,22 @@ internal static partial class thread_common
         int num_workers, cdef_init_fb_row_t cdef_init_fb_row_fn,
         int do_extend_border)
     {
+        prepare_cdef_worker_data(cm, xd, cdef_worker, num_workers, cdef_init_fb_row_fn,
+                                 do_extend_border);
+        for (int i = num_workers - 1; i >= 0; i--)
+        {
+            AVxWorker worker = workers[i];
+            worker.hook = hook;
+            worker.data1 = cdef_sync;
+            worker.data2 = cdef_worker[i];
+        }
+    }
+
+    // [av1rt] The thread data half of prepare_cdef_frame_workers.
+    private static void prepare_cdef_worker_data(
+        AV1_COMMON cm, MACROBLOCKD xd, AV1CdefWorkerData[] cdef_worker, int num_workers,
+        cdef_init_fb_row_t cdef_init_fb_row_fn, int do_extend_border)
+    {
         int num_planes = av1_num_planes(cm);
 
         cdef_worker[0].srcbuf = cm.cdef_info.srcbuf;
@@ -581,19 +597,39 @@ internal static partial class thread_common
             cdef_worker[0].colbuf[plane] = cm.cdef_info.colbuf[plane];
         for (int i = num_workers - 1; i >= 0; i--)
         {
-            AVxWorker worker = workers[i];
             cdef_worker[i].cm = cm;
             cdef_worker[i].xd = xd;
             cdef_worker[i].cdef_init_fb_row_fn = cdef_init_fb_row_fn;
             cdef_worker[i].do_extend_border = do_extend_border;
             for (int plane = 0; plane < num_planes; plane++)
                 cdef_worker[i].linebuf[plane] = cm.cdef_info.linebuf[plane];
-
-            worker.hook = hook;
-            worker.data1 = cdef_sync;
-            worker.data2 = cdef_worker[i];
         }
     }
+
+    // [av1rt] av1_cdef_frame_mt without the worker launch, for running the CDEF rows inside
+    // another launch: av1rt_cdef_rows_worker on each of the num_workers threads (row jobs are
+    // handed out in order and a row only waits for the line buffers of the row above, which the
+    // thread that took it fills first). The caller checks the returned error.
+    internal static void av1rt_cdef_frame_mt_setup(AV1_COMMON cm, MACROBLOCKD xd,
+                                                   AV1CdefWorkerData[] cdef_worker,
+                                                   AV1CdefSync cdef_sync, int num_workers,
+                                                   cdef_init_fb_row_t cdef_init_fb_row_fn,
+                                                   int do_extend_border)
+    {
+        YV12_BUFFER_CONFIG frame = cm.cur_frame.buf;
+        int num_planes = av1_num_planes(cm);
+
+        av1_setup_dst_planes(xd.plane, cm.seq_params.sb_size, frame, 0, 0, 0,
+                             num_planes);
+
+        reset_cdef_job_info(cdef_sync);
+        prepare_cdef_worker_data(cm, xd, cdef_worker, num_workers, cdef_init_fb_row_fn,
+                                 do_extend_border);
+    }
+
+    internal static int av1rt_cdef_rows_worker(AV1CdefSync cdef_sync,
+                                               AV1CdefWorkerData cdef_worker) =>
+        cdef_sb_row_worker_hook(cdef_sync, cdef_worker);
 
     // Initializes row-level parameters for CDEF frame.
     internal static void av1_cdef_init_fb_row_mt(AV1_COMMON cm,

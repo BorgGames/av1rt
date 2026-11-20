@@ -1586,10 +1586,31 @@ internal static partial class encoder
                     // Extension of frame borders is multi-threaded along with cdef.
                     int do_extend_border =
                         extend_borders_mt(cpi, MOD_CDEF, /* plane */ 0);
-                    av1_cdef_frame_mt(cm, xd, cpi.mt_info.cdef_worker,
-                                      cpi.mt_info.workers, cpi.mt_info.cdef_sync,
-                                      num_workers, av1_cdef_init_fb_row_mt,
-                                      do_extend_border);
+                    if (s_cdef_in_pack && cpi.common.tiles.large_scale == 0 &&
+                        av1rt_pack_bs_num_workers(cpi) == num_workers)
+                    {
+                        // [av1rt] Nothing between here and the bitstream packing reads the
+                        // reconstruction, and the packing only reads mode info and
+                        // coefficients. Its time is set by the largest tile while the other
+                        // workers run out of tiles, so the packing workers filter the CDEF rows
+                        // once they have no tile left (av1_write_tile_obu_mt), and
+                        // av1rt_finish_deferred_cdef runs it if the packing does not. The CDEF
+                        // threads read only xd.plane[].dst and subsampling, which the packing
+                        // on the main thread does not write.
+                        av1rt_cdef_frame_mt_setup(cm, xd, cpi.mt_info.cdef_worker,
+                                                  cpi.mt_info.cdef_sync, num_workers,
+                                                  av1_cdef_init_fb_row_mt, do_extend_border);
+                        cpi.mt_info.av1rt_cdef_pending = num_workers;
+                        cpi.mt_info.av1rt_cdef_xd = xd;
+                        cpi.mt_info.av1rt_cdef_do_extend_border = do_extend_border;
+                    }
+                    else
+                    {
+                        av1_cdef_frame_mt(cm, xd, cpi.mt_info.cdef_worker,
+                                          cpi.mt_info.workers, cpi.mt_info.cdef_sync,
+                                          num_workers, av1_cdef_init_fb_row_mt,
+                                          do_extend_border);
+                    }
                 }
                 else
                 {
@@ -1607,6 +1628,23 @@ internal static partial class encoder
         }
 
         // !CONFIG_REALTIME_ONLY: loop restoration compiled out.
+    }
+
+    // [av1rt] AV1RT_CDEF_IN_PACK=0 keeps CDEF filtering in its own worker launch (for comparison).
+    private static readonly bool s_cdef_in_pack =
+        Environment.GetEnvironmentVariable("AV1RT_CDEF_IN_PACK") != "0";
+
+    // [av1rt] Runs the CDEF filtering cdef_restoration_frame deferred, if the bitstream packing
+    // did not.
+    private static void av1rt_finish_deferred_cdef(AV1_COMP cpi)
+    {
+        MultiThreadInfo mt_info = cpi.mt_info;
+        int num_workers = mt_info.av1rt_cdef_pending;
+        if (num_workers == 0) return;
+        mt_info.av1rt_cdef_pending = 0;
+        av1_cdef_frame_mt(cpi.common, mt_info.av1rt_cdef_xd, mt_info.cdef_worker,
+                          mt_info.workers, mt_info.cdef_sync, num_workers,
+                          av1_cdef_init_fb_row_mt, mt_info.av1rt_cdef_do_extend_border);
     }
 
     private static void extend_frame_borders(AV1_COMP cpi)
@@ -2121,9 +2159,16 @@ internal static partial class encoder
         av1_finalize_encoded_frame(cpi);
         cpi.rc.coefficient_size = 0;
         long tPack = StageTimes.Start();
-        if (av1_pack_bitstream(cpi, dest, dest_size, ref size, ref largest_tile_id) !=
-            AOM_CODEC_OK)
-            return AOM_CODEC_ERROR;
+        int pack_err;
+        try
+        {
+            pack_err = av1_pack_bitstream(cpi, dest, dest_size, ref size, ref largest_tile_id);
+        }
+        finally
+        {
+            av1rt_finish_deferred_cdef(cpi);
+        }
+        if (pack_err != AOM_CODEC_OK) return AOM_CODEC_ERROR;
         StageTimes.Stop(StageTimes.Stage.PackBitstream, tPack);
 
         if (cpi.rc.postencode_drop != 0 && allow_postencode_drop_rtc(cpi) != 0 &&

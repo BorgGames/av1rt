@@ -3162,6 +3162,16 @@ internal static partial class bitstream
         return ideal_num_workers;
     }
 
+    // [av1rt] The number of workers pack_tiles_in_tg_obus will use for this frame (the tiles'
+    // abs_sum_level are final once the tiles are encoded).
+    internal static int av1rt_pack_bs_num_workers(AV1_COMP cpi)
+    {
+        CommonTileParams tiles = cpi.common.tiles;
+        return calc_pack_bs_mt_workers(cpi.tile_data, tiles.rows * tiles.cols,
+                                       cpi.mt_info.num_mod_workers[MOD_PACK_BS],
+                                       cpi.mt_info.pack_bs_mt_enabled);
+    }
+
     // [port] C `uint32_t total_size` local of pack_tiles_in_tg_obus, whose address is
     // stored in PackBSParams: per-thread 1-element scratch array.
     [ThreadStatic] private static uint[] ptig_total_size;

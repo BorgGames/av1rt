@@ -1729,6 +1729,34 @@ internal static partial class ethread
         }
     }
 
+    private static readonly AVxWorkerHook pack_bs_then_cdef_hook_fn = pack_bs_then_cdef_hook;
+
+    // [av1rt] Pack-bitstream worker that then filters the CDEF rows cdef_restoration_frame
+    // deferred: the packing waits on its largest tile, so the workers that run out of tiles
+    // filter meanwhile.
+    private static int pack_bs_then_cdef_hook(object arg1, object arg2)
+    {
+        int ok = pack_bs_worker_hook(arg1, arg2);
+        EncWorkerData thread_data = (EncWorkerData)arg1;
+        MultiThreadInfo mt_info = thread_data.cpi.mt_info;
+        AV1CdefWorkerData cdef_worker = mt_info.cdef_worker[thread_data.thread_id];
+        long t0 = StageTimes.Start();
+        int cdef_ok = av1rt_cdef_rows_worker(mt_info.cdef_sync, cdef_worker);
+        if (StageTimes.Enabled)
+            StageTimes.Add(StageTimes.Counter.CdefInPack,
+                           System.Diagnostics.Stopwatch.GetTimestamp() - t0);
+        if (cdef_ok == 0 && ok != 0)
+        {
+            // sync_enc_workers reports the EncWorkerData error.
+            aom_internal_error_info error_info = thread_data.error_info;
+            error_info.error_code = cdef_worker.error_info.error_code;
+            error_info.has_detail = cdef_worker.error_info.has_detail;
+            error_info.detail = cdef_worker.error_info.detail;
+            ok = 0;
+        }
+        return ok;
+    }
+
     // Prepares thread data and workers of pack bitsteam multithreading.
     private static void prepare_pack_bs_workers(AV1_COMP cpi,
                                                 PackBSParams[] pack_bs_params,
@@ -1870,7 +1898,11 @@ internal static partial class ethread
 
         init_tile_pack_bs_params(cpi, dst, dst_size, saved_wb, pack_bs_params,
                                  obu_extn_header);
-        prepare_pack_bs_workers(cpi, pack_bs_params, pack_bs_worker_hook_fn,
+        // [av1rt] With CDEF deferred for this worker count, the workers filter it after the tiles.
+        bool with_cdef = mt_info.av1rt_cdef_pending == num_workers;
+        if (with_cdef) mt_info.av1rt_cdef_pending = 0;
+        prepare_pack_bs_workers(cpi, pack_bs_params,
+                                with_cdef ? pack_bs_then_cdef_hook_fn : pack_bs_worker_hook_fn,
                                 num_workers);
         long tMt = StageTimes.Start();
         StageTimes.FrameMax = 0;

@@ -14,7 +14,7 @@ internal static class StageTimes
     internal enum Stage { Total, Lookahead, SceneDetect, EncodeTiles, PickLpf, LoopFilter, CdefSearch, CdefApply, ExtendBorders, PackBitstream, Count }
 
     /// <summary>Thread-summed worker counters (times in Stopwatch ticks, or event counts).</summary>
-    internal enum Counter { EncBusy, EncLaunchDelay, EncLaunchMain, EncLpf, LpfWait, RowSyncWait, RowSyncWaits, PackMt, PackBusy, PackMaxTile, PackWorkers, Count }
+    internal enum Counter { EncBusy, EncLaunchDelay, EncLaunchMain, EncLpf, LpfWait, RowSyncWait, RowSyncWaits, PackMt, PackBusy, PackMaxTile, PackWorkers, CdefInPack, Count }
 
     internal static readonly bool Enabled = Environment.GetEnvironmentVariable("AV1RT_STAGES") == "1";
     private static readonly long[] s_counters = new long[(int)Counter.Count];
