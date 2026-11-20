@@ -11,6 +11,15 @@ internal static partial class stubs_av1_encoder_rd_c
     internal static void av1_set_rd_speed_thresholds(AV1_COMP cpi) =>
         throw new NotImplementedException();
 
+    // [e7] needed by av1_cyclic_refresh_setup.
+    internal static int av1_compute_rd_mult(int qindex, aom_bit_depth_t bit_depth,
+                                            FRAME_UPDATE_TYPE update_type, int layer_depth,
+                                            int boost_index, FRAME_TYPE frame_type,
+                                            int use_fixed_qp_offsets,
+                                            int is_stat_consumption_stage,
+                                            aom_tune_metric tuning, MODE mode) =>
+        throw new NotImplementedException();
+
     // ---- av1/encoder/rd.c ---------------------------------------------------------------
     internal static YV12_BUFFER_CONFIG av1_get_scaled_ref_frame(AV1_COMP cpi,
                                                                 int ref_frame) =>
