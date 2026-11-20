@@ -148,4 +148,5 @@ jobs:
           user: lost   # the nuget.org account that created the trusted publishing policy (owner: Borg)
 
       - name: Push
-        run: dotnet nuget push "artifacts/nupkg/*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        # Backslashes: on Windows, nuget push only expands the wildcard in a backslash path.
+        run: dotnet nuget push "artifacts\nupkg\*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
