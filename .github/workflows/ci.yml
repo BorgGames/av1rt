@@ -20,8 +20,11 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Restore
+        run: dotnet restore av1rt.slnx
+
       - name: Build
-        run: dotnet build av1rt.slnx -c Release
+        run: dotnet build av1rt.slnx -c Release --no-restore
 
       - name: Test the SIPSorcery adapter
         run: dotnet test tests/SIPSorceryMedia.AV1.Tests/SIPSorceryMedia.AV1.Tests.csproj -c Release --no-build
@@ -75,7 +78,7 @@ jobs:
           key: ${{ steps.shims.outputs.cache-primary-key }}
 
       - name: Build the tests with the shims
-        run: dotnet build tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release
+        run: dotnet build tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release --no-restore
 
       - name: Test av1rt against libaom
         run: dotnet test tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release --no-build --filter "Category=Native"
@@ -125,13 +128,16 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Restore
+        run: dotnet restore src/SIPSorceryMedia.AV1/SIPSorceryMedia.AV1.csproj   # and Av1rt, which it references
+
       - name: Pack
         env:
           TAG: ${{ github.ref_name }}
         run: |
           $version = $env:TAG.Substring(1)
           foreach ($p in 'src/Av1rt/Av1rt.csproj', 'src/SIPSorceryMedia.AV1/SIPSorceryMedia.AV1.csproj') {
-            dotnet pack $p -c Release -o artifacts/nupkg "-p:Version=$version"
+            dotnet pack $p -c Release --no-restore -o artifacts/nupkg "-p:Version=$version"
             if ($LASTEXITCODE) { exit $LASTEXITCODE }
           }
 
