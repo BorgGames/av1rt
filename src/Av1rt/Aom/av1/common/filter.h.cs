@@ -316,4 +316,30 @@ internal static partial class filter
     {
         return filter_params.filter_ptr + filter_params.taps * subpel;
     }
+
+    // [port] Used by the SIMD convolutions only (s6).
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int get_filter_tap(InterpFilterParams filter_params,
+                                       int subpel_qn)
+    {
+        Ptr<short> filter = av1_get_interp_filter_subpel_kernel(
+            filter_params, subpel_qn & SUBPEL_MASK);
+        if (filter_params.taps == 12)
+        {
+            return 12;
+        }
+        if (filter[0] != 0 || filter[7] != 0)
+        {
+            return 8;
+        }
+        if (filter[1] != 0 || filter[6] != 0)
+        {
+            return 6;
+        }
+        if (filter[2] != 0 || filter[5] != 0)
+        {
+            return 4;
+        }
+        return 2;
+    }
 }
