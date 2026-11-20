@@ -8,6 +8,9 @@
     <IsPackable>false</IsPackable>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <!-- Native AOT compiles Avx2 code paths only when AVX2 is part of the instruction-set
+         baseline; without it the SIMD kernels are unavailable (Simd.UseAvx2 is false). -->
+    <IlcInstructionSet>x86-64-v3</IlcInstructionSet>
   </PropertyGroup>
 
   <ItemGroup>

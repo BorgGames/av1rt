@@ -9,6 +9,7 @@ using Av1rt;
 // Av1rt.Cli encode in.y4m out.ivf [options]   — same options and per-frame output as tools/oracle/av1rt_oracle.c
 // Av1rt.Cli bench in.y4m [options] [--frames N] — preloads the clip, loops it, reports encode fps
 return args.Length > 0 && args[0] == "bench" ? Bench(args) :
+       args.Length > 0 && args[0] == "kbench" ? KernelBench.Run(args) :
        args.Length > 0 && args[0] == "encode" ? Encode(args) :
        Usage();
 
@@ -109,9 +110,16 @@ static int Bench(string[] args)
     long bytes = 0;
     int warmup = Math.Min(10, total / 10);
     var sw = new Stopwatch();
+    long alloc0 = 0;
+    int gc0 = 0;
     for (int i = 0; i < total; i++)
     {
-        if (i == warmup) sw.Start();
+        if (i == warmup)
+        {
+            alloc0 = GC.GetTotalAllocatedBytes(true);
+            gc0 = GC.CollectionCount(0);
+            sw.Start();
+        }
         // Ping-pong through the clip so there's no artificial scene cut at the loop point.
         int period = Math.Max(1, 2 * frames.Count - 2);
         int k = i % period;
@@ -126,5 +134,7 @@ static int Bench(string[] args)
     double kbps = bytes * 8.0 / 1000 / ((double)timed / o.FrameRate);
     Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
         $"{o.Width}x{o.Height} speed {o.Speed}: {fps:F2} fps over {timed} frames, {kbps:F0} kbps at {o.FrameRate} fps nominal"));
+    Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture,
+        $"allocated {(GC.GetTotalAllocatedBytes(true) - alloc0) / (double)timed / 1024:F0} KiB/frame, {GC.CollectionCount(0) - gc0} gen0 collections"));
     return 0;
 }

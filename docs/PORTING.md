@@ -252,3 +252,53 @@ Rules:
 * At the end, `git add -A` and `git commit` on your branch (message: what you ported). Final
   report: branch name, files written, functions ported, functions deliberately skipped (and
   why), stubs deleted/added, fields added, edits to others' files, test results, open questions.
+
+## 9. SIMD (phase 4)
+
+The scalar port is bit-exact; this phase ports libaom's **x86 SIMD versions** of the dispatched
+(RTCD) kernels, line by line, keeping bit-exactness.
+
+* **Which variant.** For a dispatched function, port the variant libaom's RTCD picks on an
+  AVX2 machine: the best of `sse2 < ssse3 < sse4_1 < avx2` in its `specialize` line
+  (`aom_dsp/aom_dsp_rtcd_defs.pl`, `av1/common/av1_rtcd_defs.pl`). The main checkout's
+  `.oracle/prof/rtcd_best.txt` lists every dispatched function of the port with that choice.
+  Use the `!CONFIG_HIGHWAY` code. When libaom's version is assembly (`*.asm`), write an
+  intrinsics version computing exactly what the C does and name it like the asm symbol
+  (`aom_sad16x16_sse2`); say so in a `// [port]` comment.
+* **Where.** `src/Av1rt/Aom/<dir>/x86/<file>.c.cs` (and `.h.cs`) mirroring libaom
+  (`aom_dsp/x86/sad_avx2.c.cs`), a `static partial class` named after the C file stem
+  (`sad_avx2`) with `global using static`. Port shared headers you need (e.g.
+  `aom_dsp/x86/transpose_sse2.h`, `av1/common/x86/av1_txfm_sse2.h`) **whole**, at that path,
+  with verbatim names and the mechanical signatures below — another package may port the same
+  header and the two must be interchangeable.
+* **Intrinsics.** Write against `src/Av1rt/Aom/x86/intrin.cs`: Intel's names (`_mm_add_epi16`,
+  `_mm256_sad_epu8`, ...) with C's untyped semantics; `__m128i`/`__m256i` are
+  `Vector128<long>`/`Vector256<long>`. Plus `aom_dsp/x86/synonyms.h.cs` (`xx_*`, `yy_*`). Read
+  the doc comments there (`_mm_andnot_si128` is `~a & b`, `_mm_set_*` argument order is
+  reversed, `_mm256_castsi128_si256` zeroes the upper half). If you need an intrinsic that is
+  missing, add it to `src/Av1rt/Aom/x86/intrin_<pkg>.cs` (`internal static partial class intrin`)
+  following the same pattern.
+* **Memory.** `_mm_loadu_si128((const __m128i *)(p + i))` → `_mm_loadu_si128(p + i)` with `p` a
+  `Ptr<T>` (or a span); loads and stores are bounds checked and read/write 4/8/16/32 bytes
+  whatever `T` is. `__m128i` arrays: locals `__m128i x[8]` → `Span<__m128i> x = stackalloc
+  __m128i[8];`, `__m128i *` / `const __m128i *` parameters → `Span<__m128i>` (sliced for
+  `x + n`), scalar out-parameters → `ref`. `DECLARE_ALIGNED` scratch buffers follow §4.
+* **Dispatch.** Change the forwarder to `=> Simd.UseAvx2 ? name_avx2(...) : name_c(...)`
+  (`Simd.UseAvx2` gates every SIMD variant, SSE ones included — the SIMD path assumes an AVX2
+  CPU). `AV1RT_SIMD=0` in the environment forces the C versions. Keep the `_c` code untouched:
+  it is the reference.
+* **Bit-exactness.** The SIMD port must produce exactly what the `_c` port produces for every
+  input the encoder can feed it. libaom's own tests (`test/*_test.cc`) show the input ranges they
+  compare SIMD with C on; use at least those. If libaom's SIMD version is *not* bit-exact with its
+  C for some encoder-reachable input, do not wire it up — report it.
+* **Tests.** In `tests/Av1rt.Tests/Simd/<pkg>/`: per function a randomized differential test of
+  the SIMD port against the `_c` port (which is already verified against libaom), with random
+  sizes/strides/offsets and extreme values (all-zero, all-max, coefficient extremes in the valid
+  range), thousands of iterations; return early when `!Avx2.IsSupported`. Then the end-to-end
+  tests (`--filter Category=EndToEnd`, 9 cases) must still be byte-identical to the oracle with
+  SIMD on — they are the final check.
+* **Safe code** still (§7): no `unsafe`, no `Unsafe`, no `Vector128.LoadUnsafe`.
+* **Speed.** `static inline` helpers get `[MethodImpl(MethodImplOptions.AggressiveInlining)]` so
+  immediate operands stay constants. Native AOT apps must publish with
+  `<IlcInstructionSet>x86-64-v3</IlcInstructionSet>` (as `tools/Av1rt.Cli` does), otherwise the
+  AVX2 paths are not compiled. `tools/Av1rt.Cli kbench` is a scratch micro-benchmark.
