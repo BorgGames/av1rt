@@ -40,15 +40,15 @@ internal static class v128_intrinsics_x86
 
     // _mm_load_si128((__m128i *)p)
     [MethodImpl(AI)] internal static v128 v128_load_aligned<T>(Ptr<T> p) where T : unmanaged =>
-        Vector128.Create<T>(p.Array, p.Offset).AsInt64();
+        Vector128.Create<T>(new ReadOnlySpan<T>(p.Array, p.Offset, Vector128<T>.Count)).AsInt64();
 
     // _mm_lddqu_si128((__m128i *)p)
     [MethodImpl(AI)] internal static v128 v128_load_unaligned<T>(Ptr<T> p) where T : unmanaged =>
-        Vector128.Create<T>(p.Array, p.Offset).AsInt64();
+        Vector128.Create<T>(new ReadOnlySpan<T>(p.Array, p.Offset, Vector128<T>.Count)).AsInt64();
 
     // _mm_storeu_si128((__m128i *)p, a)
     [MethodImpl(AI)] internal static void v128_store_unaligned<T>(Ptr<T> p, v128 a) where T : unmanaged =>
-        a.As<long, T>().CopyTo(p.Array, p.Offset);
+        a.As<long, T>().CopyTo(new Span<T>(p.Array, p.Offset, Vector128<T>.Count));
     [MethodImpl(AI)] internal static void v128_store_unaligned<T>(Span<T> p, v128 a) where T : unmanaged =>
         a.As<long, T>().CopyTo(p);
 

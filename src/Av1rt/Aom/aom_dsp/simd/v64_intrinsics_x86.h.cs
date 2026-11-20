@@ -5,6 +5,7 @@ global using static Av1rt.Aom.v64_intrinsics_x86;
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -43,17 +44,20 @@ internal static class v64_intrinsics_x86
     // _mm_loadl_epi64((__m128i *)p)
     // [port] A bounds-checked 8-byte load into a GPR and movq: the JIT keeps this in registers,
     // where Vector64.ToVector128() went through a stack slot (a store-forwarding stall per load)
-    // in filter_block_4x4.
+    // in filter_block_4x4. The bounds check is the span constructor's single unsigned compare
+    // (Vector64.Create(T[], int) does three).
     [MethodImpl(AI)] internal static v64 v64_load_aligned<T>(Ptr<T> p) where T : unmanaged =>
-        Vector128.CreateScalar(Vector64.Create<T>(p.Array, p.Offset).AsInt64().ToScalar());
+        Vector128.CreateScalar(MemoryMarshal.Read<long>(
+            MemoryMarshal.AsBytes(new ReadOnlySpan<T>(p.Array, p.Offset, Vector64<T>.Count))));
 
     // _mm_loadl_epi64((__m128i *)p)
     [MethodImpl(AI)] internal static v64 v64_load_unaligned<T>(Ptr<T> p) where T : unmanaged =>
-        Vector128.CreateScalar(Vector64.Create<T>(p.Array, p.Offset).AsInt64().ToScalar());
+        v64_load_aligned(p);
 
     // _mm_storel_epi64((__m128i *)p, a)
     [MethodImpl(AI)] internal static void v64_store_aligned<T>(Ptr<T> p, v64 a) where T : unmanaged =>
-        a.GetLower().As<long, T>().CopyTo(p.Array, p.Offset);
+        MemoryMarshal.Write(MemoryMarshal.AsBytes(new Span<T>(p.Array, p.Offset, Vector64<T>.Count)),
+                            a.ToScalar());
 
     // _mm_setzero_si128()
     [MethodImpl(AI)] internal static v64 v64_zero() => Vector128<long>.Zero;
