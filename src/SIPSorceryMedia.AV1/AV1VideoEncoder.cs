@@ -18,6 +18,12 @@ namespace SIPSorceryMedia.AV1;
 /// frame size changes. Calls are serialised internally.
 /// </para>
 /// <para>
+/// RGB input is converted with BT.709 limited-range coefficients, which is also what browsers assume
+/// for a stream that signals no colour; unless the options set the colour primaries, transfer or
+/// matrix, the stream signals BT.709 for it. For I420 and NV12 input, set the options to match the
+/// source.
+/// </para>
+/// <para>
 /// SIPSorcery passes no timestamps, so <see cref="EncodeVideo(int, int, byte[], VideoPixelFormatsEnum, VideoCodecsEnum)"/>
 /// and <see cref="EncodeVideoFaster"/> time each frame by its arrival: the rate control follows the
 /// rate frames actually come in at, and the target bitrate holds whatever the source's frame rate.
@@ -34,6 +40,8 @@ public sealed class AV1VideoEncoder : IVideoEncoder
     private readonly ArrayBufferWriter<byte> _output = new(1 << 20);
     private readonly long _created = Stopwatch.GetTimestamp();
     private Av1Encoder? _encoder;
+    // _encoder signals BT.709 on the options' behalf, for RGB input.
+    private bool _signalsBt709;
     private bool _forceKeyFrame;
     private int _targetBitrateKbps;
     private bool _disposed;
@@ -144,7 +152,7 @@ public sealed class AV1VideoEncoder : IVideoEncoder
                                        VideoPixelFormatsEnum pixelFormat, IBufferWriter<byte> output, long timestamp)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        Av1Encoder encoder = EnsureEncoder(width, height);
+        Av1Encoder encoder = EnsureEncoder(width, height, pixelFormat);
         Av1InputFrame input = encoder.GetInputFrame();
         // Converted by the encoder's own threads, which are idle between frames.
         if (native != IntPtr.Zero)
@@ -187,14 +195,17 @@ public sealed class AV1VideoEncoder : IVideoEncoder
         }
     }
 
-    private Av1Encoder EnsureEncoder(int width, int height)
+    private Av1Encoder EnsureEncoder(int width, int height, VideoPixelFormatsEnum pixelFormat)
     {
-        if (_encoder != null && _encoder.Width == width && _encoder.Height == height)
+        var o = _template;
+        bool bt709 = I420Converter.IsRgb(pixelFormat) && o.ColorPrimaries == Av1ColorPrimaries.Unspecified &&
+                     o.TransferCharacteristics == Av1TransferCharacteristics.Unspecified &&
+                     o.MatrixCoefficients == Av1MatrixCoefficients.Unspecified;
+        if (_encoder != null && _encoder.Width == width && _encoder.Height == height && _signalsBt709 == bt709)
             return _encoder;
 
         _encoder?.Dispose();
         _encoder = null;
-        var o = _template;
         _encoder = new Av1Encoder(new Av1EncoderOptions
         {
             Width = width, Height = height, FrameRate = o.FrameRate, TargetBitrateKbps = _targetBitrateKbps,
@@ -202,9 +213,12 @@ public sealed class AV1VideoEncoder : IVideoEncoder
             Superblock = o.Superblock, MinQuantizer = o.MinQuantizer, MaxQuantizer = o.MaxQuantizer,
             FrameDropThreshold = o.FrameDropThreshold, KeyFrameInterval = o.KeyFrameInterval,
             EnableCdef = o.EnableCdef, EnableCyclicRefresh = o.EnableCyclicRefresh,
-            ColorPrimaries = o.ColorPrimaries, TransferCharacteristics = o.TransferCharacteristics,
-            MatrixCoefficients = o.MatrixCoefficients, FullRange = o.FullRange,
+            ColorPrimaries = bt709 ? Av1ColorPrimaries.Bt709 : o.ColorPrimaries,
+            TransferCharacteristics = bt709 ? Av1TransferCharacteristics.Bt709 : o.TransferCharacteristics,
+            MatrixCoefficients = bt709 ? Av1MatrixCoefficients.Bt709 : o.MatrixCoefficients,
+            FullRange = o.FullRange,
         });
+        _signalsBt709 = bt709;
         return _encoder;
     }
 }

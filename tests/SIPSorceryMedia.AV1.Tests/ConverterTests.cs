@@ -30,9 +30,9 @@ public class ConverterTests
 
     // ---- Reference: the per-pixel formulas, into packed I420 ----
 
-    private static byte RgbToY(int r, int g, int b) => (byte)((66 * r + 129 * g + 25 * b + 0x1080) >> 8);
-    private static byte RgbToU(int r, int g, int b) => (byte)((112 * b - 74 * g - 38 * r + 0x8080) >> 8);
-    private static byte RgbToV(int r, int g, int b) => (byte)((112 * r - 94 * g - 18 * b + 0x8080) >> 8);
+    private static byte RgbToY(int r, int g, int b) => (byte)((47 * r + 157 * g + 16 * b + 0x1080) >> 8);
+    private static byte RgbToU(int r, int g, int b) => (byte)((112 * b - 86 * g - 26 * r + 0x8080) >> 8);
+    private static byte RgbToV(int r, int g, int b) => (byte)((112 * r - 102 * g - 10 * b + 0x8080) >> 8);
 
     private static byte[] Reference(byte[] src, int stride, VideoPixelFormatsEnum format, int w, int h)
     {
@@ -193,6 +193,33 @@ public class ConverterTests
             byte[] got = adapter.EncodeVideo(w, h, src, 0, format, output).Dropped ? null : output.WrittenSpan.ToArray();
             Assert.Equal(want, got);
         }
+    }
+
+    // RGB input, converted with BT.709, is signalled as BT.709 when the options leave the colours
+    // unspecified; I420 input is passed through and stays unsignalled.
+    [Theory]
+    [InlineData(VideoPixelFormatsEnum.Bgra, true)]
+    [InlineData(VideoPixelFormatsEnum.I420, false)]
+    public void RgbInputIsSignalledAsBt709(VideoPixelFormatsEnum format, bool bt709)
+    {
+        const int w = 66, h = 40;
+        int stride = I420Converter.PackedStride(format, w);
+        using var adapter = new AV1VideoEncoder(new Av1EncoderOptions { Threads = 1 });
+        using var direct = new Av1Encoder(new Av1EncoderOptions
+        {
+            Width = w, Height = h, Threads = 1,
+            ColorPrimaries = bt709 ? Av1ColorPrimaries.Bt709 : Av1ColorPrimaries.Unspecified,
+            TransferCharacteristics = bt709 ? Av1TransferCharacteristics.Bt709 : Av1TransferCharacteristics.Unspecified,
+            MatrixCoefficients = bt709 ? Av1MatrixCoefficients.Bt709 : Av1MatrixCoefficients.Unspecified,
+        });
+        var src = new byte[I420Converter.SourceSize(format, stride, w, h)];
+        for (int i = 0; i < src.Length; i++) src[i] = (byte)(i * 7 ^ (i >> 5));
+        var output = new ArrayBufferWriter<byte>();
+        direct.Encode(Reference(src, stride, format, w, h), output);
+        byte[] want = output.WrittenSpan.ToArray();
+        output.ResetWrittenCount();
+        adapter.EncodeVideo(w, h, src, 0, format, output);
+        Assert.Equal(want, output.WrittenSpan.ToArray());
     }
 
     // SIPSorcery passes no timestamps; the adapter stamps frames with their arrival time.

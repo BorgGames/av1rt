@@ -10,7 +10,7 @@ namespace SIPSorceryMedia.AV1;
 
 /// <summary>
 /// Converts the pixel formats SIPSorcery sources deliver into the encoder's I420 input buffer,
-/// with libyuv's BT.601 limited-range coefficients for RGB input.
+/// with BT.709 limited-range coefficients for RGB input.
 /// </summary>
 /// <remarks>
 /// The picture is converted in bands of <see cref="BandRows"/> rows, which run in parallel on the
@@ -250,10 +250,15 @@ internal static class I420Converter
         }
     }
 
-    // libyuv RGBToY / RGBToU / RGBToV (BT.601, limited range), chroma from the rounded 2x2 average.
-    private static byte RgbToY(int r, int g, int b) => (byte)((66 * r + 129 * g + 25 * b + 0x1080) >> 8);
-    private static byte RgbToU(int r, int g, int b) => (byte)((112 * b - 74 * g - 38 * r + 0x8080) >> 8);
-    private static byte RgbToV(int r, int g, int b) => (byte)((112 * r - 94 * g - 18 * b + 0x8080) >> 8);
+    /// <summary>True for the packed RGB formats, which this class converts with BT.709.</summary>
+    public static bool IsRgb(VideoPixelFormatsEnum format) =>
+        format is VideoPixelFormatsEnum.Bgra or VideoPixelFormatsEnum.Rgba or VideoPixelFormatsEnum.Bgr or VideoPixelFormatsEnum.Rgb;
+
+    // BT.709, limited range, in the fixed-point form of libyuv's BT.601 RGBToY / RGBToU / RGBToV
+    // (8-bit weights, chroma weights summing to 0); chroma from the rounded 2x2 average.
+    private static byte RgbToY(int r, int g, int b) => (byte)((47 * r + 157 * g + 16 * b + 0x1080) >> 8);
+    private static byte RgbToU(int r, int g, int b) => (byte)((112 * b - 86 * g - 26 * r + 0x8080) >> 8);
+    private static byte RgbToV(int r, int g, int b) => (byte)((112 * r - 102 * g - 10 * b + 0x8080) >> 8);
 
     // Columns [c, width) of a row pair (c even). row1 is row0 and y1 empty for the last row of a
     // picture of odd height; the last column pairs with itself for an odd width.
@@ -290,10 +295,10 @@ internal static class I420Converter
     private static int PackedRowPairAvx2(ReadOnlySpan<byte> row0, ReadOnlySpan<byte> row1, Span<byte> y0, Span<byte> y1,
                                          Span<byte> u, Span<byte> v, int n16, bool bgr)
     {
-        Vector256<short> kY = Pairs(bgr ? (short)25 : (short)66, bgr ? (short)66 : (short)25);
-        Vector256<short> kU = Pairs(bgr ? (short)112 : (short)-38, bgr ? (short)-38 : (short)112);
-        Vector256<short> kV = Pairs(bgr ? (short)-18 : (short)112, bgr ? (short)112 : (short)-18);
-        Vector256<short> kYg = Pairs(129, 0), kUg = Pairs(-74, 0), kVg = Pairs(-94, 0);
+        Vector256<short> kY = Pairs(bgr ? (short)16 : (short)47, bgr ? (short)47 : (short)16);
+        Vector256<short> kU = Pairs(bgr ? (short)112 : (short)-26, bgr ? (short)-26 : (short)112);
+        Vector256<short> kV = Pairs(bgr ? (short)-10 : (short)112, bgr ? (short)112 : (short)-10);
+        Vector256<short> kYg = Pairs(157, 0), kUg = Pairs(-86, 0), kVg = Pairs(-102, 0);
         Vector256<int> lo = Vector256.Create(0x00FF00FF);
         Vector256<int> roundY = Vector256.Create(0x1080), roundC = Vector256.Create(0x8080);
         Vector256<int> order = Vector256.Create(0, 4, 1, 5, 0, 0, 0, 0);

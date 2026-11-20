@@ -78,7 +78,7 @@ public enum Av1MatrixCoefficients
 {
     /// <summary>BT.709.</summary>
     Bt709 = 1,
-    /// <summary>Not signalled: the decoder chooses.</summary>
+    /// <summary>Not signalled: the decoder chooses (Chromium-based browsers BT.709, ffmpeg BT.601).</summary>
     Unspecified = 2,
     /// <summary>US FCC 73.628.</summary>
     Fcc = 4,
