@@ -29,4 +29,7 @@ internal static partial class stubs_av1_encoder_context_tree_c
                                                     int keep_none,
                                                     PARTITION_SEARCH_TYPE partition_search_type) =>
         throw new NotImplementedException();
+
+    internal static PC_TREE av1_alloc_pc_tree_node(BLOCK_SIZE bsize) =>
+        throw new NotImplementedException();
 }

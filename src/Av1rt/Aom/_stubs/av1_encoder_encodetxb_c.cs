@@ -13,4 +13,7 @@ internal static partial class stubs_av1_encoder_encodetxb_c
 
     internal static void av1_free_txb_buf(AV1_COMP cpi) =>
         throw new NotImplementedException();
+
+    internal static CB_COEFF_BUFFER av1_get_cb_coeff_buffer(AV1_COMP cpi, int mi_row, int mi_col) =>
+        throw new NotImplementedException();
 }
