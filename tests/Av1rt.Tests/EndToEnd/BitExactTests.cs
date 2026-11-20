@@ -46,11 +46,22 @@ public class BitExactTests
         while ((limit == 0 || framesIn < limit) && y4m.ReadFrame(frame))
         {
             output.ResetWrittenCount();
-            // The q352 cases go through the copying I420Frame overload, the rest through the
-            // zero-copy byte[] overload.
-            Av1EncodeResult r = name.StartsWith("q352", StringComparison.Ordinal)
-                ? encoder.Encode(I420Frame.FromPacked(frame, options.Width, options.Height), output)
-                : encoder.Encode(frame, output);
+            // The q352 cases go through the I420Frame overload, q1080*, q4k_1t and desk4k write
+            // into the encoder's own buffer (GetInputFrame), the rest use the byte[] overload.
+            Av1EncodeResult r;
+            if (name.StartsWith("q352", StringComparison.Ordinal))
+            {
+                r = encoder.Encode(I420Frame.FromPacked(frame, options.Width, options.Height), output);
+            }
+            else if (name.StartsWith("q1080", StringComparison.Ordinal) || name is "q4k_1t" or "desk4k")
+            {
+                WritePacked(frame, encoder.GetInputFrame());
+                r = encoder.EncodeInputFrame(output);
+            }
+            else
+            {
+                r = encoder.Encode(frame, output);
+            }
             framesIn++;
             if (r.Dropped) continue;
             Assert.True(framesOut < expected.Count, $"{name}: encoder produced more frames than the oracle ({expected.Count})");
@@ -65,6 +76,21 @@ public class BitExactTests
             framesOut++;
         }
         Assert.Equal(expected.Count, framesOut);
+    }
+
+    // Writes a packed I420 picture into the planes of an Av1InputFrame.
+    internal static void WritePacked(ReadOnlySpan<byte> i420, Av1InputFrame input)
+    {
+        int w = input.Width, h = input.Height, cw = input.ChromaWidth, ch = input.ChromaHeight;
+        Span<byte> y = input.Y.Span, u = input.U.Span, v = input.V.Span;
+        for (int r = 0; r < h; r++)
+            i420.Slice(r * w, w).CopyTo(y.Slice(r * input.StrideY, w));
+        ReadOnlySpan<byte> su = i420.Slice(w * h, cw * ch), sv = i420.Slice(w * h + cw * ch, cw * ch);
+        for (int r = 0; r < ch; r++)
+        {
+            su.Slice(r * cw, cw).CopyTo(u.Slice(r * input.StrideUV, cw));
+            sv.Slice(r * cw, cw).CopyTo(v.Slice(r * input.StrideUV, cw));
+        }
     }
 
     internal static (Av1EncoderOptions Options, int Limit) ParseOracleArgs(string args, int width, int height)

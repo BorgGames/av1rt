@@ -17,4 +17,8 @@
     <ProjectReference Include="..\Av1rt\Av1rt.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SIPSorceryMedia.AV1.Tests" />
+  </ItemGroup>
+
 </Project>

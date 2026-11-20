@@ -5,9 +5,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using Av1rt;
+using SIPSorceryMedia.AV1;
+using SIPSorceryMedia.Abstractions;
 
 // Av1rt.Cli encode in.y4m out.ivf [options]   — same options and per-frame output as tools/oracle/av1rt_oracle.c
-// Av1rt.Cli bench in.y4m [options] [--frames N] — preloads the clip, loops it, reports encode fps
+// Av1rt.Cli bench in.y4m [options] [--frames N] [--input copy|adapter-i420|adapter-nv12|adapter-bgra]
+//   — preloads the clip, loops it, reports encode fps. The adapter inputs convert the clip to that
+//   pixel format first and time SIPSorceryMedia.AV1's EncodeVideo (conversion into the encoder's
+//   buffer plus encode), as a capture pipeline would call it.
 return args.Length > 0 && args[0] == "bench" ? Bench(args) :
        args.Length > 0 && args[0] == "kbench" ? KernelBench.Run(args) :
        args.Length > 0 && args[0] == "encode" ? Encode(args) :
@@ -18,7 +23,7 @@ static int Usage()
     Console.Error.WriteLine("""
         usage:
           Av1rt.Cli encode in.y4m out.ivf [options]
-          Av1rt.Cli bench in.y4m [options] [--frames N]
+          Av1rt.Cli bench in.y4m [options] [--frames N] [--input copy|adapter-i420|adapter-nv12|adapter-bgra]
         options (defaults match tools/oracle/av1rt_oracle.c):
           --speed 11 --bitrate 35000 --threads 0(auto) --limit 0 --qmax 56 --drop 0
           --kf-interval 0 --fps 60 --sb 0|64|128 --tile-cols -1 --tile-rows -1 --aq 3 --cdef 1
@@ -34,6 +39,11 @@ static (Av1EncoderOptions Options, Dictionary<string, string> Extra) Parse(strin
     {
         if (i + 1 >= args.Length) throw new ArgumentException($"missing value for {args[i]}");
         string k = args[i], v = args[i + 1];
+        if (k == "--input")
+        {
+            extra[k] = v;
+            continue;
+        }
         int n = int.Parse(v, CultureInfo.InvariantCulture);
         switch (k)
         {
@@ -106,7 +116,20 @@ static int Bench(string[] args)
         frames.Add(buf);
     if (frames.Count == 0) throw new InvalidDataException("empty clip");
 
-    using var enc = new Av1Encoder(o);
+    string input = extra.TryGetValue("--input", out var inp) ? inp : "copy";
+    VideoPixelFormatsEnum? format = input switch
+    {
+        "copy" => null,
+        "adapter-i420" => VideoPixelFormatsEnum.I420,
+        "adapter-nv12" => VideoPixelFormatsEnum.NV12,
+        "adapter-bgra" => VideoPixelFormatsEnum.Bgra,
+        _ => throw new ArgumentException($"unknown --input {input}"),
+    };
+    if (format is VideoPixelFormatsEnum fmt && fmt != VideoPixelFormatsEnum.I420)
+        for (int i = 0; i < frames.Count; i++) frames[i] = PixelFormats.FromI420(frames[i], o.Width, o.Height, fmt);
+
+    using var enc = format == null ? new Av1Encoder(o) : null;
+    using var adapter = format != null ? new AV1VideoEncoder(o) : null;
     var output = new ArrayBufferWriter<byte>(1 << 22);
     long bytes = 0;
     int warmup = Math.Min(10, total / 10);
@@ -137,7 +160,9 @@ static int Bench(string[] args)
         output.ResetWrittenCount();
         long t0 = Av1rt.Diagnostics.StageTimes.Start();
         long f0 = Stopwatch.GetTimestamp();
-        var r = enc.Encode(frames[idx], output);
+        var r = adapter != null
+            ? adapter.EncodeVideo(o.Width, o.Height, frames[idx], 0, format.Value, output)
+            : enc.Encode(frames[idx], output);
         double ms = Stopwatch.GetElapsedTime(f0).TotalMilliseconds;
         Av1rt.Diagnostics.StageTimes.Stop(Av1rt.Diagnostics.StageTimes.Stage.Total, t0);
         if (i >= warmup)
@@ -152,7 +177,7 @@ static int Bench(string[] args)
     double fps = timed / sw.Elapsed.TotalSeconds;
     double kbps = bytes * 8.0 / 1000 / ((double)timed / o.FrameRate);
     Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-        $"{o.Width}x{o.Height} speed {o.Speed}: {fps:F2} fps over {timed} frames, {kbps:F0} kbps at {o.FrameRate} fps nominal"));
+        $"{o.Width}x{o.Height} speed {o.Speed}{(format != null ? " " + input : "")}: {fps:F2} fps over {timed} frames, {kbps:F0} kbps at {o.FrameRate} fps nominal"));
     // Per-frame encode time: what a live 60 fps stream sees, unlike the average.
     frameMs.Sort();
     double Pct(double q) => frameMs[Math.Min(frameMs.Count - 1, (int)(q * frameMs.Count))];

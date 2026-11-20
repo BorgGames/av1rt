@@ -26,7 +26,8 @@ internal static partial class extend
             memset(dst_ptr1, src_ptr1[0], extend_left);
             if (chroma_step == 1)
             {
-                memcpy(dst_ptr1 + extend_left, src_ptr1, w);
+                // [av1rt] Skipped when the picture already is in place (see av1_copy_and_extend_frame).
+                if (src_ptr1 != dst_ptr1 + extend_left) memcpy(dst_ptr1 + extend_left, src_ptr1, w);
             }
             else
             {
@@ -75,9 +76,10 @@ internal static partial class extend
     // [port] The multi-threaded form of copy_and_extend_plane for all planes at once: the rows
     // of every plane in bands of 64 (copy plus left/right extension), then the border rows
     // (copies of the extended first and last rows). Every byte written is the same as in the
-    // serial loops; two worker launches per frame instead of two per plane.
+    // serial loops; two worker launches per frame instead of two per plane. With in_place (the
+    // picture already is in dst) only the borders are written.
     private static void copy_and_extend_frame_mt(PlaneCopy[] planes, int threads,
-                                                 PrimaryMultiThreadInfo workers)
+                                                 PrimaryMultiThreadInfo workers, bool in_place)
     {
         Span<int> row_band_start = stackalloc int[planes.Length + 1];
         Span<int> border_band_start = stackalloc int[planes.Length + 1];
@@ -102,7 +104,7 @@ internal static partial class extend
                 Ptr<byte> s = pc.src + i * pc.src_pitch;
                 Ptr<byte> d = pc.dst + i * pc.dst_pitch;
                 memset(d - pc.extend_left, s[0], pc.extend_left);
-                memcpy(d, s, pc.w);
+                if (!in_place) memcpy(d, s, pc.w);
                 memset(d + pc.w, s[pc.w - 1], pc.extend_right);
             }
         });
@@ -152,6 +154,14 @@ internal static partial class extend
         // == 0.
         Debug.Assert((src.flags & YV12_FLAG_HIGHBITDEPTH) == 0);
 
+        // [av1rt] The picture may already be in dst: Av1Encoder.GetInputFrame hands out the
+        // lookahead buffer the next push fills, and the caller writes the picture there. Then
+        // src and dst are the same planes and only the borders are extended (same bytes).
+        bool in_place = src.y_buffer == dst.y_buffer && src.u_buffer == dst.u_buffer &&
+                        src.v_buffer == dst.v_buffer && src.y_stride == dst.y_stride &&
+                        src.uv_stride == dst.uv_stride;
+        Debug.Assert(in_place || !ReferenceEquals(src.y_buffer.Array, dst.y_buffer.Array));
+
         // [port] threads > 1 (not in C): copy_and_extend_frame_mt, for planar 4:2:0/4:4:4
         // input of at least 256 rows.
         if (threads > 1 && src.monochrome == 0 && !src.v_buffer.IsNull &&
@@ -165,7 +175,7 @@ internal static partial class extend
                     src.uv_crop_width, src.uv_crop_height, et_uv, el_uv, eb_uv, er_uv),
                 new(src.v_buffer, src.uv_stride, dst.v_buffer, dst.uv_stride,
                     src.uv_crop_width, src.uv_crop_height, et_uv, el_uv, eb_uv, er_uv),
-            }, threads, workers);
+            }, threads, workers, in_place);
             return;
         }
         copy_and_extend_plane(src.y_buffer, src.y_stride, dst.y_buffer,

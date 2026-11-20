@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Av1rt\Av1rt.csproj" />
+    <ProjectReference Include="..\..\src\SIPSorceryMedia.AV1\SIPSorceryMedia.AV1.csproj" />
   </ItemGroup>
 
 </Project>

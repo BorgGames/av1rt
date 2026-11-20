@@ -1,7 +1,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Av1rt;
 using SIPSorceryMedia.Abstractions;
 
@@ -28,8 +27,6 @@ public sealed class AV1VideoEncoder : IVideoEncoder
     private readonly object _lock = new();
     private readonly ArrayBufferWriter<byte> _output = new(1 << 20);
     private Av1Encoder _encoder;
-    private byte[] _i420 = Array.Empty<byte>();
-    private byte[] _staging = Array.Empty<byte>();
     private bool _forceKeyFrame;
     private int _targetBitrateKbps;
     private bool _disposed;
@@ -73,7 +70,13 @@ public sealed class AV1VideoEncoder : IVideoEncoder
     public byte[] EncodeVideo(int width, int height, byte[] sample, VideoPixelFormatsEnum pixelFormat, VideoCodecsEnum codec)
     {
         ArgumentNullException.ThrowIfNull(sample);
-        return EncodeToArray(width, height, sample, I420Converter.PackedStride(pixelFormat, width), pixelFormat, codec);
+        CheckCodec(codec);
+        lock (_lock)
+        {
+            _output.ResetWrittenCount();
+            Av1EncodeResult result = EncodeVideo(width, height, sample, I420Converter.PackedStride(pixelFormat, width), pixelFormat, _output);
+            return result.Dropped ? null : _output.WrittenSpan.ToArray();
+        }
     }
 
     /// <inheritdoc/>
@@ -82,45 +85,72 @@ public sealed class AV1VideoEncoder : IVideoEncoder
     {
         ArgumentNullException.ThrowIfNull(rawImage);
         if (rawImage.Sample == IntPtr.Zero) throw new ArgumentException("The image has no pixel data.", nameof(rawImage));
+        CheckCodec(codec);
         int stride = rawImage.Stride > 0 ? rawImage.Stride : I420Converter.PackedStride(rawImage.PixelFormat, rawImage.Width);
-        int size = I420Converter.SourceSize(rawImage.PixelFormat, stride, rawImage.Width, rawImage.Height);
+        if (stride < I420Converter.MinStride(rawImage.PixelFormat, rawImage.Width))
+            throw new ArgumentException($"A stride of {stride} is too small for a {rawImage.Width} pixel wide {rawImage.PixelFormat} frame.", nameof(rawImage));
         lock (_lock)
         {
-            if (_staging.Length < size) _staging = new byte[size];
-            Marshal.Copy(rawImage.Sample, _staging, 0, size);
-            return EncodeToArray(rawImage.Width, rawImage.Height, _staging.AsSpan(0, size), stride, rawImage.PixelFormat, codec);
+            _output.ResetWrittenCount();
+            Av1EncodeResult result = EncodeCore(rawImage.Width, rawImage.Height, default, rawImage.Sample, stride,
+                                                rawImage.PixelFormat, _output, -1);
+            return result.Dropped ? null : _output.WrittenSpan.ToArray();
         }
     }
 
     /// <summary>
-    /// Encodes a frame into a caller-supplied writer without allocating a result array.
+    /// Encodes a frame into a caller-supplied writer without allocating a result array. The picture
+    /// is converted straight into the encoder's input buffer, by several threads.
     /// </summary>
+    /// <param name="width">Frame width.</param>
+    /// <param name="height">Frame height.</param>
+    /// <param name="sample">The picture; for I420 and NV12 the chroma plane(s) follow the luma rows.</param>
+    /// <param name="stride">Bytes between rows of the luma plane or of the packed pixels; 0 for tightly packed.</param>
+    /// <param name="pixelFormat">I420, NV12, BGRA, RGBA, BGR or RGB.</param>
+    /// <param name="output">Receives the temporal unit.</param>
+    /// <param name="timestamp">Presentation time in 90 kHz units, or -1 for the nominal frame rate.</param>
     /// <returns>What was encoded; <see cref="Av1EncodeResult.Dropped"/> if nothing was written.</returns>
-    public Av1EncodeResult EncodeVideo(int width, int height, ReadOnlySpan<byte> sample, int stride,
+    public Av1EncodeResult EncodeVideo(int width, int height, ReadOnlyMemory<byte> sample, int stride,
                                        VideoPixelFormatsEnum pixelFormat, IBufferWriter<byte> output, long timestamp = -1)
     {
         ArgumentNullException.ThrowIfNull(output);
+        if (stride <= 0) stride = I420Converter.PackedStride(pixelFormat, width);
+        if (stride < I420Converter.MinStride(pixelFormat, width))
+            throw new ArgumentException($"A stride of {stride} is too small for a {width} pixel wide {pixelFormat} frame.", nameof(stride));
+        if (sample.Length < I420Converter.SourceSize(pixelFormat, stride, width, height))
+            throw new ArgumentException($"The sample is too small for a {width}x{height} {pixelFormat} frame.", nameof(sample));
         lock (_lock)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            if (stride <= 0) stride = I420Converter.PackedStride(pixelFormat, width);
-            if (sample.Length < I420Converter.SourceSize(pixelFormat, stride, width, height))
-                throw new ArgumentException($"The sample is too small for a {width}x{height} {pixelFormat} frame.", nameof(sample));
-
-            Av1Encoder encoder = EnsureEncoder(width, height);
-            int size = I420Frame.PackedSize(width, height);
-            if (_i420.Length < size) _i420 = new byte[size];
-            I420Converter.Convert(sample, stride, pixelFormat, width, height, _i420);
-
-            if (_forceKeyFrame)
-            {
-                _forceKeyFrame = false;
-                encoder.ForceKeyFrame();
-            }
-            Av1EncodeResult result = encoder.Encode(_i420, output, timestamp);
-            if (!result.Dropped) FrameEncoded?.Invoke(result);
-            return result;
+            return EncodeCore(width, height, sample, IntPtr.Zero, stride, pixelFormat, output, timestamp);
         }
+    }
+
+    // The picture comes from `sample`, or from `native` when that is not zero.
+    private Av1EncodeResult EncodeCore(int width, int height, ReadOnlyMemory<byte> sample, IntPtr native, int stride,
+                                       VideoPixelFormatsEnum pixelFormat, IBufferWriter<byte> output, long timestamp)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        Av1Encoder encoder = EnsureEncoder(width, height);
+        Av1InputFrame input = encoder.GetInputFrame();
+        // Converted by the encoder's own threads, which are idle between frames.
+        if (native != IntPtr.Zero)
+            I420Converter.Convert(native, stride, pixelFormat, input, encoder);
+        else
+            I420Converter.Convert(sample, stride, pixelFormat, input, encoder);
+
+        if (_forceKeyFrame)
+        {
+            _forceKeyFrame = false;
+            encoder.ForceKeyFrame();
+        }
+        Av1EncodeResult result = encoder.EncodeInputFrame(output, timestamp);
+        if (!result.Dropped) FrameEncoded?.Invoke(result);
+        return result;
+    }
+
+    private static void CheckCodec(VideoCodecsEnum codec)
+    {
+        if (codec != VideoCodecsEnum.AV1) throw new NotSupportedException($"This encoder only produces AV1, not {codec}.");
     }
 
     /// <summary>Not supported: this is an encoder only.</summary>
@@ -140,17 +170,6 @@ public sealed class AV1VideoEncoder : IVideoEncoder
             _disposed = true;
             _encoder?.Dispose();
             _encoder = null;
-        }
-    }
-
-    private byte[] EncodeToArray(int width, int height, ReadOnlySpan<byte> sample, int stride, VideoPixelFormatsEnum pixelFormat, VideoCodecsEnum codec)
-    {
-        if (codec != VideoCodecsEnum.AV1) throw new NotSupportedException($"This encoder only produces AV1, not {codec}.");
-        lock (_lock)
-        {
-            _output.ResetWrittenCount();
-            Av1EncodeResult result = EncodeVideo(width, height, sample, stride, pixelFormat, _output);
-            return result.Dropped ? null : _output.WrittenSpan.ToArray();
         }
     }
 

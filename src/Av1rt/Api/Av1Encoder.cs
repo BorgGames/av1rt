@@ -42,6 +42,9 @@ public sealed class Av1Encoder : IDisposable
     private long _framesIn;
     private bool _forceKeyFrame;
     private bool _disposed;
+    // The buffer the last GetInputFrame handed out: a lookahead buffer, or null for _image.
+    private YV12_BUFFER_CONFIG _input;
+    private bool _inputPending;
 
     /// <summary>Creates an encoder. The options are copied; later changes to them have no effect.</summary>
     public Av1Encoder(Av1EncoderOptions options)
@@ -194,9 +197,91 @@ public sealed class Av1Encoder : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(output);
-        CopyIn(frame);
-        return EncodeImage(output, timestamp);
+        // Copied straight into the encoder's buffer for the next picture (one copy, not two).
+        Av1InputFrame input = GetInputFrame();
+        int cw = input.ChromaWidth, ch = input.ChromaHeight;
+        CopyPlane(frame.Y, frame.StrideY, input.Y.Span, input.StrideY, input.Width, input.Height, "Y");
+        CopyPlane(frame.U, frame.StrideU, input.U.Span, input.StrideUV, cw, ch, "U");
+        CopyPlane(frame.V, frame.StrideV, input.V.Span, input.StrideUV, cw, ch, "V");
+        return EncodeInputFrame(output, timestamp);
     }
+
+    /// <summary>
+    /// The encoder's buffer for the next picture. Write the picture into its planes and call
+    /// <see cref="EncodeInputFrame"/>: the encoder then only extends the borders instead of
+    /// copying the whole frame, as the other encode methods do.
+    /// </summary>
+    /// <remarks>
+    /// The planes stay valid until the next encode call of any kind. Calling this again before
+    /// encoding returns the same buffer. Before the first encode the encoder has not allocated its
+    /// buffers yet, so the first picture is still copied once.
+    /// </remarks>
+    public Av1InputFrame GetInputFrame()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        int w = _options.Width, h = _options.Height, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
+        _input = NextLookaheadBuffer();
+        _inputPending = true;
+        if (_input == null)
+        {
+            int sy = _image.stride[AOM_PLANE_Y], suv = _image.stride[AOM_PLANE_U];
+            return new Av1InputFrame(Plane(_image.planes[AOM_PLANE_Y], sy, w, h), sy,
+                                     Plane(_image.planes[AOM_PLANE_U], suv, cw, ch),
+                                     Plane(_image.planes[AOM_PLANE_V], suv, cw, ch), suv, w, h);
+        }
+        return new Av1InputFrame(Plane(_input.y_buffer, _input.y_stride, w, h), _input.y_stride,
+                                 Plane(_input.u_buffer, _input.uv_stride, cw, ch),
+                                 Plane(_input.v_buffer, _input.uv_stride, cw, ch), _input.uv_stride, w, h);
+    }
+
+    /// <summary>Encodes the picture written into the planes from <see cref="GetInputFrame"/>.</summary>
+    /// <param name="output">Receives the temporal unit.</param>
+    /// <param name="timestamp">As in <see cref="Encode(in I420Frame, IBufferWriter{byte}, long)"/>.</param>
+    /// <exception cref="InvalidOperationException">No <see cref="GetInputFrame"/> since the last encode.</exception>
+    public Av1EncodeResult EncodeInputFrame(IBufferWriter<byte> output, long timestamp = -1)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(output);
+        if (!_inputPending)
+            throw new InvalidOperationException("GetInputFrame has not been called since the last encode.");
+        YV12_BUFFER_CONFIG input = _input;
+        _input = null;
+        _inputPending = false;
+        if (input == null) return EncodeImage(output, timestamp);
+        // The image borrows the lookahead buffer; av1_lookahead_push finds the picture already in
+        // place and only extends the borders.
+        return EncodeBorrowed(input.y_buffer, input.y_stride, input.u_buffer, input.v_buffer, input.uv_stride,
+                              output, timestamp);
+    }
+
+    /// <summary>
+    /// Runs <paramref name="body"/> for 0 .. <paramref name="count"/> - 1 on the encoder's worker
+    /// threads, which are idle between encode calls, and the calling thread; returns when all have
+    /// run. Meant for filling the <see cref="GetInputFrame"/> planes in row bands without starting
+    /// more threads than the encoder already has. Serial before the first encode creates the workers.
+    /// </summary>
+    /// <remarks>Not reentrant, and not to be called while an encode call is running.</remarks>
+    public void ParallelFor(int count, Action<int> body)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(body);
+        PrimaryMultiThreadInfo workers = (_codec.priv as aom_codec_alg_priv_t)?.ppi?.p_mt_info;
+        ethread.av1rt_parallel_for(workers, workers?.num_workers ?? 1, count, body);
+    }
+
+    // The lookahead buffer the next av1_lookahead_push fills (the oldest one; nothing reads it
+    // between encode calls), or null before the first encode allocates the lookahead.
+    private YV12_BUFFER_CONFIG NextLookaheadBuffer()
+    {
+        lookahead_ctx la = (_codec.priv as aom_codec_alg_priv_t)?.ppi?.lookahead;
+        if (la == null) return null;
+        YV12_BUFFER_CONFIG img = la.buf[la.write_idx].img;
+        // A buffer of another size would be reallocated by the push.
+        return img.y_crop_width == _options.Width && img.y_crop_height == _options.Height ? img : null;
+    }
+
+    private static Memory<byte> Plane(Ptr<byte> p, int stride, int w, int h) =>
+        p.Array.AsMemory(p.Offset, (h - 1) * stride + w);
 
     /// <summary>
     /// Encodes one tightly packed I420 picture (Y, then U, then V, no row padding; see
@@ -216,18 +301,27 @@ public sealed class Av1Encoder : IDisposable
         if (i420.Length < size)
             throw new ArgumentException($"An I420 frame of {w}x{h} needs {size} bytes, got {i420.Length}.", nameof(i420));
 
-        // aom_codec_encode copies the picture into its lookahead buffer before returning, so the
-        // image can borrow the caller's array for the duration of the call.
+        _input = null;
+        _inputPending = false;
+        return EncodeBorrowed(new Ptr<byte>(i420, 0), w, new Ptr<byte>(i420, w * h), new Ptr<byte>(i420, w * h + cw * ch), cw,
+                              output, timestamp);
+    }
+
+    // aom_codec_encode copies the picture into its lookahead buffer before returning, so the
+    // image can borrow other planes for the duration of the call.
+    private Av1EncodeResult EncodeBorrowed(Ptr<byte> y, int strideY, Ptr<byte> u, Ptr<byte> v, int strideUV,
+                                           IBufferWriter<byte> output, long timestamp)
+    {
         Ptr<byte> ownY = _image.planes[AOM_PLANE_Y], ownU = _image.planes[AOM_PLANE_U], ownV = _image.planes[AOM_PLANE_V];
-        int strideY = _image.stride[AOM_PLANE_Y], strideU = _image.stride[AOM_PLANE_U], strideV = _image.stride[AOM_PLANE_V];
+        int ownStrideY = _image.stride[AOM_PLANE_Y], ownStrideU = _image.stride[AOM_PLANE_U], ownStrideV = _image.stride[AOM_PLANE_V];
         try
         {
-            _image.planes[AOM_PLANE_Y] = new Ptr<byte>(i420, 0);
-            _image.planes[AOM_PLANE_U] = new Ptr<byte>(i420, w * h);
-            _image.planes[AOM_PLANE_V] = new Ptr<byte>(i420, w * h + cw * ch);
-            _image.stride[AOM_PLANE_Y] = w;
-            _image.stride[AOM_PLANE_U] = cw;
-            _image.stride[AOM_PLANE_V] = cw;
+            _image.planes[AOM_PLANE_Y] = y;
+            _image.planes[AOM_PLANE_U] = u;
+            _image.planes[AOM_PLANE_V] = v;
+            _image.stride[AOM_PLANE_Y] = strideY;
+            _image.stride[AOM_PLANE_U] = strideUV;
+            _image.stride[AOM_PLANE_V] = strideUV;
             return EncodeImage(output, timestamp);
         }
         finally
@@ -235,9 +329,9 @@ public sealed class Av1Encoder : IDisposable
             _image.planes[AOM_PLANE_Y] = ownY;
             _image.planes[AOM_PLANE_U] = ownU;
             _image.planes[AOM_PLANE_V] = ownV;
-            _image.stride[AOM_PLANE_Y] = strideY;
-            _image.stride[AOM_PLANE_U] = strideU;
-            _image.stride[AOM_PLANE_V] = strideV;
+            _image.stride[AOM_PLANE_Y] = ownStrideY;
+            _image.stride[AOM_PLANE_U] = ownStrideU;
+            _image.stride[AOM_PLANE_V] = ownStrideV;
         }
     }
 
@@ -297,19 +391,10 @@ public sealed class Av1Encoder : IDisposable
         aom_codec_destroy(_codec);
     }
 
-    private void CopyIn(in I420Frame frame)
-    {
-        int w = _options.Width, h = _options.Height, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
-        CopyPlane(frame.Y, frame.StrideY, _image.planes[AOM_PLANE_Y], _image.stride[AOM_PLANE_Y], w, h, "Y");
-        CopyPlane(frame.U, frame.StrideU, _image.planes[AOM_PLANE_U], _image.stride[AOM_PLANE_U], cw, ch, "U");
-        CopyPlane(frame.V, frame.StrideV, _image.planes[AOM_PLANE_V], _image.stride[AOM_PLANE_V], cw, ch, "V");
-    }
-
-    private static void CopyPlane(ReadOnlySpan<byte> src, int srcStride, Ptr<byte> dst, int dstStride, int w, int h, string plane)
+    private static void CopyPlane(ReadOnlySpan<byte> src, int srcStride, Span<byte> d, int dstStride, int w, int h, string plane)
     {
         if (srcStride < w || src.Length < (long)srcStride * (h - 1) + w)
             throw new ArgumentException($"Plane {plane} is too small for {w}x{h} with stride {srcStride}.", nameof(src));
-        Span<byte> d = dst.AsSpan();
         for (int y = 0; y < h; y++)
             src.Slice(y * srcStride, w).CopyTo(d.Slice(y * dstStride, w));
     }
