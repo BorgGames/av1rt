@@ -143,15 +143,19 @@ internal static partial class av1_noise_estimate
             if (num_low_motion <
                 (((3 * (mi_params.mi_rows * mi_params.mi_cols) >> 2)) >> 3))
                 frame_low_motion = 0;
-            for (mi_row = 0; mi_row < mi_params.mi_rows; mi_row++)
+            // [port] C walks every mi position, advancing src_y/last_src_y by 4 pixels, and only
+            // samples where mi_row and mi_col are multiples of 8; this visits those positions
+            // directly (same blocks, same order).
+            for (mi_row = 0; mi_row < mi_params.mi_rows; mi_row += 8)
             {
-                for (mi_col = 0; mi_col < mi_params.mi_cols; mi_col++)
+                for (mi_col = 0; mi_col < mi_params.mi_cols; mi_col += 8)
                 {
                     // 16x16 blocks, 1/4 sample of frame.
-                    if (mi_row % 8 == 0 && mi_col % 8 == 0 &&
-                        mi_row < mi_params.mi_rows - 3 &&
+                    if (mi_row < mi_params.mi_rows - 3 &&
                         mi_col < mi_params.mi_cols - 3)
                     {
+                        src_y = cpi.source.y_buffer + (mi_row * 4) * src_ystride + mi_col * 4;
+                        last_src_y = last_source.y_buffer + (mi_row * 4) * last_src_ystride + mi_col * 4;
                         int bl_index =
                             (mi_row >> 1) * (mi_params.mi_cols >> 1) + (mi_col >> 1);
                         int bl_index1 = bl_index + 1;
@@ -182,11 +186,7 @@ internal static partial class av1_noise_estimate
                                 hist[MAX_VAR_HIST_BINS - 1]++;  // Account for the tail
                         }
                     }
-                    src_y += 4;
-                    last_src_y += 4;
                 }
-                src_y += (src_ystride << 2) - (mi_params.mi_cols << 2);
-                last_src_y += (last_src_ystride << 2) - (mi_params.mi_cols << 2);
             }
             ne.last_w = cm.width;
             ne.last_h = cm.height;
