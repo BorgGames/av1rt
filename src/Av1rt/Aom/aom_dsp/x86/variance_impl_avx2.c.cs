@@ -514,6 +514,7 @@ internal static class variance_impl_avx2
                                                             Ptr<byte> dst, int dst_stride, ref uint sse) =>
         aom_sub_pixel_variance32xh_imp_avx2(src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse, 32);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance32x64_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                           Ptr<byte> dst, int dst_stride, ref uint sse)
     {
@@ -521,6 +522,7 @@ internal static class variance_impl_avx2
         return sse - (uint)(((long)sum * sum) >> (5 + 6));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance32x32_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                           Ptr<byte> dst, int dst_stride, ref uint sse)
     {
@@ -528,6 +530,7 @@ internal static class variance_impl_avx2
         return sse - (uint)(((long)sum * sum) >> (5 + 5));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance32x16_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                           Ptr<byte> dst, int dst_stride, ref uint sse)
     {
@@ -568,22 +571,27 @@ internal static class variance_impl_avx2
     }
 
     // Note: hf = AOMMIN(h, 64) to avoid overflow in helper by capping height.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance128x128_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                             Ptr<byte> dst, int dst_stride, ref uint sse_ptr) =>
         AOM_SUB_PIXEL_VAR_AVX2(128, 128, 64, 7, 7, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance128x64_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                            Ptr<byte> dst, int dst_stride, ref uint sse_ptr) =>
         AOM_SUB_PIXEL_VAR_AVX2(128, 64, 64, 7, 6, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance64x128_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                            Ptr<byte> dst, int dst_stride, ref uint sse_ptr) =>
         AOM_SUB_PIXEL_VAR_AVX2(64, 128, 64, 6, 7, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance64x64_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                           Ptr<byte> dst, int dst_stride, ref uint sse_ptr) =>
         AOM_SUB_PIXEL_VAR_AVX2(64, 64, 64, 6, 6, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance64x32_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                           Ptr<byte> dst, int dst_stride, ref uint sse_ptr) =>
         AOM_SUB_PIXEL_VAR_AVX2(64, 32, 32, 6, 5, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr);
@@ -1002,14 +1010,17 @@ internal static class variance_impl_avx2
     }
 
     // MAKE_SUB_PIXEL_VAR_16XH(32, 5), (16, 4), (8, 3)
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance16x32_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                           Ptr<byte> dst, int dst_stride, ref uint sse) =>
         aom_sub_pixel_variance16xh_avx2(src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse, 32, 5);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance16x16_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                           Ptr<byte> dst, int dst_stride, ref uint sse) =>
         aom_sub_pixel_variance16xh_avx2(src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse, 16, 4);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance16x8_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                          Ptr<byte> dst, int dst_stride, ref uint sse) =>
         aom_sub_pixel_variance16xh_avx2(src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse, 8, 3);
@@ -1307,6 +1318,7 @@ internal static class variance_impl_avx2
     }
 
     // MAKE_SUB_PIXEL_AVG_VAR_32XH(64, 6), (32, 5), (16, 4)
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance32x64_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                               Ptr<byte> dst, int dst_stride, ref uint sse, Ptr<byte> sec_ptr)
     {
@@ -1314,6 +1326,7 @@ internal static class variance_impl_avx2
         return sse - (uint)(((long)sum * sum) >> (5 + 6));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance32x32_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                               Ptr<byte> dst, int dst_stride, ref uint sse, Ptr<byte> sec_ptr)
     {
@@ -1321,6 +1334,7 @@ internal static class variance_impl_avx2
         return sse - (uint)(((long)sum * sum) >> (5 + 5));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance32x16_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                               Ptr<byte> dst, int dst_stride, ref uint sse, Ptr<byte> sec_ptr)
     {
@@ -1364,22 +1378,27 @@ internal static class variance_impl_avx2
     }
 
     // Note: hf = AOMMIN(h, 64) to avoid overflow in helper by capping height.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance128x128_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                                 Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec) =>
         AOM_SUB_PIXEL_AVG_VAR_AVX2(128, 128, 64, 7, 7, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr, sec);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance128x64_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                                Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec) =>
         AOM_SUB_PIXEL_AVG_VAR_AVX2(128, 64, 64, 7, 6, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr, sec);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance64x128_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                                Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec) =>
         AOM_SUB_PIXEL_AVG_VAR_AVX2(64, 128, 64, 6, 7, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr, sec);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance64x64_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                               Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec) =>
         AOM_SUB_PIXEL_AVG_VAR_AVX2(64, 64, 64, 6, 6, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr, sec);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance64x32_avx2(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                               Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec) =>
         AOM_SUB_PIXEL_AVG_VAR_AVX2(64, 32, 32, 6, 5, src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse_ptr, sec);

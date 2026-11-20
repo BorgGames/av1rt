@@ -123,6 +123,7 @@ internal static class intrapred_sse2
     // -----------------------------------------------------------------------------
     // DC_PRED
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_4x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_8(left);
@@ -138,6 +139,7 @@ internal static class intrapred_sse2
         dc_store_4xh(pred, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_4x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_16_sse2(left);
@@ -153,6 +155,7 @@ internal static class intrapred_sse2
         dc_store_4xh(pred, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_8x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_4(left);
@@ -167,6 +170,7 @@ internal static class intrapred_sse2
         dc_store_8xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_8x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_16_sse2(left);
@@ -180,6 +184,7 @@ internal static class intrapred_sse2
         dc_store_8xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_8x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_32_sse2(left);
@@ -193,6 +198,7 @@ internal static class intrapred_sse2
         dc_store_8xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_16x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_4(left);
@@ -206,6 +212,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_16x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_8(left);
@@ -219,6 +226,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_16x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_32_sse2(left);
@@ -232,6 +240,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_16x64_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_64(left);
@@ -245,6 +254,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_32x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_32_sse2(above);
@@ -326,6 +336,7 @@ internal static class intrapred_sse2
     // -----------------------------------------------------------------------------
     // DC_TOP
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_4x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_4(above);
@@ -339,6 +350,7 @@ internal static class intrapred_sse2
         dc_store_4xh(pred, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_4x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_4(above);
@@ -352,6 +364,7 @@ internal static class intrapred_sse2
         dc_store_4xh(pred, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_8x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_8(above);
@@ -363,6 +376,7 @@ internal static class intrapred_sse2
         dc_store_8xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_8x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_8(above);
@@ -374,6 +388,7 @@ internal static class intrapred_sse2
         dc_store_8xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_8x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_8(above);
@@ -385,6 +400,7 @@ internal static class intrapred_sse2
         dc_store_8xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_16x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_16_sse2(above);
@@ -397,6 +413,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_16x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_16_sse2(above);
@@ -409,6 +426,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_16x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_16_sse2(above);
@@ -421,6 +439,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_16x64_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_16_sse2(above);
@@ -433,6 +452,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_32x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_above = dc_sum_32_sse2(above);
@@ -508,6 +528,7 @@ internal static class intrapred_sse2
     // -----------------------------------------------------------------------------
     // DC_LEFT
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_4x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_8(left);
@@ -521,6 +542,7 @@ internal static class intrapred_sse2
         dc_store_4xh(pred, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_4x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_16_sse2(left);
@@ -534,6 +556,7 @@ internal static class intrapred_sse2
         dc_store_4xh(pred, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_8x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_4(left);
@@ -545,6 +568,7 @@ internal static class intrapred_sse2
         dc_store_8xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_8x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_16_sse2(left);
@@ -556,6 +580,7 @@ internal static class intrapred_sse2
         dc_store_8xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_8x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_32_sse2(left);
@@ -567,6 +592,7 @@ internal static class intrapred_sse2
         dc_store_8xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_16x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_4(left);
@@ -579,6 +605,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_16x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_8(left);
@@ -591,6 +618,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_16x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_32_sse2(left);
@@ -603,6 +631,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_16x64_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_64(left);
@@ -615,6 +644,7 @@ internal static class intrapred_sse2
         dc_store_16xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_32x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum_left = dc_sum_8(left);
@@ -690,60 +720,70 @@ internal static class intrapred_sse2
     // -----------------------------------------------------------------------------
     // DC_128
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_4x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         const uint pred = 0x80808080;
         dc_store_4xh(pred, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_4x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         const uint pred = 0x80808080;
         dc_store_4xh(pred, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_8x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_set1_epi8(unchecked((sbyte)128));
         dc_store_8xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_8x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_set1_epi8(unchecked((sbyte)128));
         dc_store_8xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_8x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_set1_epi8(unchecked((sbyte)128));
         dc_store_8xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_16x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_set1_epi8(unchecked((sbyte)128));
         dc_store_16xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_16x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_set1_epi8(unchecked((sbyte)128));
         dc_store_16xh(row, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_16x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_set1_epi8(unchecked((sbyte)128));
         dc_store_16xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_16x64_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_set1_epi8(unchecked((sbyte)128));
         dc_store_16xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_32x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_set1_epi8(unchecked((sbyte)128));
@@ -784,54 +824,63 @@ internal static class intrapred_sse2
     // V_PRED
 
     // [port] `*(uint32_t *)above`.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_4x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         uint pred = BinaryPrimitives.ReadUInt32LittleEndian(above.AsSpan(4));
         dc_store_4xh(pred, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_4x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         uint pred = BinaryPrimitives.ReadUInt32LittleEndian(above.AsSpan(4));
         dc_store_4xh(pred, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_8x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_loadl_epi64(above);
         dc_store_8xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_8x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_loadl_epi64(above);
         dc_store_8xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_8x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_loadl_epi64(above);
         dc_store_8xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_16x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_load_si128(above);
         dc_store_16xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_16x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_load_si128(above);
         dc_store_16xh(row, 8, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_16x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_load_si128(above);
         dc_store_16xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_16x64_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i row = _mm_load_si128(above);
@@ -851,6 +900,7 @@ internal static class intrapred_sse2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_32x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor_32xh(dst, stride, above, 8);
@@ -902,6 +952,7 @@ internal static class intrapred_sse2
     // H_PRED
 
     // [port] `*(int *)dst = _mm_cvtsi128_si32(row)` is _mm_storeu_si32(dst, row).
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_4x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i left_col = _mm_loadl_epi64(left);
@@ -932,6 +983,7 @@ internal static class intrapred_sse2
         _mm_storeu_si32(dst, row3);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_4x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i left_col = _mm_load_si128(left);
@@ -992,6 +1044,7 @@ internal static class intrapred_sse2
         _mm_storeu_si32(dst, row3);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_8x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i left_col = _mm_loadl_epi64(left);
@@ -1076,11 +1129,13 @@ internal static class intrapred_sse2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_8x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor_8x16xc(dst, stride, above, left, 1);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_8x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor_8x16xc(dst, stride, above, left, 2);
@@ -1145,6 +1200,7 @@ internal static class intrapred_sse2
         h_pred_store_16xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_16x4_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i left_col = _mm_loadl_epi64(left);
@@ -1152,6 +1208,7 @@ internal static class intrapred_sse2
         h_prediction_16x8_1(left_col_8p, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_16x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i left_col = _mm_loadl_epi64(left);
@@ -1185,11 +1242,13 @@ internal static class intrapred_sse2
         } while (i < count);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_16x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor_16xh(dst, stride, left, 2);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_16x64_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor_16xh(dst, stride, left, 4);
@@ -1227,6 +1286,7 @@ internal static class intrapred_sse2
         h_pred_store_32xh(row, 4, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_32x8_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i left_col, left_col_8p;
@@ -1239,6 +1299,7 @@ internal static class intrapred_sse2
         h_prediction_32x8_2(left_col_8p, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_32x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i left_col, left_col_8p;
@@ -1284,6 +1345,7 @@ internal static class intrapred_sse2
         } while (--i != 0);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_32x64_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor_32xh(dst, stride, left, 64);
@@ -1323,16 +1385,19 @@ internal static class intrapred_sse2
         } while (--i != 0);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_64x64_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor_64xh(dst, stride, left, 64);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_64x32_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor_64xh(dst, stride, left, 32);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_64x16_sse2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor_64xh(dst, stride, left, 16);

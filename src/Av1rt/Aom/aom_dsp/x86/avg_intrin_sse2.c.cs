@@ -21,6 +21,7 @@ namespace Av1rt.Aom;
 // multiple of 16 but not of 32.
 internal static partial class avg_intrin_sse2
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_avg_8x8_sse2(Ptr<byte> s, int p)
     {
         __m128i sum0, sum1, s0, s1, s2, s3, u0;
@@ -47,6 +48,7 @@ internal static partial class avg_intrin_sse2
         return (avg + 32) >> 6;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_avg_4x4_sse2(Ptr<byte> s, int p)
     {
         __m128i s0, s1, u0;
@@ -176,6 +178,7 @@ internal static partial class avg_intrin_sse2
         _mm_store_si128(coeff, src[7]);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_hadamard_lp_8x8_sse2(Ptr<short> src_diff, int src_stride,
                                                   Ptr<short> coeff)
     {

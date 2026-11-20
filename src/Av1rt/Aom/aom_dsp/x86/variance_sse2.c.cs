@@ -159,21 +159,27 @@ internal static class variance_sse2
         return sse - (uint)(((long)sum * sum) >> bits);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_variance4x4_sse2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse) =>
         AOM_VAR_NO_LOOP_SSE2_128(4, 4, 4, src, src_stride, @ref, ref_stride, ref sse);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_variance4x8_sse2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse) =>
         AOM_VAR_NO_LOOP_SSE2_128(4, 8, 5, src, src_stride, @ref, ref_stride, ref sse);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_variance8x4_sse2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse) =>
         AOM_VAR_NO_LOOP_SSE2_128(8, 4, 5, src, src_stride, @ref, ref_stride, ref sse);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_variance8x8_sse2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse) =>
         AOM_VAR_NO_LOOP_SSE2_128(8, 8, 6, src, src_stride, @ref, ref_stride, ref sse);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_variance8x16_sse2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse) =>
         AOM_VAR_NO_LOOP_SSE2_128(8, 16, 7, src, src_stride, @ref, ref_stride, ref sse);
 
     internal static uint aom_variance16x8_sse2(Ptr<byte> src, int src_stride, Ptr<byte> @ref, int ref_stride, ref uint sse) =>
         AOM_VAR_NO_LOOP_SSE2_128(16, 8, 7, src, src_stride, @ref, ref_stride, ref sse);
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_mse8x8_sse2(Ptr<byte> src, int src_stride,
                                          Ptr<byte> @ref, int ref_stride,
                                          ref uint sse)
@@ -182,6 +188,7 @@ internal static class variance_sse2
         return sse;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_mse8x16_sse2(Ptr<byte> src, int src_stride,
                                           Ptr<byte> @ref, int ref_stride,
                                           ref uint sse)
@@ -190,6 +197,7 @@ internal static class variance_sse2
         return sse;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_mse16x8_sse2(Ptr<byte> src, int src_stride,
                                           Ptr<byte> @ref, int ref_stride,
                                           ref uint sse)

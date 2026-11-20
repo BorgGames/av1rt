@@ -116,6 +116,7 @@ internal static partial class error_intrin_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static long av1_block_error_lp_avx2(Ptr<short> coeff, Ptr<short> dqcoeff,
                                                  int block_size)
     {

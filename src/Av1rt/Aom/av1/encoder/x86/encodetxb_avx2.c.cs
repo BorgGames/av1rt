@@ -16,6 +16,7 @@ namespace Av1rt.Aom;
 // TX_PAD_HOR / TX_PAD_BOTTOM padding).
 internal static partial class encodetxb_avx2
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void av1_txb_init_levels_avx2(Ptr<tran_low_t> coeff, int width,
                                                   int height, Ptr<byte> levels)
     {

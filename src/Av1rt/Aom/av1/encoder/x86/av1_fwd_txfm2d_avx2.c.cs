@@ -2056,6 +2056,7 @@ internal static partial class av1_fwd_txfm2d_avx2
         null,  // [subset] lowbd_fwd_txfm2d_64x16_avx2, // 64x16 transform
     };
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void av1_lowbd_fwd_txfm_avx2(Ptr<short> src_diff, Ptr<tran_low_t> coeff, int diff_stride, ref TxfmParam txfm_param)
     {
         FwdTxfm2dFunc fwd_txfm2d_func = fwd_txfm2d_func_ls[txfm_param.tx_size];

@@ -376,6 +376,7 @@ internal static partial class convolve_2d_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void av1_convolve_2d_sr_avx2(
         Ptr<byte> src, int src_stride, Ptr<byte> dst, int dst_stride,
         int w, int h, InterpFilterParams filter_params_x,

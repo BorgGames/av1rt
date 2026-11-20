@@ -10,6 +10,7 @@ namespace Av1rt.Aom;
 // global using). Register arrays are ArrN<> locals, passed to the header helpers as spans.
 internal static partial class convolve_avx2
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void av1_convolve_y_sr_avx2(Ptr<byte> src, int src_stride,
                                                 Ptr<byte> dst, int dst_stride, int w,
                                                 int h,
@@ -931,6 +932,7 @@ internal static partial class convolve_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void av1_convolve_x_sr_avx2(Ptr<byte> src, int src_stride,
                                                 Ptr<byte> dst, int dst_stride, int w,
                                                 int h,

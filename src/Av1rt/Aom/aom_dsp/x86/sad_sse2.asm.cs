@@ -155,48 +155,64 @@ internal static class sad_sse2
     }
 
     // SAD16XN 32 / 16 / 8                     ; sad16x32_sse2 ...
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad16x32_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad16xn_sse2(src_ptr, src_stride, ref_ptr, ref_stride, 32 / 4);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad16x16_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad16xn_sse2(src_ptr, src_stride, ref_ptr, ref_stride, 16 / 4);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad16x8_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad16xn_sse2(src_ptr, src_stride, ref_ptr, ref_stride, 8 / 4);
 
     // SAD16XN 32, 1 / 16, 1 / 8, 1             ; sad16x32_avg_sse2 ...
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad16x32_avg_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride, Ptr<byte> second_pred) =>
         sad16xn_avg_sse2(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 32 / 4);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad16x16_avg_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride, Ptr<byte> second_pred) =>
         sad16xn_avg_sse2(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 16 / 4);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad16x8_avg_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride, Ptr<byte> second_pred) =>
         sad16xn_avg_sse2(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 8 / 4);
 
     // SAD16XN 32, 2 / 16, 2                    ; sad_skip_16x32_sse2 ...
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad_skip_16x32_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad16xn_sse2(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, 32 / 8) << 1;
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad_skip_16x16_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad16xn_sse2(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, 16 / 8) << 1;
 
     // SAD8XN 16 / 8 / 4                        ; sad8x16_sse2 ...
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad8x16_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad8xn_sse2(src_ptr, src_stride, ref_ptr, ref_stride, 16 / 4);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad8x8_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad8xn_sse2(src_ptr, src_stride, ref_ptr, ref_stride, 8 / 4);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad8x4_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad8xn_sse2(src_ptr, src_stride, ref_ptr, ref_stride, 4 / 4);
 
     // SAD8XN 16, 1 / 8, 1                      ; sad8x16_avg_sse2 ...
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad8x16_avg_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride, Ptr<byte> second_pred) =>
         sad8xn_avg_sse2(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 16 / 4);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad8x8_avg_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride, Ptr<byte> second_pred) =>
         sad8xn_avg_sse2(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 8 / 4);
 
     // SAD8XN 16, 2                             ; sad_skip_8x16_sse2
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad_skip_8x16_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad8xn_sse2(src_ptr, src_stride * 2, ref_ptr, ref_stride * 2, 16 / 8) << 1;
 
     // SAD4XN 8 / 4                             ; sad4x8_sse2, sad4x4_sse2
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad4x8_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad4xn_sse2(src_ptr, src_stride, ref_ptr, ref_stride, 8 / 4);
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sad4x4_sse2(Ptr<byte> src_ptr, int src_stride, Ptr<byte> ref_ptr, int ref_stride) =>
         sad4xn_sse2(src_ptr, src_stride, ref_ptr, ref_stride, 4 / 4);
 }

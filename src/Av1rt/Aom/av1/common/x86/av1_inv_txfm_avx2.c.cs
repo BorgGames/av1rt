@@ -2462,6 +2462,7 @@ internal static partial class av1_inv_txfm_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void av1_inv_txfm_add_avx2(Ptr<tran_low_t> dqcoeff, Ptr<byte> dst, int stride,
                                                in TxfmParam txfm_param)
     {

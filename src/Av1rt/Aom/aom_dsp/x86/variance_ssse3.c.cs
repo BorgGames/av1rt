@@ -51,6 +51,7 @@ internal static class variance_ssse3
     }
 
     // FN(8, 16, 8, 3, 4, opt, (int32_t), (int32_t)) ... FN(4, 4, 4, 2, 2, opt, (int32_t), (int32_t))
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance8x16_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                           Ptr<byte> dst, int dst_stride, ref uint sse_ptr)
     {
@@ -58,6 +59,7 @@ internal static class variance_ssse3
         return sse_ptr - (uint)((int)(se * se) >> (3 + 4));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance8x8_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                          Ptr<byte> dst, int dst_stride, ref uint sse_ptr)
     {
@@ -65,6 +67,7 @@ internal static class variance_ssse3
         return sse_ptr - (uint)((int)(se * se) >> (3 + 3));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance8x4_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                          Ptr<byte> dst, int dst_stride, ref uint sse_ptr)
     {
@@ -72,6 +75,7 @@ internal static class variance_ssse3
         return sse_ptr - (uint)((int)(se * se) >> (3 + 2));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance4x8_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                          Ptr<byte> dst, int dst_stride, ref uint sse_ptr)
     {
@@ -79,6 +83,7 @@ internal static class variance_ssse3
         return sse_ptr - (uint)((int)(se * se) >> (2 + 3));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_variance4x4_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                          Ptr<byte> dst, int dst_stride, ref uint sse_ptr)
     {
@@ -128,6 +133,7 @@ internal static class variance_ssse3
     }
 
     // FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t))
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance16x32_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                                Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec)
     {
@@ -136,6 +142,7 @@ internal static class variance_ssse3
     }
 
     // FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t))
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance16x16_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                                Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec)
     {
@@ -144,6 +151,7 @@ internal static class variance_ssse3
     }
 
     // FN(16, 8, 16, 4, 3, opt, (uint32_t), (int32_t)) ... FN(4, 4, 4, 2, 2, opt, (uint32_t), (int32_t))
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance16x8_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                               Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec)
     {
@@ -151,6 +159,7 @@ internal static class variance_ssse3
         return sse_ptr - (uint)((uint)(se * se) >> (4 + 3));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance8x16_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                               Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec)
     {
@@ -158,6 +167,7 @@ internal static class variance_ssse3
         return sse_ptr - (uint)((uint)(se * se) >> (3 + 4));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance8x8_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                              Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec)
     {
@@ -165,6 +175,7 @@ internal static class variance_ssse3
         return sse_ptr - (uint)((uint)(se * se) >> (3 + 3));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance8x4_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                              Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec)
     {
@@ -172,6 +183,7 @@ internal static class variance_ssse3
         return sse_ptr - (uint)((uint)(se * se) >> (3 + 2));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance4x8_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                              Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec)
     {
@@ -179,6 +191,7 @@ internal static class variance_ssse3
         return sse_ptr - (uint)((uint)(se * se) >> (2 + 3));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static uint aom_sub_pixel_avg_variance4x4_ssse3(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
                                                              Ptr<byte> dst, int dst_stride, ref uint sse_ptr, Ptr<byte> sec)
     {

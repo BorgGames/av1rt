@@ -99,6 +99,7 @@ internal static partial class avg_intrin_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_hadamard_lp_8x8_dual_avx2(Ptr<short> src_diff,
                                                        int src_stride, Ptr<short> coeff)
     {
@@ -130,6 +131,7 @@ internal static partial class avg_intrin_avx2
         _mm256_storeu_si256(c.Slice(112), _mm256_permute2x128_si256(src6, src7, 0x31));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_hadamard_lp_16x16_avx2(Ptr<short> src_diff, int src_stride,
                                                     Ptr<short> coeff)
     {
@@ -166,6 +168,7 @@ internal static partial class avg_intrin_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static int aom_satd_lp_avx2(Ptr<short> coeff, int length)
     {
         __m256i one = _mm256_set1_epi16(1);
@@ -191,6 +194,7 @@ internal static partial class avg_intrin_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_avg_8x8_quad_avx2(Ptr<byte> s, int p, int x16_idx, int y16_idx,
                                                Ptr<int> avg)
     {
@@ -224,6 +228,7 @@ internal static partial class avg_intrin_avx2
         avg[3] = _mm_extract_epi32(hi, 2);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_int_pro_row_avx2(Ptr<short> hbuf, Ptr<byte> @ref,
                                               int ref_stride, int width,
                                               int height, int norm_factor)
@@ -369,6 +374,7 @@ internal static partial class avg_intrin_avx2
 
     // [port] The `__m256i src[16]` (8, 4) arrays declared inside the row loops are hoisted out of
     // the loops: a stackalloc in a C# loop would allocate on every iteration.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_int_pro_col_avx2(Ptr<short> vbuf, Ptr<byte> @ref,
                                               int ref_stride, int width,
                                               int height, int norm_factor)
@@ -528,6 +534,7 @@ internal static partial class avg_intrin_avx2
     // ref: [0 - 510]
     // src: [0 - 510]
     // bwl: {2, 3, 4, 5}
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static int aom_vector_var_avx2(Ptr<short> @ref, Ptr<short> src, int bwl)
     {
         int width = 4 << bwl;

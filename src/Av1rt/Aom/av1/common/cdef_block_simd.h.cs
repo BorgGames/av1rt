@@ -170,6 +170,7 @@ internal static partial class cdef_block_avx2
         res[0] = v128_ziphi_64(tr1_7, tr1_6);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static int cdef_find_dir_avx2(Ptr<ushort> img, int stride, ref int var,
                                            int coeff_shift)
     {

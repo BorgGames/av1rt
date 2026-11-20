@@ -12,6 +12,7 @@ namespace Av1rt.Aom;
 internal static partial class aom_convolve_copy_avx2_h
 {
     // [port] copy_128 is inlined into the 128-wide case below.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_convolve_copy_avx2(Ptr<byte> src, int src_stride,
                                                 Ptr<byte> dst, int dst_stride, int w, int h)
     {

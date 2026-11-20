@@ -74,6 +74,7 @@ internal static class intrapred_avx2
 
     // [subset] HighbdLoadMaskx .. aom_highbd_*_avx2: CONFIG_AV1_HIGHBITDEPTH is off.
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_32x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum_above = dc_sum_32(above);
@@ -87,6 +88,7 @@ internal static class intrapred_avx2
         row_store_32xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_32x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_32(above);
@@ -99,6 +101,7 @@ internal static class intrapred_avx2
         row_store_32xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_32x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_32(left);
@@ -111,12 +114,14 @@ internal static class intrapred_avx2
         row_store_32xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_32x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row = _mm256_set1_epi8(unchecked((sbyte)0x80));
         row_store_32xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_32x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row = _mm256_loadu_si256(above);
@@ -147,6 +152,7 @@ internal static class intrapred_avx2
         }
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_h_predictor_32x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i left_col = _mm256_loadu_si256(left);
@@ -173,6 +179,7 @@ internal static class intrapred_avx2
 
     // -----------------------------------------------------------------------------
     // Rectangle
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_32x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i top_sum = dc_sum_32_sse2(above);
@@ -185,6 +192,7 @@ internal static class intrapred_avx2
         row_store_32xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_32x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum_above = dc_sum_32(above);
@@ -197,6 +205,7 @@ internal static class intrapred_avx2
         row_store_32xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_64x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum_above = dc_sum_64(above);
@@ -209,6 +218,7 @@ internal static class intrapred_avx2
         row_store_64xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_64x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum_above = dc_sum_64(above);
@@ -221,6 +231,7 @@ internal static class intrapred_avx2
         row_store_64xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_predictor_64x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum_above = dc_sum_64(above);
@@ -233,6 +244,7 @@ internal static class intrapred_avx2
         row_store_64xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_32x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_32(above);
@@ -245,6 +257,7 @@ internal static class intrapred_avx2
         row_store_32xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_32x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_32(above);
@@ -257,6 +270,7 @@ internal static class intrapred_avx2
         row_store_32xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_64x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_64(above);
@@ -269,6 +283,7 @@ internal static class intrapred_avx2
         row_store_64xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_64x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_64(above);
@@ -281,6 +296,7 @@ internal static class intrapred_avx2
         row_store_64xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_top_predictor_64x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_64(above);
@@ -293,6 +309,7 @@ internal static class intrapred_avx2
         row_store_64xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_32x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum = dc_sum_16_sse2(left);
@@ -306,6 +323,7 @@ internal static class intrapred_avx2
         row_store_32xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_32x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_64(left);
@@ -318,6 +336,7 @@ internal static class intrapred_avx2
         row_store_32xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_64x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_64(left);
@@ -330,6 +349,7 @@ internal static class intrapred_avx2
         row_store_64xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_64x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i sum = dc_sum_32(left);
@@ -342,6 +362,7 @@ internal static class intrapred_avx2
         row_store_64xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_left_predictor_64x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m128i sum = dc_sum_16_sse2(left);
@@ -355,48 +376,56 @@ internal static class intrapred_avx2
         row_store_64xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_32x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row = _mm256_set1_epi8(unchecked((sbyte)0x80));
         row_store_32xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_32x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row = _mm256_set1_epi8(unchecked((sbyte)0x80));
         row_store_32xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_64x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row = _mm256_set1_epi8(unchecked((sbyte)0x80));
         row_store_64xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_64x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row = _mm256_set1_epi8(unchecked((sbyte)0x80));
         row_store_64xh(row, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_dc_128_predictor_64x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row = _mm256_set1_epi8(unchecked((sbyte)0x80));
         row_store_64xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_32x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row = _mm256_loadu_si256(above);
         row_store_32xh(row, 16, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_32x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row = _mm256_loadu_si256(above);
         row_store_32xh(row, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_64x64_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row0 = _mm256_loadu_si256(above);
@@ -404,6 +433,7 @@ internal static class intrapred_avx2
         row_store_32x2xh(row0, row1, 64, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_64x32_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row0 = _mm256_loadu_si256(above);
@@ -411,6 +441,7 @@ internal static class intrapred_avx2
         row_store_32x2xh(row0, row1, 32, dst, stride);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal static void aom_v_predictor_64x16_avx2(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         __m256i row0 = _mm256_loadu_si256(above);
