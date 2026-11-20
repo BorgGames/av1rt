@@ -318,11 +318,8 @@ internal static partial class cdef_block
      * strength_index == 2 : enable_primary = 0, enable_secondary = 1
      * strength_index == 3 : enable_primary = 0, enable_secondary = 0
      */
-    // [port] The function-local `const cdef_filter_block_func cdef_filter_fn[4]` of the dst8
-    // branch, hoisted to a static table.
-    private static readonly cdef_filter_block_func<byte>[] cdef_filter_fn_8 = {
-        cdef_filter_8_0, cdef_filter_8_1, cdef_filter_8_2, cdef_filter_8_3
-    };
+    // [av1rt] The function-local `const cdef_filter_block_func cdef_filter_fn[4]` of the dst8
+    // branch (cdef_filter_8_0 .. cdef_filter_8_3) is a switch in av1_cdef_filter_fb.
 
     // [port] `int dir[CDEF_NBLOCKS][CDEF_NBLOCKS]` / `var[..][..]` are jagged arrays; `int *dirinit`
     // is a Ptr<int> because callers pass NULL (cdef.c) or the address of a flag (pickcdef.c).
@@ -368,8 +365,8 @@ internal static partial class cdef_block
         {
             int block_width = 8 >> xdec;
             int block_height = 8 >> ydec;
-            cdef_filter_block_func<byte>[] cdef_filter_fn = cdef_filter_fn_8;
-
+            // [av1rt] cdef_filter_fn_8[strength_index](...) as a switch: direct calls the JIT
+            // can inline, instead of a delegate call per 8x8 block.
             for (bi = 0; bi < cdef_count; bi++)
             {
                 by = dlist[bi].by;
@@ -378,11 +375,28 @@ internal static partial class cdef_block
                     (pli != 0 ? pri_strength : adjust_strength(pri_strength, var[by][bx]));
                 int strength_index = B(sec_strength == 0) | (B(t == 0) << 1);
 
-                cdef_filter_fn[strength_index](
-                    dst8 + ((by << bh_log2) * dstride + (bx << bw_log2)), dstride,
-                    @in + ((by * CDEF_BSTRIDE << bh_log2) + (bx << bw_log2)), t,
-                    sec_strength, pri_strength != 0 ? dir[by][bx] : 0, damping, damping,
-                    coeff_shift, block_width, block_height);
+                Ptr<byte> d8 = dst8 + ((by << bh_log2) * dstride + (bx << bw_log2));
+                Ptr<ushort> in8 = @in + ((by * CDEF_BSTRIDE << bh_log2) + (bx << bw_log2));
+                int d = pri_strength != 0 ? dir[by][bx] : 0;
+                switch (strength_index)
+                {
+                    case 0:
+                        cdef_filter_8_0(d8, dstride, in8, t, sec_strength, d, damping, damping,
+                                        coeff_shift, block_width, block_height);
+                        break;
+                    case 1:
+                        cdef_filter_8_1(d8, dstride, in8, t, sec_strength, d, damping, damping,
+                                        coeff_shift, block_width, block_height);
+                        break;
+                    case 2:
+                        cdef_filter_8_2(d8, dstride, in8, t, sec_strength, d, damping, damping,
+                                        coeff_shift, block_width, block_height);
+                        break;
+                    default:
+                        cdef_filter_8_3(d8, dstride, in8, t, sec_strength, d, damping, damping,
+                                        coeff_shift, block_width, block_height);
+                        break;
+                }
             }
         }
         else

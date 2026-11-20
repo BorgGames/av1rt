@@ -4,6 +4,7 @@ global using v64 = System.Runtime.Intrinsics.Vector128<long>;
 global using static Av1rt.Aom.v64_intrinsics_x86;
 
 using System;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -30,16 +31,10 @@ internal static class v64_intrinsics_x86
     [MethodImpl(AI)] internal static uint v64_high_u32(v64 a) => Sse41.Extract(a.AsUInt32(), 1);
 
     // *((uint32_t *)p) = a
-    // [port] Only byte destinations store a u32 in the ported code; little-endian byte stores.
-    [MethodImpl(AI)] internal static void u32_store_aligned(Ptr<byte> p, uint a)
-    {
-        byte[] d = p.Array;
-        int o = p.Offset;
-        d[o + 3] = (byte)(a >> 24);
-        d[o + 2] = (byte)(a >> 16);
-        d[o + 1] = (byte)(a >> 8);
-        d[o] = (byte)a;
-    }
+    // [port] Only byte destinations store a u32 in the ported code: one checked 4-byte
+    // little-endian store.
+    [MethodImpl(AI)] internal static void u32_store_aligned(Ptr<byte> p, uint a) =>
+        BinaryPrimitives.WriteUInt32LittleEndian(new Span<byte>(p.Array, p.Offset, 4), a);
 
     // _mm_loadl_epi64((__m128i *)p)
     // [port] A bounds-checked 8-byte load into a GPR and movq: the JIT keeps this in registers,

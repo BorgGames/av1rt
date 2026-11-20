@@ -3,6 +3,9 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+using System.Runtime.InteropServices;
 
 namespace Av1rt.Aom;
 
@@ -287,6 +290,34 @@ internal static partial class cdef_block_avx2
         return max;
     }
 
+    // [av1rt] Rows r .. r + 3 of a 4-wide block whose row r starts at element `off` of `a`, as
+    // v256_from_v64(row r, r + 1, r + 2, r + 3) builds them (row r in the high qword), from one
+    // checked window. C loads 64 bits per row (_mm_loadl_epi64); this loads 128 (one vmovdqu
+    // each, where 64-bit loads went through GPRs and stack slots) and uses the low halves. The
+    // extra 4 elements per row are inside the CDEF input buffer: a 4-wide block is chroma, whose
+    // rows end at least CDEF_HBORDER - 2 (the largest tap offset) elements before the buffer row
+    // ends, and the window is bounds-checked anyway.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static v256 load_4x4(ReadOnlySpan<ushort> a, int off)
+    {
+        ReadOnlySpan<ushort> w = a.Slice(off, 3 * CDEF_BSTRIDE + 8);
+        v128 r0 = Vector128.Create(w.Slice(0, 8)).AsInt64();
+        v128 r1 = Vector128.Create(w.Slice(CDEF_BSTRIDE, 8)).AsInt64();
+        v128 r2 = Vector128.Create(w.Slice(2 * CDEF_BSTRIDE, 8)).AsInt64();
+        v128 r3 = Vector128.Create(w.Slice(3 * CDEF_BSTRIDE, 8)).AsInt64();
+        return Vector256.Create(Sse2.UnpackLow(r3, r2), Sse2.UnpackLow(r1, r0));
+    }
+
+    // [av1rt] Rows r and r + 1 of an 8-wide block as v256_from_v128(row r, row r + 1) builds them
+    // (row r in the high lane), from one checked window.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static v256 load_8x2(ReadOnlySpan<ushort> a, int off)
+    {
+        ReadOnlySpan<ushort> w = a.Slice(off, CDEF_BSTRIDE + 8);
+        return Vector256.Create(Vector128.Create(w.Slice(CDEF_BSTRIDE, 8)),
+                                Vector128.Create(w.Slice(0, 8))).AsInt64();
+    }
+
     // [port] `void *dest` is the 8-bit destination (only is_lowbd == 1 is in the subset).
     // `v256 tap[4]` / `v256 tap[8]` of the primary / secondary blocks are locals tap0..tap7
     // (a stackalloc buffer keeps the method from being inlined into cdef_filter_8_*, where
@@ -298,6 +329,9 @@ internal static partial class cdef_block_avx2
                                          int sec_damping, int coeff_shift, int height,
                                          int enable_primary, int enable_secondary)
     {
+        // [av1rt] Taps are read through load_4x4 / load_8x2: one checked window per tap.
+        ReadOnlySpan<ushort> in16 = @in.Array;
+        int o = @in.Offset;
         Ptr<byte> dst8 = dest;
         int clipping_required = B(enable_primary != 0 && enable_secondary != 0);
         v256 p0, p1, p2, p3;
@@ -323,26 +357,17 @@ internal static partial class cdef_block_avx2
         for (i = 0; i < height; i += 4)
         {
             sum = v256_zero();
-            row = v256_from_v64(v64_load_aligned(@in + (i + 0) * CDEF_BSTRIDE),
-                                v64_load_aligned(@in + (i + 1) * CDEF_BSTRIDE),
-                                v64_load_aligned(@in + (i + 2) * CDEF_BSTRIDE),
-                                v64_load_aligned(@in + (i + 3) * CDEF_BSTRIDE));
+            row = load_4x4(in16, o + i * CDEF_BSTRIDE);
             max = min = row;
 
             if (enable_primary != 0)
             {
                 // Primary near taps
                 tap0 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE + po1)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + po1)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE + po1)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE + po1)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE + po1);
                 p0 = constrain16(tap0, row, (uint)pri_strength, (uint)pri_damping);
                 tap1 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE - po1)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - po1)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE - po1)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE - po1)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE - po1);
                 p1 = constrain16(tap1, row, (uint)pri_strength, (uint)pri_damping);
 
                 // sum += pri_taps[0] * (p0 + p1)
@@ -351,16 +376,10 @@ internal static partial class cdef_block_avx2
 
                 // Primary far taps
                 tap2 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE + po2)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + po2)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE + po2)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE + po2)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE + po2);
                 p0 = constrain16(tap2, row, (uint)pri_strength, (uint)pri_damping);
                 tap3 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE - po2)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - po2)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE - po2)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE - po2)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE - po2);
                 p1 = constrain16(tap3, row, (uint)pri_strength, (uint)pri_damping);
 
                 // sum += pri_taps[1] * (p0 + p1)
@@ -381,28 +400,16 @@ internal static partial class cdef_block_avx2
             {
                 // Secondary near taps
                 tap0 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE + s1o1)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + s1o1)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE + s1o1)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE + s1o1)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE + s1o1);
                 p0 = constrain16(tap0, row, (uint)sec_strength, (uint)sec_damping);
                 tap1 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE - s1o1)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - s1o1)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE - s1o1)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE - s1o1)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE - s1o1);
                 p1 = constrain16(tap1, row, (uint)sec_strength, (uint)sec_damping);
                 tap2 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE + s2o1)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + s2o1)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE + s2o1)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE + s2o1)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE + s2o1);
                 p2 = constrain16(tap2, row, (uint)sec_strength, (uint)sec_damping);
                 tap3 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE - s2o1)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - s2o1)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE - s2o1)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE - s2o1)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE - s2o1);
                 p3 = constrain16(tap3, row, (uint)sec_strength, (uint)sec_damping);
 
                 // sum += sec_taps[0] * (p0 + p1 + p2 + p3)
@@ -412,28 +419,16 @@ internal static partial class cdef_block_avx2
 
                 // Secondary far taps
                 tap4 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE + s1o2)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + s1o2)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE + s1o2)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE + s1o2)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE + s1o2);
                 p0 = constrain16(tap4, row, (uint)sec_strength, (uint)sec_damping);
                 tap5 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE - s1o2)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - s1o2)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE - s1o2)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE - s1o2)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE - s1o2);
                 p1 = constrain16(tap5, row, (uint)sec_strength, (uint)sec_damping);
                 tap6 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE + s2o2)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + s2o2)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE + s2o2)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE + s2o2)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE + s2o2);
                 p2 = constrain16(tap6, row, (uint)sec_strength, (uint)sec_damping);
                 tap7 =
-                    v256_from_v64(v64_load_unaligned(@in + ((i + 0) * CDEF_BSTRIDE - s2o2)),
-                                  v64_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - s2o2)),
-                                  v64_load_unaligned(@in + ((i + 2) * CDEF_BSTRIDE - s2o2)),
-                                  v64_load_unaligned(@in + ((i + 3) * CDEF_BSTRIDE - s2o2)));
+                    load_4x4(in16, o + i * CDEF_BSTRIDE - s2o2);
                 p3 = constrain16(tap7, row, (uint)sec_strength, (uint)sec_damping);
 
                 // sum += sec_taps[1] * (p0 + p1 + p2 + p3)
@@ -496,6 +491,9 @@ internal static partial class cdef_block_avx2
                                          int sec_damping, int coeff_shift, int height,
                                          int enable_primary, int enable_secondary)
     {
+        // [av1rt] Taps are read through load_4x4 / load_8x2: one checked window per tap.
+        ReadOnlySpan<ushort> in16 = @in.Array;
+        int o = @in.Offset;
         Ptr<byte> dst8 = dest;
         int clipping_required = B(enable_primary != 0 && enable_secondary != 0);
         int i;
@@ -520,19 +518,14 @@ internal static partial class cdef_block_avx2
         for (i = 0; i < height; i += 2)
         {
             sum = v256_zero();
-            row = v256_from_v128(v128_load_aligned(@in + i * CDEF_BSTRIDE),
-                                 v128_load_aligned(@in + (i + 1) * CDEF_BSTRIDE));
+            row = load_8x2(in16, o + i * CDEF_BSTRIDE);
 
             min = max = row;
             if (enable_primary != 0)
             {
                 // Primary near taps
-                tap0 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE + po1)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + po1)));
-                tap1 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE - po1)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - po1)));
+                tap0 = load_8x2(in16, o + i * CDEF_BSTRIDE + po1);
+                tap1 = load_8x2(in16, o + i * CDEF_BSTRIDE - po1);
                 p0 = constrain16(tap0, row, (uint)pri_strength, (uint)pri_damping);
                 p1 = constrain16(tap1, row, (uint)pri_strength, (uint)pri_damping);
 
@@ -541,12 +534,8 @@ internal static partial class cdef_block_avx2
                     sum, v256_mullo_s16(v256_dup_16((ushort)pri_taps[0]), v256_add_16(p0, p1)));
 
                 // Primary far taps
-                tap2 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE + po2)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + po2)));
-                tap3 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE - po2)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - po2)));
+                tap2 = load_8x2(in16, o + i * CDEF_BSTRIDE + po2);
+                tap3 = load_8x2(in16, o + i * CDEF_BSTRIDE - po2);
                 p0 = constrain16(tap2, row, (uint)pri_strength, (uint)pri_damping);
                 p1 = constrain16(tap3, row, (uint)pri_strength, (uint)pri_damping);
 
@@ -569,18 +558,10 @@ internal static partial class cdef_block_avx2
             if (enable_secondary != 0)
             {
                 // Secondary near taps
-                tap0 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE + s1o1)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + s1o1)));
-                tap1 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE - s1o1)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - s1o1)));
-                tap2 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE + s2o1)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + s2o1)));
-                tap3 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE - s2o1)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - s2o1)));
+                tap0 = load_8x2(in16, o + i * CDEF_BSTRIDE + s1o1);
+                tap1 = load_8x2(in16, o + i * CDEF_BSTRIDE - s1o1);
+                tap2 = load_8x2(in16, o + i * CDEF_BSTRIDE + s2o1);
+                tap3 = load_8x2(in16, o + i * CDEF_BSTRIDE - s2o1);
                 p0 = constrain16(tap0, row, (uint)sec_strength, (uint)sec_damping);
                 p1 = constrain16(tap1, row, (uint)sec_strength, (uint)sec_damping);
                 p2 = constrain16(tap2, row, (uint)sec_strength, (uint)sec_damping);
@@ -592,18 +573,10 @@ internal static partial class cdef_block_avx2
                                                                   v256_add_16(p2, p3))));
 
                 // Secondary far taps
-                tap4 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE + s1o2)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + s1o2)));
-                tap5 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE - s1o2)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - s1o2)));
-                tap6 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE + s2o2)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE + s2o2)));
-                tap7 = v256_from_v128(
-                    v128_load_unaligned(@in + (i * CDEF_BSTRIDE - s2o2)),
-                    v128_load_unaligned(@in + ((i + 1) * CDEF_BSTRIDE - s2o2)));
+                tap4 = load_8x2(in16, o + i * CDEF_BSTRIDE + s1o2);
+                tap5 = load_8x2(in16, o + i * CDEF_BSTRIDE - s1o2);
+                tap6 = load_8x2(in16, o + i * CDEF_BSTRIDE + s2o2);
+                tap7 = load_8x2(in16, o + i * CDEF_BSTRIDE - s2o2);
                 p0 = constrain16(tap4, row, (uint)sec_strength, (uint)sec_damping);
                 p1 = constrain16(tap5, row, (uint)sec_strength, (uint)sec_damping);
                 p2 = constrain16(tap6, row, (uint)sec_strength, (uint)sec_damping);
@@ -715,6 +688,10 @@ internal static partial class cdef_block_avx2
         }
     }
 
+    // [av1rt] NoInlining: each kernel is compiled on its own, with the whole register file for
+    // its loop. Inlined into av1_cdef_filter_fb (one call per 8x8 / 4x4 block, like C's function
+    // pointer) the loop's invariants (offsets, span lengths, thresholds) lived in stack slots.
+    [MethodImpl(MethodImplOptions.NoInlining)]
     internal static void cdef_filter_8_0_avx2(Ptr<byte> dest, int dstride, Ptr<ushort> @in,
                                               int pri_strength, int sec_strength, int dir,
                                               int pri_damping, int sec_damping,
@@ -737,6 +714,7 @@ internal static partial class cdef_block_avx2
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     internal static void cdef_filter_8_1_avx2(Ptr<byte> dest, int dstride, Ptr<ushort> @in,
                                               int pri_strength, int sec_strength, int dir,
                                               int pri_damping, int sec_damping,
@@ -759,6 +737,7 @@ internal static partial class cdef_block_avx2
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     internal static void cdef_filter_8_2_avx2(Ptr<byte> dest, int dstride, Ptr<ushort> @in,
                                               int pri_strength, int sec_strength, int dir,
                                               int pri_damping, int sec_damping,
@@ -781,6 +760,7 @@ internal static partial class cdef_block_avx2
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     internal static void cdef_filter_8_3_avx2(Ptr<byte> dest, int dstride, Ptr<ushort> @in,
                                               int pri_strength, int sec_strength, int dir,
                                               int pri_damping, int sec_damping,

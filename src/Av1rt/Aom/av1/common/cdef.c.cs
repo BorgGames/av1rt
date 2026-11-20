@@ -11,16 +11,11 @@ internal static partial class cdef
     private static int is_8x8_block_skip(MB_MODE_INFO[] grid, int mi_row, int mi_col,
                                          int mi_stride)
     {
+        // [av1rt] mi_size_high[BLOCK_8X8] == mi_size_wide[BLOCK_8X8] == 2, unrolled.
         int mbmi = mi_row * mi_stride + mi_col;
-        for (int r = 0; r < mi_size_high[BLOCK_8X8]; ++r, mbmi += mi_stride)
-        {
-            for (int c = 0; c < mi_size_wide[BLOCK_8X8]; ++c)
-            {
-                if (grid[mbmi + c].skip_txfm == 0) return 0;
-            }
-        }
-
-        return 1;
+        return B(grid[mbmi].skip_txfm != 0 && grid[mbmi + 1].skip_txfm != 0 &&
+                 grid[mbmi + mi_stride].skip_txfm != 0 &&
+                 grid[mbmi + mi_stride + 1].skip_txfm != 0);
     }
 
     internal static int av1_cdef_compute_sb_list(CommonModeInfoParams mi_params,
@@ -98,13 +93,12 @@ internal static partial class cdef
     private static void copy_rect(Ptr<ushort> dst, int dstride, Ptr<ushort> src,
                                   int sstride, int v, int h)
     {
+        // [av1rt] Row copies within one checked window per side (C: element loop).
+        if (v <= 0 || h <= 0) return;
+        ReadOnlySpan<ushort> s = src.AsSpan(0, (v - 1) * sstride + h);
+        Span<ushort> d = dst.AsSpan(0, (v - 1) * dstride + h);
         for (int i = 0; i < v; i++)
-        {
-            for (int j = 0; j < h; j++)
-            {
-                dst[i * dstride + j] = src[i * sstride + j];
-            }
-        }
+            s.Slice(i * sstride, h).CopyTo(d.Slice(i * dstride, h));
     }
 
     // Prepares intermediate input buffer for CDEF.

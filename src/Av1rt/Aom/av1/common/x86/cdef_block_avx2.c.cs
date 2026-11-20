@@ -5,6 +5,8 @@ global using static Av1rt.Aom.cdef_block_avx2;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Av1rt.Aom;
 
@@ -72,19 +74,21 @@ internal static partial class cdef_block_avx2
     /* Computes cost for directions 0, 5, 6 and 7. We can call this function again
     to compute the remaining directions. */
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static __m256i compute_directions_avx2(Span<__m256i> lines,
-                                                   Span<int> cost_frist_8x8,
-                                                   Span<int> cost_second_8x8)
+    // [av1rt] lines[0..7] are the values l0..l7, and the costs are only returned: C also stores
+    // them to cost_frist_8x8 / cost_second_8x8, which cdef_find_dir_dual_avx2 reads from the
+    // returned vector instead (low lane: first 8x8, high lane: second).
+    private static __m256i compute_directions_avx2(__m256i l0, __m256i l1, __m256i l2, __m256i l3,
+                                                   __m256i l4, __m256i l5, __m256i l6, __m256i l7)
     {
         __m256i partial4a, partial4b, partial5a, partial5b, partial7a, partial7b;
         __m256i partial6;
         __m256i tmp;
         /* Partial sums for lines 0 and 1. */
-        partial4a = _mm256_slli_si256(lines[0], 14);
-        partial4b = _mm256_srli_si256(lines[0], 2);
-        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(lines[1], 12));
-        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(lines[1], 4));
-        tmp = _mm256_add_epi16(lines[0], lines[1]);
+        partial4a = _mm256_slli_si256(l0, 14);
+        partial4b = _mm256_srli_si256(l0, 2);
+        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(l1, 12));
+        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(l1, 4));
+        tmp = _mm256_add_epi16(l0, l1);
         partial5a = _mm256_slli_si256(tmp, 10);
         partial5b = _mm256_srli_si256(tmp, 6);
         partial7a = _mm256_slli_si256(tmp, 4);
@@ -92,11 +96,11 @@ internal static partial class cdef_block_avx2
         partial6 = tmp;
 
         /* Partial sums for lines 2 and 3. */
-        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(lines[2], 10));
-        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(lines[2], 6));
-        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(lines[3], 8));
-        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(lines[3], 8));
-        tmp = _mm256_add_epi16(lines[2], lines[3]);
+        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(l2, 10));
+        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(l2, 6));
+        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(l3, 8));
+        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(l3, 8));
+        tmp = _mm256_add_epi16(l2, l3);
         partial5a = _mm256_add_epi16(partial5a, _mm256_slli_si256(tmp, 8));
         partial5b = _mm256_add_epi16(partial5b, _mm256_srli_si256(tmp, 8));
         partial7a = _mm256_add_epi16(partial7a, _mm256_slli_si256(tmp, 6));
@@ -104,11 +108,11 @@ internal static partial class cdef_block_avx2
         partial6 = _mm256_add_epi16(partial6, tmp);
 
         /* Partial sums for lines 4 and 5. */
-        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(lines[4], 6));
-        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(lines[4], 10));
-        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(lines[5], 4));
-        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(lines[5], 12));
-        tmp = _mm256_add_epi16(lines[4], lines[5]);
+        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(l4, 6));
+        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(l4, 10));
+        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(l5, 4));
+        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(l5, 12));
+        tmp = _mm256_add_epi16(l4, l5);
         partial5a = _mm256_add_epi16(partial5a, _mm256_slli_si256(tmp, 6));
         partial5b = _mm256_add_epi16(partial5b, _mm256_srli_si256(tmp, 10));
         partial7a = _mm256_add_epi16(partial7a, _mm256_slli_si256(tmp, 8));
@@ -116,10 +120,10 @@ internal static partial class cdef_block_avx2
         partial6 = _mm256_add_epi16(partial6, tmp);
 
         /* Partial sums for lines 6 and 7. */
-        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(lines[6], 2));
-        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(lines[6], 14));
-        partial4a = _mm256_add_epi16(partial4a, lines[7]);
-        tmp = _mm256_add_epi16(lines[6], lines[7]);
+        partial4a = _mm256_add_epi16(partial4a, _mm256_slli_si256(l6, 2));
+        partial4b = _mm256_add_epi16(partial4b, _mm256_srli_si256(l6, 14));
+        partial4a = _mm256_add_epi16(partial4a, l7);
+        tmp = _mm256_add_epi16(l6, l7);
         partial5a = _mm256_add_epi16(partial5a, _mm256_slli_si256(tmp, 4));
         partial5b = _mm256_add_epi16(partial5b, _mm256_srli_si256(tmp, 12));
         partial7a = _mm256_add_epi16(partial7a, _mm256_slli_si256(tmp, 10));
@@ -145,46 +149,18 @@ internal static partial class cdef_block_avx2
         partial6 = _mm256_mullo_epi32(partial6, _mm256_set1_epi32(105));
 
         partial4a = hsum4_avx2(ref partial4a, ref partial5a, ref partial6, ref partial7a);
-        _mm_storeu_si128(cost_frist_8x8,
-                         _mm256_castsi256_si128(partial4a));
-        _mm_storeu_si128(cost_second_8x8,
-                         _mm256_extractf128_si256(partial4a, 1));
-
         return partial4a;
     }
 
-    /* transpose and reverse the order of the lines -- equivalent to a 90-degree
-    counter-clockwise rotation of the pixels. */
-    // [port] Called with in == res: every read of `in` happens before the first write to `res`.
+    // [av1rt] Line `off` of the two 8x8 blocks: (img >> coeff_shift) - 128, first block in the
+    // low lane.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void array_reverse_transpose_8x8_avx2(Span<__m256i> @in, Span<__m256i> res)
+    private static __m256i load_line(ReadOnlySpan<ushort> a1, ReadOnlySpan<ushort> a2, int off,
+                                     __m128i shift, __m256i c128)
     {
-        __m256i tr0_0 = _mm256_unpacklo_epi16(@in[0], @in[1]);
-        __m256i tr0_1 = _mm256_unpacklo_epi16(@in[2], @in[3]);
-        __m256i tr0_2 = _mm256_unpackhi_epi16(@in[0], @in[1]);
-        __m256i tr0_3 = _mm256_unpackhi_epi16(@in[2], @in[3]);
-        __m256i tr0_4 = _mm256_unpacklo_epi16(@in[4], @in[5]);
-        __m256i tr0_5 = _mm256_unpacklo_epi16(@in[6], @in[7]);
-        __m256i tr0_6 = _mm256_unpackhi_epi16(@in[4], @in[5]);
-        __m256i tr0_7 = _mm256_unpackhi_epi16(@in[6], @in[7]);
-
-        __m256i tr1_0 = _mm256_unpacklo_epi32(tr0_0, tr0_1);
-        __m256i tr1_1 = _mm256_unpacklo_epi32(tr0_4, tr0_5);
-        __m256i tr1_2 = _mm256_unpackhi_epi32(tr0_0, tr0_1);
-        __m256i tr1_3 = _mm256_unpackhi_epi32(tr0_4, tr0_5);
-        __m256i tr1_4 = _mm256_unpacklo_epi32(tr0_2, tr0_3);
-        __m256i tr1_5 = _mm256_unpacklo_epi32(tr0_6, tr0_7);
-        __m256i tr1_6 = _mm256_unpackhi_epi32(tr0_2, tr0_3);
-        __m256i tr1_7 = _mm256_unpackhi_epi32(tr0_6, tr0_7);
-
-        res[7] = _mm256_unpacklo_epi64(tr1_0, tr1_1);
-        res[6] = _mm256_unpackhi_epi64(tr1_0, tr1_1);
-        res[5] = _mm256_unpacklo_epi64(tr1_2, tr1_3);
-        res[4] = _mm256_unpackhi_epi64(tr1_2, tr1_3);
-        res[3] = _mm256_unpacklo_epi64(tr1_4, tr1_5);
-        res[2] = _mm256_unpackhi_epi64(tr1_4, tr1_5);
-        res[1] = _mm256_unpacklo_epi64(tr1_6, tr1_7);
-        res[0] = _mm256_unpackhi_epi64(tr1_6, tr1_7);
+        __m256i l = _mm256_insertf128_si256(_mm256_castsi128_si256(_mm_loadu_si128(a1.Slice(off, 8))),
+                                            _mm_loadu_si128(a2.Slice(off, 8)), 1);
+        return _mm256_sub_epi16(_mm256_sra_epi16(l, shift), c128);
     }
 
     internal static void cdef_find_dir_dual_avx2(Ptr<ushort> img1, Ptr<ushort> img2,
@@ -192,36 +168,56 @@ internal static partial class cdef_block_avx2
                                                  ref int var_out_2nd, int coeff_shift,
                                                  ref int out_dir_1st_8x8, ref int out_dir_2nd_8x8)
     {
-        Span<int> cost_first_8x8 = stackalloc int[8];
-        Span<int> cost_second_8x8 = stackalloc int[8];
-        // Used to store the best cost for 2 8x8's.
-        Span<int> best_cost = stackalloc int[2];  // { 0 }
-        // Best direction for 2 8x8's.
-        Span<int> best_dir = stackalloc int[2];  // { 0 }
-
+        // [av1rt] In registers as in C: the lines are l0..l7 (C: __m256i lines[8]), the
+        // transpose is inline (array_reverse_transpose_8x8_avx2) and the costs are read from
+        // dir03 / dir47 (C: cost_first_8x8[8] / cost_second_8x8[8]); best_cost / best_dir are
+        // scalars. No zeroed stackalloc buffers.
         __m128i const_coeff_shift_reg = _mm_cvtsi32_si128(coeff_shift);
         __m256i const_128_reg = _mm256_set1_epi16(128);
-        Span<__m256i> lines = stackalloc __m256i[8];
-        for (int i = 0; i < 8; i++)
-        {
-            __m128i src_1 = _mm_loadu_si128(img1 + i * stride);
-            __m128i src_2 = _mm_loadu_si128(img2 + i * stride);
-
-            lines[i] = _mm256_insertf128_si256(_mm256_castsi128_si256(src_1), src_2, 1);
-            lines[i] = _mm256_sub_epi16(
-                _mm256_sra_epi16(lines[i], const_coeff_shift_reg), const_128_reg);
-        }
+        ReadOnlySpan<ushort> a1 = img1.AsSpan(0, 7 * stride + 8), a2 = img2.AsSpan(0, 7 * stride + 8);
+        __m256i l0 = load_line(a1, a2, 0, const_coeff_shift_reg, const_128_reg);
+        __m256i l1 = load_line(a1, a2, stride, const_coeff_shift_reg, const_128_reg);
+        __m256i l2 = load_line(a1, a2, 2 * stride, const_coeff_shift_reg, const_128_reg);
+        __m256i l3 = load_line(a1, a2, 3 * stride, const_coeff_shift_reg, const_128_reg);
+        __m256i l4 = load_line(a1, a2, 4 * stride, const_coeff_shift_reg, const_128_reg);
+        __m256i l5 = load_line(a1, a2, 5 * stride, const_coeff_shift_reg, const_128_reg);
+        __m256i l6 = load_line(a1, a2, 6 * stride, const_coeff_shift_reg, const_128_reg);
+        __m256i l7 = load_line(a1, a2, 7 * stride, const_coeff_shift_reg, const_128_reg);
 
         /* Compute "mostly vertical" directions. */
-        __m256i dir47 =
-            compute_directions_avx2(lines, cost_first_8x8.Slice(4), cost_second_8x8.Slice(4));
+        __m256i dir47 = compute_directions_avx2(l0, l1, l2, l3, l4, l5, l6, l7);
 
         /* Transpose and reverse the order of the lines. */
-        array_reverse_transpose_8x8_avx2(lines, lines);
+        {
+            __m256i tr0_0 = _mm256_unpacklo_epi16(l0, l1);
+            __m256i tr0_1 = _mm256_unpacklo_epi16(l2, l3);
+            __m256i tr0_2 = _mm256_unpackhi_epi16(l0, l1);
+            __m256i tr0_3 = _mm256_unpackhi_epi16(l2, l3);
+            __m256i tr0_4 = _mm256_unpacklo_epi16(l4, l5);
+            __m256i tr0_5 = _mm256_unpacklo_epi16(l6, l7);
+            __m256i tr0_6 = _mm256_unpackhi_epi16(l4, l5);
+            __m256i tr0_7 = _mm256_unpackhi_epi16(l6, l7);
+
+            __m256i tr1_0 = _mm256_unpacklo_epi32(tr0_0, tr0_1);
+            __m256i tr1_1 = _mm256_unpacklo_epi32(tr0_4, tr0_5);
+            __m256i tr1_2 = _mm256_unpackhi_epi32(tr0_0, tr0_1);
+            __m256i tr1_3 = _mm256_unpackhi_epi32(tr0_4, tr0_5);
+            __m256i tr1_4 = _mm256_unpacklo_epi32(tr0_2, tr0_3);
+            __m256i tr1_5 = _mm256_unpacklo_epi32(tr0_6, tr0_7);
+            __m256i tr1_6 = _mm256_unpackhi_epi32(tr0_2, tr0_3);
+            __m256i tr1_7 = _mm256_unpackhi_epi32(tr0_6, tr0_7);
+            l0 = _mm256_unpackhi_epi64(tr1_6, tr1_7);
+            l1 = _mm256_unpacklo_epi64(tr1_6, tr1_7);
+            l2 = _mm256_unpackhi_epi64(tr1_4, tr1_5);
+            l3 = _mm256_unpacklo_epi64(tr1_4, tr1_5);
+            l4 = _mm256_unpackhi_epi64(tr1_2, tr1_3);
+            l5 = _mm256_unpacklo_epi64(tr1_2, tr1_3);
+            l6 = _mm256_unpackhi_epi64(tr1_0, tr1_1);
+            l7 = _mm256_unpacklo_epi64(tr1_0, tr1_1);
+        }
 
         /* Compute "mostly horizontal" directions. */
-        __m256i dir03 =
-            compute_directions_avx2(lines, cost_first_8x8, cost_second_8x8);
+        __m256i dir03 = compute_directions_avx2(l0, l1, l2, l3, l4, l5, l6, l7);
 
         __m256i max = _mm256_max_epi32(dir03, dir47);
         max =
@@ -244,142 +240,65 @@ internal static partial class cdef_block_avx2
         __m128i t_first_8x8 = _mm_packs_epi32(cmpeg_res_01, cmpeg_res_00);
         __m128i t_second_8x8 = _mm_packs_epi32(cmpeg_res_11, cmpeg_res_10);
 
-        best_cost[0] = _mm_cvtsi128_si32(_mm256_castsi256_si128(max));
-        best_cost[1] = _mm_cvtsi128_si32(second_8x8_output);
-        best_dir[0] = _mm_movemask_epi8(_mm_packs_epi16(t_first_8x8, t_first_8x8));
-        best_dir[0] =
-            get_msb(best_dir[0] ^ (best_dir[0] - 1));  // Count trailing zeros
-        best_dir[1] = _mm_movemask_epi8(_mm_packs_epi16(t_second_8x8, t_second_8x8));
-        best_dir[1] =
-            get_msb(best_dir[1] ^ (best_dir[1] - 1));  // Count trailing zeros
+        int best_cost_0 = _mm_cvtsi128_si32(_mm256_castsi256_si128(max));
+        int best_cost_1 = _mm_cvtsi128_si32(second_8x8_output);
+        int best_dir_0 = _mm_movemask_epi8(_mm_packs_epi16(t_first_8x8, t_first_8x8));
+        best_dir_0 = get_msb(best_dir_0 ^ (best_dir_0 - 1));  // Count trailing zeros
+        int best_dir_1 = _mm_movemask_epi8(_mm_packs_epi16(t_second_8x8, t_second_8x8));
+        best_dir_1 = get_msb(best_dir_1 ^ (best_dir_1 - 1));  // Count trailing zeros
 
         /* Difference between the optimal variance and the variance along the
            orthogonal direction. Again, the sum(x^2) terms cancel out. */
-        var_out_1st = best_cost[0] - cost_first_8x8[(best_dir[0] + 4) & 7];
-        var_out_2nd = best_cost[1] - cost_second_8x8[(best_dir[1] + 4) & 7];
+        // cost_first_8x8[k] / cost_second_8x8[k]: lane k & 3 of the low / high half of dir03
+        // (k < 4) or dir47.
+        int k0 = (best_dir_0 + 4) & 7, k1 = (best_dir_1 + 4) & 7;
+        var_out_1st = best_cost_0 - (k0 < 4 ? dir03 : dir47).GetLower().AsInt32().GetElement(k0 & 3);
+        var_out_2nd = best_cost_1 - (k1 < 4 ? dir03 : dir47).GetUpper().AsInt32().GetElement(k1 & 3);
 
         /* We'd normally divide by 840, but dividing by 1024 is close enough
         for what we're going to do with this. */
         var_out_1st >>= 10;
         var_out_2nd >>= 10;
-        out_dir_1st_8x8 = best_dir[0];
-        out_dir_2nd_8x8 = best_dir[1];
+        out_dir_1st_8x8 = best_dir_0;
+        out_dir_2nd_8x8 = best_dir_1;
     }
 
+    // [av1rt] Per row, within one checked window per side: 32 / 16 / 8 pixels per step, then
+    // the rest (C: the same widths column block by column block, two rows per step). Same
+    // result: dst[i * dstride + k] = src[i * sstride + k].
     internal static void cdef_copy_rect8_8bit_to_16bit_avx2(Ptr<ushort> dst, int dstride,
                                                             Ptr<byte> src, int sstride,
                                                             int width, int height)
     {
-        int j = 0;
-        int remaining_width = width;
         Debug.Assert(height % 2 == 0);
         Debug.Assert(height > 0);
         Debug.Assert(width > 0);
-
-        // Process multiple 32 pixels at a time.
-        if (remaining_width > 31)
+        ReadOnlySpan<byte> s = src.AsSpan(0, (height - 1) * sstride + width);
+        Span<ushort> d = dst.AsSpan(0, (height - 1) * dstride + width);
+        for (int i = 0; i < height; i++)
         {
-            int i = 0;
-            do
+            ReadOnlySpan<byte> sr = s.Slice(i * sstride, width);
+            Span<ushort> dr = d.Slice(i * dstride, width);
+            int k = 0;
+            for (; k <= width - 32; k += 32)
             {
-                j = 0;
-                do
-                {
-                    __m128i row00 =
-                        _mm_loadu_si128(src + ((i + 0) * sstride + (j + 0)));
-                    __m128i row01 = _mm_loadu_si128(
-                        src + ((i + 0) * sstride + (j + 16)));
-                    __m128i row10 =
-                        _mm_loadu_si128(src + ((i + 1) * sstride + (j + 0)));
-                    __m128i row11 = _mm_loadu_si128(
-                        src + ((i + 1) * sstride + (j + 16)));
-                    _mm256_storeu_si256(dst + ((i + 0) * dstride + (j + 0)),
-                                        _mm256_cvtepu8_epi16(row00));
-                    _mm256_storeu_si256(dst + ((i + 0) * dstride + (j + 16)),
-                                        _mm256_cvtepu8_epi16(row01));
-                    _mm256_storeu_si256(dst + ((i + 1) * dstride + (j + 0)),
-                                        _mm256_cvtepu8_epi16(row10));
-                    _mm256_storeu_si256(dst + ((i + 1) * dstride + (j + 16)),
-                                        _mm256_cvtepu8_epi16(row11));
-                    j += 32;
-                } while (j <= width - 32);
-                i += 2;
-            } while (i < height);
-            remaining_width = width & 31;
-        }
-
-        // Process 16 pixels at a time.
-        if (remaining_width > 15)
-        {
-            int i = 0;
-            do
-            {
-                __m128i row0 =
-                    _mm_loadu_si128(src + ((i + 0) * sstride + j));
-                __m128i row1 =
-                    _mm_loadu_si128(src + ((i + 1) * sstride + j));
-                _mm256_storeu_si256(dst + ((i + 0) * dstride + j),
-                                    _mm256_cvtepu8_epi16(row0));
-                _mm256_storeu_si256(dst + ((i + 1) * dstride + j),
-                                    _mm256_cvtepu8_epi16(row1));
-                i += 2;
-            } while (i < height);
-            remaining_width = width & 15;
-            j += 16;
-        }
-
-        // Process 8 pixels at a time.
-        if (remaining_width > 7)
-        {
-            int i = 0;
-            do
-            {
-                __m128i row0 =
-                    _mm_loadl_epi64(src + ((i + 0) * sstride + j));
-                __m128i row1 =
-                    _mm_loadl_epi64(src + ((i + 1) * sstride + j));
-                _mm_storeu_si128(dst + ((i + 0) * dstride + j),
-                                 _mm_unpacklo_epi8(row0, _mm_setzero_si128()));
-                _mm_storeu_si128(dst + ((i + 1) * dstride + j),
-                                 _mm_unpacklo_epi8(row1, _mm_setzero_si128()));
-                i += 2;
-            } while (i < height);
-            remaining_width = width & 7;
-            j += 8;
-        }
-
-        // Process 4 pixels at a time.
-        if (remaining_width > 3)
-        {
-            int i = 0;
-            do
-            {
-                // [port] _mm_cvtsi32_si128(*((const int32_t *)p)) is the 4-byte load
-                // _mm_loadu_si32(p).
-                __m128i row0 =
-                    _mm_loadu_si32(src + ((i + 0) * sstride + j));
-                __m128i row1 =
-                    _mm_loadu_si32(src + ((i + 1) * sstride + j));
-                _mm_storel_epi64(dst + ((i + 0) * dstride + j),
-                                 _mm_unpacklo_epi8(row0, _mm_setzero_si128()));
-                _mm_storel_epi64(dst + ((i + 1) * dstride + j),
-                                 _mm_unpacklo_epi8(row1, _mm_setzero_si128()));
-                i += 2;
-            } while (i < height);
-            remaining_width = width & 3;
-            j += 4;
-        }
-
-        // Process the remaining pixels.
-        if (remaining_width != 0)
-        {
-            for (int i = 0; i < height; i++)
-            {
-                for (int k = j; k < width; k++)
-                {
-                    dst[i * dstride + k] = src[i * sstride + k];
-                }
+                (Vector256<ushort> lo, Vector256<ushort> hi) = Vector256.Widen(Vector256.Create(sr.Slice(k, 32)));
+                lo.CopyTo(dr.Slice(k, 16));
+                hi.CopyTo(dr.Slice(k + 16, 16));
             }
+            if (k <= width - 16)
+            {
+                Vector128<byte> v = Vector128.Create(sr.Slice(k, 16));
+                Vector256.Create(Vector128.WidenLower(v), Vector128.WidenUpper(v)).CopyTo(dr.Slice(k, 16));
+                k += 16;
+            }
+            if (k <= width - 8)
+            {
+                Vector128.WidenLower(Vector128.CreateScalar(MemoryMarshal.Read<ulong>(sr.Slice(k, 8))).AsByte())
+                    .CopyTo(dr.Slice(k, 8));
+                k += 8;
+            }
+            for (; k < width; k++) dr[k] = sr[k];
         }
     }
 }

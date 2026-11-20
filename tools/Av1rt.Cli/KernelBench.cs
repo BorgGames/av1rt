@@ -62,6 +62,28 @@ internal static class KernelBench
         T("cdef_filter_8_0 8x8", () => { for (int i = 0; i < 128; i++) cdef_block_avx2.cdef_filter_8_0_avx2(d, 64, C(2 * bstride + 8 + (i & 15)), 4, 2, i & 7, 5, 5, 0, 8, 8); return 0; });
         T("cdef_filter_8_1 8x8", () => { for (int i = 0; i < 128; i++) cdef_block_avx2.cdef_filter_8_1_avx2(d, 64, C(2 * bstride + 8 + (i & 15)), 4, 0, i & 7, 5, 5, 0, 8, 8); return 0; });
         T("cdef_filter_8_0 4x4", () => { for (int i = 0; i < 128; i++) cdef_block_avx2.cdef_filter_8_0_avx2(d, 64, C(2 * bstride + 8 + (i & 15)), 4, 2, i & 7, 5, 5, 0, 4, 4); return 0; });
+        T("cdef_filter_8_1 4x4", () => { for (int i = 0; i < 128; i++) cdef_block_avx2.cdef_filter_8_1_avx2(d, 64, C(2 * bstride + 8 + (i & 15)), 4, 0, i & 7, 5, 5, 0, 4, 4); return 0; });
+        {
+            var sb = new ushort[cdef_block.CDEF_INBUF_SIZE];
+            var sbdst = new byte[64 * 256];
+            var dirs = new int[cdef_block.CDEF_NBLOCKS][];
+            var vars = new int[cdef_block.CDEF_NBLOCKS][];
+            for (int k = 0; k < dirs.Length; k++) { dirs[k] = new int[cdef_block.CDEF_NBLOCKS]; vars[k] = new int[cdef_block.CDEF_NBLOCKS]; }
+            var dl = new cdef_list[64];
+            uint r2 = 7;
+            for (int k = 0; k < sb.Length; k++) { r2 = r2 * 1103515245 + 12345; sb[k] = (ushort)((r2 >> 16) & 255); }
+            int n = 0;
+            for (int by = 0; by < 8; by++) for (int bx = 0; bx < 8; bx++) { dl[n].by = (byte)by; dl[n].bx = (byte)bx; n++; }
+            var inp = new Ptr<ushort>(sb, cdef_block.CDEF_VBORDER * cdef_block.CDEF_BSTRIDE + cdef_block.CDEF_HBORDER);
+            var dirinit = new int[1];
+            var dip = new Ptr<int>(dirinit);
+            var dst8 = new Ptr<byte>(sbdst);
+            var dlp = new Ptr<cdef_list>(dl);
+            cdef_block.av1_cdef_filter_fb(dst8, default, 256, inp, 0, 0, dirs, dip, vars, 0, dlp, n, 4, 0, 5, 0);
+            T("cdef_fb 64 luma 8x8", () => { for (int i = 0; i < 128; i++) cdef_block.av1_cdef_filter_fb(dst8, default, 256, inp, 0, 0, dirs, dip, vars, 0, dlp, n, 4, 0, 5, 0); return sbdst[100]; });
+            T("cdef_fb 64 chroma 4x4", () => { for (int i = 0; i < 128; i++) cdef_block.av1_cdef_filter_fb(dst8, default, 256, inp, 1, 1, dirs, dip, vars, 1, dlp, n, 4, 0, 4, 0); return sbdst[100]; });
+            T("cdef_fb 64 luma +dir", () => { for (int i = 0; i < 128; i++) { dirinit[0] = 0; cdef_block.av1_cdef_filter_fb(dst8, default, 256, inp, 0, 0, dirs, dip, vars, 0, dlp, n, 4, 0, 5, 0); } return sbdst[100]; });
+        }
         T("cdef_find_dir_dual", () =>
         {
             uint s = 0; int v1 = 0, v2 = 0, d1 = 0, d2 = 0;

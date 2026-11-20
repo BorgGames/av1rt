@@ -2,6 +2,7 @@
 
 global using static Av1rt.Aom.cdef_block;
 
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Av1rt.Aom;
@@ -47,12 +48,10 @@ internal static partial class cdef_block
     internal static void fill_rect(Ptr<ushort> dst, int dstride, int v, int h,
                                    ushort x)
     {
+        // [av1rt] Row fills within one checked window (C: element loop).
+        if (v <= 0 || h <= 0) return;
+        Span<ushort> d = dst.AsSpan(0, (v - 1) * dstride + h);
         for (int i = 0; i < v; i++)
-        {
-            for (int j = 0; j < h; j++)
-            {
-                dst[i * dstride + j] = x;
-            }
-        }
+            d.Slice(i * dstride, h).Fill(x);
     }
 }
