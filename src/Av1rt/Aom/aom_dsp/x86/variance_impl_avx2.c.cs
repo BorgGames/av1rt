@@ -601,6 +601,27 @@ internal static class variance_impl_avx2
         Ptr<byte> src, int src_stride, int x_offset, int y_offset,
         Ptr<byte> dst, int dst_stride, ref uint sse, int height, int log2height)
     {
+        /* x_offset = 0 and y_offset = 0 */
+        if (x_offset == 0)
+        {
+            return aom_sub_pixel_variance16xh_avx2_x0(src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse, height, log2height);
+        }
+        else if (x_offset == 4)
+        {
+            return aom_sub_pixel_variance16xh_avx2_x4(src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse, height, log2height);
+        }
+        else
+        {
+            return aom_sub_pixel_variance16xh_avx2_xbil(src, src_stride, x_offset, y_offset, dst, dst_stride, ref sse, height, log2height);
+        }
+    }
+
+    // [port] The branches below are separate methods so that each is its own JIT root: as one
+    // large method the JIT runs out of inlining room and calls the intrinsic wrappers.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static uint aom_sub_pixel_variance16xh_avx2_x0(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
+        Ptr<byte> dst, int dst_stride, ref uint sse, int height, int log2height)
+    {
         __m256i src_reg, dst_reg, exp_src_lo = default, exp_src_hi = default;
         __m256i sse_reg, sum_reg;
         __m256i zero_reg;
@@ -610,252 +631,101 @@ internal static class variance_impl_avx2
         zero_reg = _mm256_setzero_si256();
 
         /* x_offset = 0 and y_offset = 0 */
-        if (x_offset == 0)
+        if (y_offset == 0)
         {
-            if (y_offset == 0)
+            for (i = 0; i < height; i += 2)
             {
-                for (i = 0; i < height; i += 2)
-                {
-                    // LOAD_SRC_DST_INSERT(src_stride, dst_stride)
-                    src_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src)),
-                        _mm_loadu_si128(src + src_stride), 1);
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    /* expend each byte to 2 bytes */
-                    MERGE_WITH_SRC(src_reg, zero_reg, ref exp_src_lo, ref exp_src_hi);
-                    CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
-                    src += (src_stride << 1);
-                    dst += (dst_stride << 1);
-                }
-                /* x_offset = 0 and y_offset = 4 */
+                // LOAD_SRC_DST_INSERT(src_stride, dst_stride)
+                src_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src)),
+                    _mm_loadu_si128(src + src_stride), 1);
+                dst_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                    _mm_loadu_si128(dst + dst_stride), 1);
+                /* expend each byte to 2 bytes */
+                MERGE_WITH_SRC(src_reg, zero_reg, ref exp_src_lo, ref exp_src_hi);
+                CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+                src += (src_stride << 1);
+                dst += (dst_stride << 1);
             }
-            else if (y_offset == 4)
-            {
-                __m256i src_next_reg;
-                for (i = 0; i < height; i += 2)
-                {
-                    // LOAD_SRC_DST_INSERT(src_stride, dst_stride)
-                    src_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src)),
-                        _mm_loadu_si128(src + src_stride), 1);
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    // AVG_NEXT_SRC_INSERT(src_reg, src_stride)
-                    src_next_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src + src_stride)),
-                        _mm_loadu_si128(src + (src_stride << 1)), 1);
-                    /* average between current and next stride source */
-                    src_reg = _mm256_avg_epu8(src_reg, src_next_reg);
-                    /* expend each byte to 2 bytes */
-                    MERGE_WITH_SRC(src_reg, zero_reg, ref exp_src_lo, ref exp_src_hi);
-                    CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
-                    src += (src_stride << 1);
-                    dst += (dst_stride << 1);
-                }
-                /* x_offset = 0 and y_offset = bilin interpolation */
-            }
-            else
-            {
-                __m256i filter, pw8, src_next_reg;
-                y_offset <<= 5;
-                filter = _mm256_load_si256(bilinear_filters_avx2.Slice(y_offset));
-                pw8 = _mm256_set1_epi16(8);
-                for (i = 0; i < height; i += 2)
-                {
-                    // LOAD_SRC_DST_INSERT(src_stride, dst_stride)
-                    src_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src)),
-                        _mm_loadu_si128(src + src_stride), 1);
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    // MERGE_NEXT_SRC_INSERT(src_reg, src_stride)
-                    src_next_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src + src_stride)),
-                        _mm_loadu_si128(src + (src_stride + src_stride)), 1);
-                    MERGE_WITH_SRC(src_reg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
-                    FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
-                    CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
-                    src += (src_stride << 1);
-                    dst += (dst_stride << 1);
-                }
-            }
-            /* x_offset = 4  and y_offset = 0 */
+            /* x_offset = 0 and y_offset = 4 */
         }
-        else if (x_offset == 4)
+        else if (y_offset == 4)
         {
-            if (y_offset == 0)
+            __m256i src_next_reg;
+            for (i = 0; i < height; i += 2)
             {
-                __m256i src_next_reg;
-                for (i = 0; i < height; i += 2)
-                {
-                    // LOAD_SRC_NEXT_BYTE_INSERT
-                    src_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src)),
-                        _mm_loadu_si128(src + src_stride), 1);
-                    src_next_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
-                        _mm_loadu_si128(src + src_stride + 1), 1);
-                    // LOAD_DST_INSERT
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    /* average between current and next stride source */
-                    src_reg = _mm256_avg_epu8(src_reg, src_next_reg);
-                    /* expand each byte to 2 bytes */
-                    MERGE_WITH_SRC(src_reg, zero_reg, ref exp_src_lo, ref exp_src_hi);
-                    CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
-                    src += (src_stride << 1);
-                    dst += (dst_stride << 1);
-                }
-                /* x_offset = 4  and y_offset = 4 */
-            }
-            else if (y_offset == 4)
-            {
-                __m256i src_next_reg, src_avg, src_temp;
-                /* load and insert source and next row source */
-                // LOAD_SRC_NEXT_BYTE_INSERT
+                // LOAD_SRC_DST_INSERT(src_stride, dst_stride)
                 src_reg = _mm256_inserti128_si256(
                     _mm256_castsi128_si256(_mm_loadu_si128(src)),
                     _mm_loadu_si128(src + src_stride), 1);
-                src_next_reg = _mm256_inserti128_si256(
-                    _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
-                    _mm_loadu_si128(src + src_stride + 1), 1);
-                src_avg = _mm256_avg_epu8(src_reg, src_next_reg);
-                src += src_stride << 1;
-                for (i = 0; i < height - 2; i += 2)
-                {
-                    // LOAD_SRC_NEXT_BYTE_INSERT
-                    src_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src)),
-                        _mm_loadu_si128(src + src_stride), 1);
-                    src_next_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
-                        _mm_loadu_si128(src + src_stride + 1), 1);
-                    src_next_reg = _mm256_avg_epu8(src_reg, src_next_reg);
-                    src_temp = _mm256_permute2x128_si256(src_avg, src_next_reg, 0x21);
-                    src_temp = _mm256_avg_epu8(src_avg, src_temp);
-                    // LOAD_DST_INSERT
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    /* expand each byte to 2 bytes */
-                    MERGE_WITH_SRC(src_temp, zero_reg, ref exp_src_lo, ref exp_src_hi);
-                    /* save current source average */
-                    src_avg = src_next_reg;
-                    CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
-                    dst += dst_stride << 1;
-                    src += src_stride << 1;
-                }
-                /* last 2 rows processing happens here */
-                __m128i src_reg_0 = _mm_loadu_si128(src);
-                __m128i src_reg_1 = _mm_loadu_si128(src + 1);
-                src_reg_0 = _mm_avg_epu8(src_reg_0, src_reg_1);
-                src_next_reg = _mm256_permute2x128_si256(
-                    src_avg, _mm256_castsi128_si256(src_reg_0), 0x21);
-                // LOAD_DST_INSERT
                 dst_reg = _mm256_inserti128_si256(
                     _mm256_castsi128_si256(_mm_loadu_si128(dst)),
                     _mm_loadu_si128(dst + dst_stride), 1);
-                src_avg = _mm256_avg_epu8(src_avg, src_next_reg);
-                MERGE_WITH_SRC(src_avg, zero_reg, ref exp_src_lo, ref exp_src_hi);
-                CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
-            }
-            else
-            {
-                /* x_offset = 4  and y_offset = bilin interpolation */
-                __m256i filter, pw8, src_next_reg, src_avg, src_temp;
-                y_offset <<= 5;
-                filter = _mm256_load_si256(bilinear_filters_avx2.Slice(y_offset));
-                pw8 = _mm256_set1_epi16(8);
-                /* load and insert source and next row source */
-                // LOAD_SRC_NEXT_BYTE_INSERT
-                src_reg = _mm256_inserti128_si256(
-                    _mm256_castsi128_si256(_mm_loadu_si128(src)),
-                    _mm_loadu_si128(src + src_stride), 1);
+                // AVG_NEXT_SRC_INSERT(src_reg, src_stride)
                 src_next_reg = _mm256_inserti128_si256(
-                    _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
-                    _mm_loadu_si128(src + src_stride + 1), 1);
-                src_avg = _mm256_avg_epu8(src_reg, src_next_reg);
-                src += src_stride << 1;
-                for (i = 0; i < height - 2; i += 2)
-                {
-                    // LOAD_SRC_NEXT_BYTE_INSERT
-                    src_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src)),
-                        _mm_loadu_si128(src + src_stride), 1);
-                    src_next_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
-                        _mm_loadu_si128(src + src_stride + 1), 1);
-                    src_next_reg = _mm256_avg_epu8(src_reg, src_next_reg);
-                    src_temp = _mm256_permute2x128_si256(src_avg, src_next_reg, 0x21);
-                    // LOAD_DST_INSERT
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    MERGE_WITH_SRC(src_avg, src_temp, ref exp_src_lo, ref exp_src_hi);
-                    /* save current source average */
-                    src_avg = src_next_reg;
-                    FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
-                    CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
-                    dst += dst_stride << 1;
-                    src += src_stride << 1;
-                }
-                /* last 2 rows processing happens here */
-                __m128i src_reg_0 = _mm_loadu_si128(src);
-                __m128i src_reg_1 = _mm_loadu_si128(src + 1);
-                src_reg_0 = _mm_avg_epu8(src_reg_0, src_reg_1);
-                src_next_reg = _mm256_permute2x128_si256(
-                    src_avg, _mm256_castsi128_si256(src_reg_0), 0x21);
-                // LOAD_DST_INSERT
-                dst_reg = _mm256_inserti128_si256(
-                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                    _mm_loadu_si128(dst + dst_stride), 1);
-                MERGE_WITH_SRC(src_avg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
-                FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
+                    _mm256_castsi128_si256(_mm_loadu_si128(src + src_stride)),
+                    _mm_loadu_si128(src + (src_stride << 1)), 1);
+                /* average between current and next stride source */
+                src_reg = _mm256_avg_epu8(src_reg, src_next_reg);
+                /* expend each byte to 2 bytes */
+                MERGE_WITH_SRC(src_reg, zero_reg, ref exp_src_lo, ref exp_src_hi);
                 CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+                src += (src_stride << 1);
+                dst += (dst_stride << 1);
             }
-            /* x_offset = bilin interpolation and y_offset = 0 */
+            /* x_offset = 0 and y_offset = bilin interpolation */
         }
         else
         {
-            if (y_offset == 0)
+            __m256i filter, pw8, src_next_reg;
+            y_offset <<= 5;
+            filter = _mm256_load_si256(bilinear_filters_avx2.Slice(y_offset));
+            pw8 = _mm256_set1_epi16(8);
+            for (i = 0; i < height; i += 2)
             {
-                __m256i filter, pw8, src_next_reg;
-                x_offset <<= 5;
-                filter = _mm256_load_si256(bilinear_filters_avx2.Slice(x_offset));
-                pw8 = _mm256_set1_epi16(8);
-                for (i = 0; i < height; i += 2)
-                {
-                    // LOAD_SRC_DST_INSERT(src_stride, dst_stride)
-                    src_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src)),
-                        _mm_loadu_si128(src + src_stride), 1);
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    // MERGE_NEXT_SRC_INSERT(src_reg, 1)
-                    src_next_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
-                        _mm_loadu_si128(src + (src_stride + 1)), 1);
-                    MERGE_WITH_SRC(src_reg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
-                    FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
-                    CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
-                    src += (src_stride << 1);
-                    dst += (dst_stride << 1);
-                }
-                /* x_offset = bilin interpolation and y_offset = 4 */
+                // LOAD_SRC_DST_INSERT(src_stride, dst_stride)
+                src_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src)),
+                    _mm_loadu_si128(src + src_stride), 1);
+                dst_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                    _mm_loadu_si128(dst + dst_stride), 1);
+                // MERGE_NEXT_SRC_INSERT(src_reg, src_stride)
+                src_next_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src + src_stride)),
+                    _mm_loadu_si128(src + (src_stride + src_stride)), 1);
+                MERGE_WITH_SRC(src_reg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
+                FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
+                CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+                src += (src_stride << 1);
+                dst += (dst_stride << 1);
             }
-            else if (y_offset == 4)
+        }
+        /* x_offset = 4  and y_offset = 0 */
+        sum = CALC_SUM_AND_SSE(sse_reg, sum_reg, zero_reg, ref sse);
+        _mm256_zeroupper();
+        return sse - (uint)(((long)sum * sum) >> (4 + log2height));
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static uint aom_sub_pixel_variance16xh_avx2_x4(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
+        Ptr<byte> dst, int dst_stride, ref uint sse, int height, int log2height)
+    {
+        __m256i src_reg, dst_reg, exp_src_lo = default, exp_src_hi = default;
+        __m256i sse_reg, sum_reg;
+        __m256i zero_reg;
+        int i, sum;
+        sum_reg = _mm256_setzero_si256();
+        sse_reg = _mm256_setzero_si256();
+        zero_reg = _mm256_setzero_si256();
+
+        /* x_offset = 0 and y_offset = 0 */
+        if (y_offset == 0)
+        {
+            __m256i src_next_reg;
+            for (i = 0; i < height; i += 2)
             {
-                __m256i filter, pw8, src_next_reg, src_pack;
-                x_offset <<= 5;
-                filter = _mm256_load_si256(bilinear_filters_avx2.Slice(x_offset));
-                pw8 = _mm256_set1_epi16(8);
-                /* load and insert source and next row source */
                 // LOAD_SRC_NEXT_BYTE_INSERT
                 src_reg = _mm256_inserti128_si256(
                     _mm256_castsi128_si256(_mm_loadu_si128(src)),
@@ -863,146 +733,324 @@ internal static class variance_impl_avx2
                 src_next_reg = _mm256_inserti128_si256(
                     _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
                     _mm_loadu_si128(src + src_stride + 1), 1);
-                MERGE_WITH_SRC(src_reg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
-                FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
-                /* convert each 16 bit to 8 bit to each low and high lane source */
-                src_pack = _mm256_packus_epi16(exp_src_lo, exp_src_hi);
-                src += src_stride << 1;
-                for (i = 0; i < height - 2; i += 2)
-                {
-                    // LOAD_SRC_NEXT_BYTE_INSERT
-                    src_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src)),
-                        _mm_loadu_si128(src + src_stride), 1);
-                    src_next_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
-                        _mm_loadu_si128(src + src_stride + 1), 1);
-                    // LOAD_DST_INSERT
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    MERGE_WITH_SRC(src_reg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
-                    FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
-                    src_reg = _mm256_packus_epi16(exp_src_lo, exp_src_hi);
-                    src_next_reg = _mm256_permute2x128_si256(src_pack, src_reg, 0x21);
-                    /* average between previous pack to the current */
-                    src_pack = _mm256_avg_epu8(src_pack, src_next_reg);
-                    MERGE_WITH_SRC(src_pack, zero_reg, ref exp_src_lo, ref exp_src_hi);
-                    CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
-                    src_pack = src_reg;
-                    src += src_stride << 1;
-                    dst += dst_stride << 1;
-                }
-                /* last 2 rows processing happens here */
-                // LOAD_SRC_MERGE_128BIT(filter)
-                __m128i src_reg_0 = _mm_loadu_si128(src);
-                __m128i src_reg_1 = _mm_loadu_si128(src + 1);
-                __m128i src_lo = _mm_unpacklo_epi8(src_reg_0, src_reg_1);
-                __m128i src_hi = _mm_unpackhi_epi8(src_reg_0, src_reg_1);
-                __m128i filter_128bit = _mm256_castsi256_si128(filter);
-                __m128i pw8_128bit = _mm256_castsi256_si128(pw8);
                 // LOAD_DST_INSERT
                 dst_reg = _mm256_inserti128_si256(
                     _mm256_castsi128_si256(_mm_loadu_si128(dst)),
                     _mm_loadu_si128(dst + dst_stride), 1);
-                FILTER_SRC_128BIT(filter_128bit, pw8_128bit, ref src_lo, ref src_hi);
-                src_reg_0 = _mm_packus_epi16(src_lo, src_hi);
-                src_next_reg = _mm256_permute2x128_si256(
-                    src_pack, _mm256_castsi128_si256(src_reg_0), 0x21);
+                /* average between current and next stride source */
+                src_reg = _mm256_avg_epu8(src_reg, src_next_reg);
+                /* expand each byte to 2 bytes */
+                MERGE_WITH_SRC(src_reg, zero_reg, ref exp_src_lo, ref exp_src_hi);
+                CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+                src += (src_stride << 1);
+                dst += (dst_stride << 1);
+            }
+            /* x_offset = 4  and y_offset = 4 */
+        }
+        else if (y_offset == 4)
+        {
+            __m256i src_next_reg, src_avg, src_temp;
+            /* load and insert source and next row source */
+            // LOAD_SRC_NEXT_BYTE_INSERT
+            src_reg = _mm256_inserti128_si256(
+                _mm256_castsi128_si256(_mm_loadu_si128(src)),
+                _mm_loadu_si128(src + src_stride), 1);
+            src_next_reg = _mm256_inserti128_si256(
+                _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
+                _mm_loadu_si128(src + src_stride + 1), 1);
+            src_avg = _mm256_avg_epu8(src_reg, src_next_reg);
+            src += src_stride << 1;
+            for (i = 0; i < height - 2; i += 2)
+            {
+                // LOAD_SRC_NEXT_BYTE_INSERT
+                src_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src)),
+                    _mm_loadu_si128(src + src_stride), 1);
+                src_next_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
+                    _mm_loadu_si128(src + src_stride + 1), 1);
+                src_next_reg = _mm256_avg_epu8(src_reg, src_next_reg);
+                src_temp = _mm256_permute2x128_si256(src_avg, src_next_reg, 0x21);
+                src_temp = _mm256_avg_epu8(src_avg, src_temp);
+                // LOAD_DST_INSERT
+                dst_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                    _mm_loadu_si128(dst + dst_stride), 1);
+                /* expand each byte to 2 bytes */
+                MERGE_WITH_SRC(src_temp, zero_reg, ref exp_src_lo, ref exp_src_hi);
+                /* save current source average */
+                src_avg = src_next_reg;
+                CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+                dst += dst_stride << 1;
+                src += src_stride << 1;
+            }
+            /* last 2 rows processing happens here */
+            __m128i src_reg_0 = _mm_loadu_si128(src);
+            __m128i src_reg_1 = _mm_loadu_si128(src + 1);
+            src_reg_0 = _mm_avg_epu8(src_reg_0, src_reg_1);
+            src_next_reg = _mm256_permute2x128_si256(
+                src_avg, _mm256_castsi128_si256(src_reg_0), 0x21);
+            // LOAD_DST_INSERT
+            dst_reg = _mm256_inserti128_si256(
+                _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                _mm_loadu_si128(dst + dst_stride), 1);
+            src_avg = _mm256_avg_epu8(src_avg, src_next_reg);
+            MERGE_WITH_SRC(src_avg, zero_reg, ref exp_src_lo, ref exp_src_hi);
+            CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+        }
+        else
+        {
+            /* x_offset = 4  and y_offset = bilin interpolation */
+            __m256i filter, pw8, src_next_reg, src_avg, src_temp;
+            y_offset <<= 5;
+            filter = _mm256_load_si256(bilinear_filters_avx2.Slice(y_offset));
+            pw8 = _mm256_set1_epi16(8);
+            /* load and insert source and next row source */
+            // LOAD_SRC_NEXT_BYTE_INSERT
+            src_reg = _mm256_inserti128_si256(
+                _mm256_castsi128_si256(_mm_loadu_si128(src)),
+                _mm_loadu_si128(src + src_stride), 1);
+            src_next_reg = _mm256_inserti128_si256(
+                _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
+                _mm_loadu_si128(src + src_stride + 1), 1);
+            src_avg = _mm256_avg_epu8(src_reg, src_next_reg);
+            src += src_stride << 1;
+            for (i = 0; i < height - 2; i += 2)
+            {
+                // LOAD_SRC_NEXT_BYTE_INSERT
+                src_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src)),
+                    _mm_loadu_si128(src + src_stride), 1);
+                src_next_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
+                    _mm_loadu_si128(src + src_stride + 1), 1);
+                src_next_reg = _mm256_avg_epu8(src_reg, src_next_reg);
+                src_temp = _mm256_permute2x128_si256(src_avg, src_next_reg, 0x21);
+                // LOAD_DST_INSERT
+                dst_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                    _mm_loadu_si128(dst + dst_stride), 1);
+                MERGE_WITH_SRC(src_avg, src_temp, ref exp_src_lo, ref exp_src_hi);
+                /* save current source average */
+                src_avg = src_next_reg;
+                FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
+                CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+                dst += dst_stride << 1;
+                src += src_stride << 1;
+            }
+            /* last 2 rows processing happens here */
+            __m128i src_reg_0 = _mm_loadu_si128(src);
+            __m128i src_reg_1 = _mm_loadu_si128(src + 1);
+            src_reg_0 = _mm_avg_epu8(src_reg_0, src_reg_1);
+            src_next_reg = _mm256_permute2x128_si256(
+                src_avg, _mm256_castsi128_si256(src_reg_0), 0x21);
+            // LOAD_DST_INSERT
+            dst_reg = _mm256_inserti128_si256(
+                _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                _mm_loadu_si128(dst + dst_stride), 1);
+            MERGE_WITH_SRC(src_avg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
+            FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
+            CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+        }
+        /* x_offset = bilin interpolation and y_offset = 0 */
+        sum = CALC_SUM_AND_SSE(sse_reg, sum_reg, zero_reg, ref sse);
+        _mm256_zeroupper();
+        return sse - (uint)(((long)sum * sum) >> (4 + log2height));
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static uint aom_sub_pixel_variance16xh_avx2_xbil(Ptr<byte> src, int src_stride, int x_offset, int y_offset,
+        Ptr<byte> dst, int dst_stride, ref uint sse, int height, int log2height)
+    {
+        __m256i src_reg, dst_reg, exp_src_lo = default, exp_src_hi = default;
+        __m256i sse_reg, sum_reg;
+        __m256i zero_reg;
+        int i, sum;
+        sum_reg = _mm256_setzero_si256();
+        sse_reg = _mm256_setzero_si256();
+        zero_reg = _mm256_setzero_si256();
+
+        /* x_offset = 0 and y_offset = 0 */
+        if (y_offset == 0)
+        {
+            __m256i filter, pw8, src_next_reg;
+            x_offset <<= 5;
+            filter = _mm256_load_si256(bilinear_filters_avx2.Slice(x_offset));
+            pw8 = _mm256_set1_epi16(8);
+            for (i = 0; i < height; i += 2)
+            {
+                // LOAD_SRC_DST_INSERT(src_stride, dst_stride)
+                src_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src)),
+                    _mm_loadu_si128(src + src_stride), 1);
+                dst_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                    _mm_loadu_si128(dst + dst_stride), 1);
+                // MERGE_NEXT_SRC_INSERT(src_reg, 1)
+                src_next_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
+                    _mm_loadu_si128(src + (src_stride + 1)), 1);
+                MERGE_WITH_SRC(src_reg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
+                FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
+                CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+                src += (src_stride << 1);
+                dst += (dst_stride << 1);
+            }
+            /* x_offset = bilin interpolation and y_offset = 4 */
+        }
+        else if (y_offset == 4)
+        {
+            __m256i filter, pw8, src_next_reg, src_pack;
+            x_offset <<= 5;
+            filter = _mm256_load_si256(bilinear_filters_avx2.Slice(x_offset));
+            pw8 = _mm256_set1_epi16(8);
+            /* load and insert source and next row source */
+            // LOAD_SRC_NEXT_BYTE_INSERT
+            src_reg = _mm256_inserti128_si256(
+                _mm256_castsi128_si256(_mm_loadu_si128(src)),
+                _mm_loadu_si128(src + src_stride), 1);
+            src_next_reg = _mm256_inserti128_si256(
+                _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
+                _mm_loadu_si128(src + src_stride + 1), 1);
+            MERGE_WITH_SRC(src_reg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
+            FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
+            /* convert each 16 bit to 8 bit to each low and high lane source */
+            src_pack = _mm256_packus_epi16(exp_src_lo, exp_src_hi);
+            src += src_stride << 1;
+            for (i = 0; i < height - 2; i += 2)
+            {
+                // LOAD_SRC_NEXT_BYTE_INSERT
+                src_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src)),
+                    _mm_loadu_si128(src + src_stride), 1);
+                src_next_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(src + 1)),
+                    _mm_loadu_si128(src + src_stride + 1), 1);
+                // LOAD_DST_INSERT
+                dst_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                    _mm_loadu_si128(dst + dst_stride), 1);
+                MERGE_WITH_SRC(src_reg, src_next_reg, ref exp_src_lo, ref exp_src_hi);
+                FILTER_SRC(filter, pw8, ref exp_src_lo, ref exp_src_hi);
+                src_reg = _mm256_packus_epi16(exp_src_lo, exp_src_hi);
+                src_next_reg = _mm256_permute2x128_si256(src_pack, src_reg, 0x21);
                 /* average between previous pack to the current */
                 src_pack = _mm256_avg_epu8(src_pack, src_next_reg);
                 MERGE_WITH_SRC(src_pack, zero_reg, ref exp_src_lo, ref exp_src_hi);
                 CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+                src_pack = src_reg;
+                src += src_stride << 1;
+                dst += dst_stride << 1;
             }
-            else
+            /* last 2 rows processing happens here */
+            // LOAD_SRC_MERGE_128BIT(filter)
+            __m128i src_reg_0 = _mm_loadu_si128(src);
+            __m128i src_reg_1 = _mm_loadu_si128(src + 1);
+            __m128i src_lo = _mm_unpacklo_epi8(src_reg_0, src_reg_1);
+            __m128i src_hi = _mm_unpackhi_epi8(src_reg_0, src_reg_1);
+            __m128i filter_128bit = _mm256_castsi256_si128(filter);
+            __m128i pw8_128bit = _mm256_castsi256_si128(pw8);
+            // LOAD_DST_INSERT
+            dst_reg = _mm256_inserti128_si256(
+                _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                _mm_loadu_si128(dst + dst_stride), 1);
+            FILTER_SRC_128BIT(filter_128bit, pw8_128bit, ref src_lo, ref src_hi);
+            src_reg_0 = _mm_packus_epi16(src_lo, src_hi);
+            src_next_reg = _mm256_permute2x128_si256(
+                src_pack, _mm256_castsi128_si256(src_reg_0), 0x21);
+            /* average between previous pack to the current */
+            src_pack = _mm256_avg_epu8(src_pack, src_next_reg);
+            MERGE_WITH_SRC(src_pack, zero_reg, ref exp_src_lo, ref exp_src_hi);
+            CALC_SUM_SSE_INSIDE_LOOP(dst_reg, zero_reg, ref exp_src_lo, ref exp_src_hi, ref sum_reg, ref sse_reg);
+        }
+        else
+        {
+            __m256i xfilter, yfilter, pw8, mask_00ff;
+            __m256i p0, p1;
+            Ptr<byte> src_ptr = src;
+            x_offset <<= 5;
+            xfilter = _mm256_load_si256(bilinear_filters_avx2.Slice(x_offset));
+            y_offset <<= 5;
+            yfilter = _mm256_load_si256(bilinear_filters_avx2.Slice(y_offset));
+            pw8 = _mm256_set1_epi16(8);
+            mask_00ff = _mm256_set1_epi16(0x00ff);
+
+            p0 = filter_rows_eo_16x2(src_ptr, src_stride, xfilter, pw8);
+            src_ptr += src_stride << 1;
+            p1 = filter_rows_eo_16x2(src_ptr, src_stride, xfilter, pw8);
+            src_ptr += src_stride << 1;
+
+            for (i = 0; i < height - 4; i += 2)
             {
-                __m256i xfilter, yfilter, pw8, mask_00ff;
-                __m256i p0, p1;
-                Ptr<byte> src_ptr = src;
-                x_offset <<= 5;
-                xfilter = _mm256_load_si256(bilinear_filters_avx2.Slice(x_offset));
-                y_offset <<= 5;
-                yfilter = _mm256_load_si256(bilinear_filters_avx2.Slice(y_offset));
-                pw8 = _mm256_set1_epi16(8);
-                mask_00ff = _mm256_set1_epi16(0x00ff);
+                __m256i p2, p_mix, diff_ev, diff_od, sum_comb, sse_comb;
 
-                p0 = filter_rows_eo_16x2(src_ptr, src_stride, xfilter, pw8);
-                src_ptr += src_stride << 1;
-                p1 = filter_rows_eo_16x2(src_ptr, src_stride, xfilter, pw8);
+                p2 = filter_rows_eo_16x2(src_ptr, src_stride, xfilter, pw8);
                 src_ptr += src_stride << 1;
 
-                for (i = 0; i < height - 4; i += 2)
-                {
-                    __m256i p2, p_mix, diff_ev, diff_od, sum_comb, sse_comb;
+                p_mix = _mm256_permute2x128_si256(p0, p1, 0x21);
+                dst_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                    _mm_loadu_si128(dst + dst_stride), 1);
+                dst += dst_stride << 1;
+                filter_col_eo_accumulate(p0, p_mix, dst_reg, yfilter, pw8, mask_00ff,
+                                         out diff_ev, out diff_od);
 
-                    p2 = filter_rows_eo_16x2(src_ptr, src_stride, xfilter, pw8);
-                    src_ptr += src_stride << 1;
+                sum_comb = _mm256_add_epi16(diff_ev, diff_od);
+                sum_reg = _mm256_add_epi16(sum_reg, sum_comb);
 
-                    p_mix = _mm256_permute2x128_si256(p0, p1, 0x21);
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    dst += dst_stride << 1;
-                    filter_col_eo_accumulate(p0, p_mix, dst_reg, yfilter, pw8, mask_00ff,
-                                             out diff_ev, out diff_od);
+                sse_comb = _mm256_add_epi32(_mm256_madd_epi16(diff_ev, diff_ev),
+                                            _mm256_madd_epi16(diff_od, diff_od));
+                sse_reg = _mm256_add_epi32(sse_reg, sse_comb);
 
-                    sum_comb = _mm256_add_epi16(diff_ev, diff_od);
-                    sum_reg = _mm256_add_epi16(sum_reg, sum_comb);
-
-                    sse_comb = _mm256_add_epi32(_mm256_madd_epi16(diff_ev, diff_ev),
-                                                _mm256_madd_epi16(diff_od, diff_od));
-                    sse_reg = _mm256_add_epi32(sse_reg, sse_comb);
-
-                    p0 = p1;
-                    p1 = p2;
-                }
-
-                {
-                    __m256i p_mix = _mm256_permute2x128_si256(p0, p1, 0x21);
-                    __m256i diff_ev, diff_od, sum_comb, sse_comb;
-
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    dst += dst_stride << 1;
-                    filter_col_eo_accumulate(p0, p_mix, dst_reg, yfilter, pw8, mask_00ff,
-                                             out diff_ev, out diff_od);
-
-                    sum_comb = _mm256_add_epi16(diff_ev, diff_od);
-                    sum_reg = _mm256_add_epi16(sum_reg, sum_comb);
-
-                    sse_comb = _mm256_add_epi32(_mm256_madd_epi16(diff_ev, diff_ev),
-                                                _mm256_madd_epi16(diff_od, diff_od));
-                    sse_reg = _mm256_add_epi32(sse_reg, sse_comb);
-                }
-                {
-                    __m128i s0 = _mm_loadu_si128(src_ptr);
-                    __m128i s1 = _mm_loadu_si128(src_ptr + 1);
-                    __m128i he = _mm_maddubs_epi16(s0, _mm256_castsi256_si128(xfilter));
-                    __m128i ho = _mm_maddubs_epi16(s1, _mm256_castsi256_si128(xfilter));
-                    __m256i p_last, p_mix, diff_ev, diff_od, sum_comb, sse_comb;
-                    he = _mm_srai_epi16(_mm_add_epi16(he, _mm256_castsi256_si128(pw8)), 4);
-                    ho = _mm_srai_epi16(_mm_add_epi16(ho, _mm256_castsi256_si128(pw8)), 4);
-                    p_last = _mm256_castsi128_si256(_mm_packus_epi16(he, ho));
-
-                    p_mix = _mm256_permute2x128_si256(p1, p_last, 0x21);
-                    dst_reg = _mm256_inserti128_si256(
-                        _mm256_castsi128_si256(_mm_loadu_si128(dst)),
-                        _mm_loadu_si128(dst + dst_stride), 1);
-                    filter_col_eo_accumulate(p1, p_mix, dst_reg, yfilter, pw8, mask_00ff,
-                                             out diff_ev, out diff_od);
-
-                    sum_comb = _mm256_add_epi16(diff_ev, diff_od);
-                    sum_reg = _mm256_add_epi16(sum_reg, sum_comb);
-
-                    sse_comb = _mm256_add_epi32(_mm256_madd_epi16(diff_ev, diff_ev),
-                                                _mm256_madd_epi16(diff_od, diff_od));
-                    sse_reg = _mm256_add_epi32(sse_reg, sse_comb);
-                }
-
-                int f_sum = final_eo_sum_sse(sse_reg, sum_reg, ref sse);
-                return sse - (uint)(((long)f_sum * f_sum) >> (4 + log2height));
+                p0 = p1;
+                p1 = p2;
             }
+
+            {
+                __m256i p_mix = _mm256_permute2x128_si256(p0, p1, 0x21);
+                __m256i diff_ev, diff_od, sum_comb, sse_comb;
+
+                dst_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                    _mm_loadu_si128(dst + dst_stride), 1);
+                dst += dst_stride << 1;
+                filter_col_eo_accumulate(p0, p_mix, dst_reg, yfilter, pw8, mask_00ff,
+                                         out diff_ev, out diff_od);
+
+                sum_comb = _mm256_add_epi16(diff_ev, diff_od);
+                sum_reg = _mm256_add_epi16(sum_reg, sum_comb);
+
+                sse_comb = _mm256_add_epi32(_mm256_madd_epi16(diff_ev, diff_ev),
+                                            _mm256_madd_epi16(diff_od, diff_od));
+                sse_reg = _mm256_add_epi32(sse_reg, sse_comb);
+            }
+            {
+                __m128i s0 = _mm_loadu_si128(src_ptr);
+                __m128i s1 = _mm_loadu_si128(src_ptr + 1);
+                __m128i he = _mm_maddubs_epi16(s0, _mm256_castsi256_si128(xfilter));
+                __m128i ho = _mm_maddubs_epi16(s1, _mm256_castsi256_si128(xfilter));
+                __m256i p_last, p_mix, diff_ev, diff_od, sum_comb, sse_comb;
+                he = _mm_srai_epi16(_mm_add_epi16(he, _mm256_castsi256_si128(pw8)), 4);
+                ho = _mm_srai_epi16(_mm_add_epi16(ho, _mm256_castsi256_si128(pw8)), 4);
+                p_last = _mm256_castsi128_si256(_mm_packus_epi16(he, ho));
+
+                p_mix = _mm256_permute2x128_si256(p1, p_last, 0x21);
+                dst_reg = _mm256_inserti128_si256(
+                    _mm256_castsi128_si256(_mm_loadu_si128(dst)),
+                    _mm_loadu_si128(dst + dst_stride), 1);
+                filter_col_eo_accumulate(p1, p_mix, dst_reg, yfilter, pw8, mask_00ff,
+                                         out diff_ev, out diff_od);
+
+                sum_comb = _mm256_add_epi16(diff_ev, diff_od);
+                sum_reg = _mm256_add_epi16(sum_reg, sum_comb);
+
+                sse_comb = _mm256_add_epi32(_mm256_madd_epi16(diff_ev, diff_ev),
+                                            _mm256_madd_epi16(diff_od, diff_od));
+                sse_reg = _mm256_add_epi32(sse_reg, sse_comb);
+            }
+
+            int f_sum = final_eo_sum_sse(sse_reg, sum_reg, ref sse);
+            return sse - (uint)(((long)f_sum * f_sum) >> (4 + log2height));
         }
         sum = CALC_SUM_AND_SSE(sse_reg, sum_reg, zero_reg, ref sse);
         _mm256_zeroupper();

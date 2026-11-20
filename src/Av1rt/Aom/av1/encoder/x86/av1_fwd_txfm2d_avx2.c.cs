@@ -110,14 +110,18 @@ internal static partial class av1_fwd_txfm2d_avx2
         output[15] = x1[15];
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // [port] NoInlining: the kernel inlined into a 2D driver twice exhausts the JIT's inline
+    // budget there, so each constant-cos_bit instance is its own root.
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void fdct16x16_cb13_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
         _ = cos_bit;
         fdct16x16_new_avx2(input, output, 13);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // [port] NoInlining: the kernel inlined into a 2D driver twice exhausts the JIT's inline
+    // budget there, so each constant-cos_bit instance is its own root.
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void fdct16x16_cb12_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
         _ = cos_bit;
@@ -318,14 +322,18 @@ internal static partial class av1_fwd_txfm2d_avx2
         output[31] = x1[31];
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // [port] NoInlining: the kernel inlined into a 2D driver twice exhausts the JIT's inline
+    // budget there, so each constant-cos_bit instance is its own root.
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void fdct16x32_cb12_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
         _ = cos_bit;
         fdct16x32_avx2(input, output, 12);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // [port] NoInlining: the kernel inlined into a 2D driver twice exhausts the JIT's inline
+    // budget there, so each constant-cos_bit instance is its own root.
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void fdct16x32_cb13_avx2(Span<__m256i> input, Span<__m256i> output, sbyte cos_bit)
     {
         _ = cos_bit;
@@ -976,10 +984,10 @@ internal static partial class av1_fwd_txfm2d_avx2
 
         load_buffer_16bit_to_16bit_avx2(input, stride, buf0, height);
         round_shift_16bit_w16_avx2(buf0, height, shift[0]);
-        fdct16x16_new_avx2(buf0, buf0, 13);
+        fdct16x16_cb13_avx2(buf0, buf0, 13);
         round_shift_16bit_w16_avx2(buf0, height, shift[1]);
         transpose_16bit_16x16_avx2(buf0, buf1);
-        fdct16x16_new_avx2(buf1, buf1, 12);
+        fdct16x16_cb12_avx2(buf1, buf1, 12);
         store_buffer_16bit_to_32bit_w16_avx2(buf1, output, height, width);
     }
 
@@ -1003,7 +1011,7 @@ internal static partial class av1_fwd_txfm2d_avx2
             {
                 load_buffer_16bit_to_16bit_avx2(input + 16 * i, stride, buf0, height);
                 round_shift_16bit_w16_avx2(buf0, height, shift[0]);
-                fdct16x32_avx2(buf0, buf0, 12);
+                fdct16x32_cb12_avx2(buf0, buf0, 12);
                 round_shift_16bit_w16_avx2(buf0, height, shift[1]);
                 transpose_16bit_16x16_avx2(buf0.Slice(0 * 16), buf1.Slice(0 * width + 16 * i));
                 transpose_16bit_16x16_avx2(buf0.Slice(1 * 16), buf1.Slice(1 * width + 16 * i));
@@ -1011,7 +1019,7 @@ internal static partial class av1_fwd_txfm2d_avx2
             for (int i = 0; i < 2; i++)
             {
                 Span<__m256i> buf = buf1.Slice(width * i);
-                fdct16x32_avx2(buf, buf, 12);
+                fdct16x32_cb12_avx2(buf, buf, 12);
                 store_buffer_16bit_to_32bit_w16_avx2(buf, output + i * 16, height, width);
             }
             return;
