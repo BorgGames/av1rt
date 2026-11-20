@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.IO;
 using System.Text;
@@ -74,7 +75,7 @@ public sealed class Y4mReader : IDisposable
         {
             throw new ArgumentException($"Buffer must hold {FrameSize} bytes.", nameof(i420));
         }
-        string marker = ReadLine();
+        string? marker = ReadLine();
         if (marker == null)
         {
             return false;
@@ -87,7 +88,7 @@ public sealed class Y4mReader : IDisposable
         return true;
     }
 
-    private string ReadLine()
+    private string? ReadLine()
     {
         var sb = new StringBuilder();
         while (true)

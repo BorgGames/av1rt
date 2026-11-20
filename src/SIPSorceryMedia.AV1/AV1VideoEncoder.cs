@@ -26,7 +26,7 @@ public sealed class AV1VideoEncoder : IVideoEncoder
     private readonly Av1EncoderOptions _template;
     private readonly object _lock = new();
     private readonly ArrayBufferWriter<byte> _output = new(1 << 20);
-    private Av1Encoder _encoder;
+    private Av1Encoder? _encoder;
     private bool _forceKeyFrame;
     private int _targetBitrateKbps;
     private bool _disposed;
@@ -35,7 +35,7 @@ public sealed class AV1VideoEncoder : IVideoEncoder
     /// Creates an encoder. <paramref name="options"/> supplies everything except the frame size,
     /// which is taken from each frame; null means libwebrtc's defaults (speed 11, 35 Mbps CBR).
     /// </summary>
-    public AV1VideoEncoder(Av1EncoderOptions options = null)
+    public AV1VideoEncoder(Av1EncoderOptions? options = null)
     {
         _template = options ?? new Av1EncoderOptions();
         _targetBitrateKbps = _template.TargetBitrateKbps;
@@ -60,14 +60,14 @@ public sealed class AV1VideoEncoder : IVideoEncoder
     }
 
     /// <summary>Raised after every encoded (not dropped) frame, from the encoding thread.</summary>
-    public event Action<Av1EncodeResult> FrameEncoded;
+    public event Action<Av1EncodeResult>? FrameEncoded;
 
     /// <inheritdoc/>
     public void ForceKeyFrame() => _forceKeyFrame = true;
 
     /// <inheritdoc/>
     /// <returns>The temporal unit, or null if the rate control dropped the frame.</returns>
-    public byte[] EncodeVideo(int width, int height, byte[] sample, VideoPixelFormatsEnum pixelFormat, VideoCodecsEnum codec)
+    public byte[]? EncodeVideo(int width, int height, byte[] sample, VideoPixelFormatsEnum pixelFormat, VideoCodecsEnum codec)
     {
         ArgumentNullException.ThrowIfNull(sample);
         CheckCodec(codec);
@@ -81,7 +81,7 @@ public sealed class AV1VideoEncoder : IVideoEncoder
 
     /// <inheritdoc/>
     /// <returns>The temporal unit, or null if the rate control dropped the frame.</returns>
-    public byte[] EncodeVideoFaster(RawImage rawImage, VideoCodecsEnum codec)
+    public byte[]? EncodeVideoFaster(RawImage rawImage, VideoCodecsEnum codec)
     {
         ArgumentNullException.ThrowIfNull(rawImage);
         if (rawImage.Sample == IntPtr.Zero) throw new ArgumentException("The image has no pixel data.", nameof(rawImage));

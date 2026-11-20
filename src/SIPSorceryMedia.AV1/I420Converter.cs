@@ -148,7 +148,7 @@ internal static class I420Converter
         ConvertRows(format, l.Width, rows, crows, p0, l.Stride0, p1, p2, l.Stride1, dst, r0);
     }
 
-    [ThreadStatic] private static byte[] t_band;
+    [ThreadStatic] private static byte[]? t_band;
 
     private static void ConvertNativeBand(IntPtr src, in Layout l, VideoPixelFormatsEnum format, Av1InputFrame dst, int r0)
     {
@@ -160,7 +160,7 @@ internal static class I420Converter
         int nc = planar ? (crows - 1) * l.Stride1 + (format == VideoPixelFormatsEnum.NV12 ? 2 * ((l.Width + 1) >> 1) : (l.Width + 1) >> 1) : 0;
         int n2 = format == VideoPixelFormatsEnum.I420 ? nc : 0;
         int need = n0 + nc + n2;
-        byte[] band = t_band;
+        byte[]? band = t_band;
         if (band == null || band.Length < need) t_band = band = new byte[Math.Max(need, 1 << 16)];
         Marshal.Copy(IntPtr.Add(src, r0 * l.Stride0), band, 0, n0);
         if (nc > 0) Marshal.Copy(IntPtr.Add(src, l.Offset1 + c0 * l.Stride1), band, n0, nc);

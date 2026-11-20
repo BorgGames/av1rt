@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 
 namespace Av1rt;

@@ -1,10 +1,11 @@
+#nullable enable
 using System;
 using System.Buffers;
 using Av1rt.Aom;
 
 namespace Av1rt;
 
-/// <summary>What <see cref="Av1Encoder.Encode"/> produced for one input picture.</summary>
+/// <summary>What <see cref="Av1Encoder.Encode(in I420Frame, IBufferWriter{byte}, long)"/> produced for one input picture.</summary>
 public readonly struct Av1EncodeResult
 {
     /// <summary>Bytes written to the output: one AV1 temporal unit (low overhead OBU format), or 0 if the frame was dropped.</summary>
@@ -25,7 +26,7 @@ public readonly struct Av1EncodeResult
 
 /// <summary>
 /// A realtime AV1 encoder: one pass, CBR, no lookahead, 8-bit 4:2:0. Every call to
-/// <see cref="Encode"/> returns at most one temporal unit for the picture just passed in.
+/// <see cref="Encode(in I420Frame, IBufferWriter{byte}, long)"/> returns at most one temporal unit for the picture just passed in.
 /// </summary>
 /// <remarks>Not thread safe: use one instance from one thread at a time.</remarks>
 public sealed class Av1Encoder : IDisposable
@@ -43,7 +44,7 @@ public sealed class Av1Encoder : IDisposable
     private bool _forceKeyFrame;
     private bool _disposed;
     // The buffer the last GetInputFrame handed out: a lookahead buffer, or null for _image.
-    private YV12_BUFFER_CONFIG _input;
+    private YV12_BUFFER_CONFIG? _input;
     private bool _inputPending;
 
     /// <summary>Creates an encoder. The options are copied; later changes to them have no effect.</summary>
@@ -244,7 +245,7 @@ public sealed class Av1Encoder : IDisposable
         ArgumentNullException.ThrowIfNull(output);
         if (!_inputPending)
             throw new InvalidOperationException("GetInputFrame has not been called since the last encode.");
-        YV12_BUFFER_CONFIG input = _input;
+        YV12_BUFFER_CONFIG? input = _input;
         _input = null;
         _inputPending = false;
         if (input == null) return EncodeImage(output, timestamp);
@@ -265,15 +266,15 @@ public sealed class Av1Encoder : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(body);
-        PrimaryMultiThreadInfo workers = (_codec.priv as aom_codec_alg_priv_t)?.ppi?.p_mt_info;
+        PrimaryMultiThreadInfo? workers = (_codec.priv as aom_codec_alg_priv_t)?.ppi?.p_mt_info;
         ethread.av1rt_parallel_for(workers, workers?.num_workers ?? 1, count, body);
     }
 
     // The lookahead buffer the next av1_lookahead_push fills (the oldest one; nothing reads it
     // between encode calls), or null before the first encode allocates the lookahead.
-    private YV12_BUFFER_CONFIG NextLookaheadBuffer()
+    private YV12_BUFFER_CONFIG? NextLookaheadBuffer()
     {
-        lookahead_ctx la = (_codec.priv as aom_codec_alg_priv_t)?.ppi?.lookahead;
+        lookahead_ctx? la = (_codec.priv as aom_codec_alg_priv_t)?.ppi?.lookahead;
         if (la == null) return null;
         YV12_BUFFER_CONFIG img = la.buf[la.write_idx].img;
         // A buffer of another size would be reallocated by the push.
