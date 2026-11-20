@@ -13,4 +13,10 @@ internal static partial class stubs_av1_encoder_encodetxb_c
 
     internal static void av1_free_txb_buf(AV1_COMP cpi) =>
         throw new NotImplementedException();
+
+    // f3: called by partition_search.c
+    internal static void av1_update_intra_mb_txb_context(AV1_COMP cpi, ThreadData td,
+                                                         RUN_TYPE dry_run, BLOCK_SIZE bsize,
+                                                         byte allow_update_cdf) =>
+        throw new NotImplementedException();
 }

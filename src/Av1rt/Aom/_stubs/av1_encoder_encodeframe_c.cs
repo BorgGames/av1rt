@@ -12,4 +12,10 @@ internal static partial class stubs_av1_encoder_encodeframe_c
                                               int mi_row, int mi_col, int num_planes,
                                               BLOCK_SIZE bsize) =>
         throw new NotImplementedException();
+
+    // f3: called by var_based_part.c / partition_search.c
+    internal static uint av1_get_perpixel_variance_facade(AV1_COMP cpi, MACROBLOCKD xd,
+                                                          in buf_2d @ref, BLOCK_SIZE bsize,
+                                                          int plane) =>
+        throw new NotImplementedException();
 }
