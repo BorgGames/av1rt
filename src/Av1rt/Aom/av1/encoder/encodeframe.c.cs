@@ -1145,9 +1145,26 @@ internal static partial class encodeframe
         else if (cpi.oxcf.q_cfg.aq_mode != CYCLIC_REFRESH_AQ &&
                  cpi.roi.enabled == 0)
         {
-            // [subset] delta q setup (deltaq_mode / delta lf): aq_mode is CYCLIC_REFRESH_AQ.
-            _ = deltaq_mode;
-            throw new NotSupportedException("delta q is not in the subset");
+            // [subset] Only deltaq_mode == NO_DELTA_Q (the subset's setting) is ported: the
+            // delta_q_res choices and the objective-delta-q eligibility checks are dropped.
+            if (deltaq_mode != NO_DELTA_Q)
+                throw new NotSupportedException("delta q is not in the subset");
+            // Set delta_q_present_flag before it is used for the first time
+            cm.delta_q_info.delta_lf_res = DEFAULT_DELTA_LF_RES;
+            cm.delta_q_info.delta_q_present_flag = B(deltaq_mode != NO_DELTA_Q);
+
+            // Reset delta_q_used flag
+            cpi.deltaq_used = 0;
+
+            cm.delta_q_info.delta_lf_present_flag =
+                B(cm.delta_q_info.delta_q_present_flag != 0 &&
+                  oxcf.tool_cfg.enable_deltalf_mode);
+            cm.delta_q_info.delta_lf_multi = DEFAULT_DELTA_LF_MULTI;
+
+            // update delta_q_present_flag and delta_lf_present_flag based on
+            // base_qindex
+            cm.delta_q_info.delta_q_present_flag &= B(quant_params.base_qindex > 0);
+            cm.delta_q_info.delta_lf_present_flag &= B(quant_params.base_qindex > 0);
         }
         else if (cpi.cyclic_refresh.apply_cyclic_refresh != 0 ||
                  cpi.svc.number_temporal_layers == 1)
