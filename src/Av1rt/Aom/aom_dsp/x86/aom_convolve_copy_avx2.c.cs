@@ -3,6 +3,7 @@
 
 global using static Av1rt.Aom.aom_convolve_copy_avx2_h;
 
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Av1rt.Aom;
@@ -10,20 +11,7 @@ namespace Av1rt.Aom;
 // [port] Class gets `_h`: the stem equals the function aom_convolve_copy_avx2.
 internal static partial class aom_convolve_copy_avx2_h
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void copy_128(Ptr<byte> src, Ptr<byte> dst)
-    {
-        Arr4<__m256i> s = default;
-        s[0] = _mm256_loadu_si256((src + 0 * 32));
-        s[1] = _mm256_loadu_si256((src + 1 * 32));
-        s[2] = _mm256_loadu_si256((src + 2 * 32));
-        s[3] = _mm256_loadu_si256((src + 3 * 32));
-        _mm256_storeu_si256((dst + 0 * 32), s[0]);
-        _mm256_storeu_si256((dst + 1 * 32), s[1]);
-        _mm256_storeu_si256((dst + 2 * 32), s[2]);
-        _mm256_storeu_si256((dst + 3 * 32), s[3]);
-    }
-
+    // [port] copy_128 is inlined into the 128-wide case below.
     internal static void aom_convolve_copy_avx2(Ptr<byte> src, int src_stride,
                                                 Ptr<byte> dst, int dst_stride, int w, int h)
     {
@@ -58,86 +46,75 @@ internal static partial class aom_convolve_copy_avx2_h
                 h -= 2;
             } while (h != 0);
         }
-        else if (w == 8)
-        {
-            do
-            {
-                Arr2<__m128i> s = default;
-                s[0] = _mm_loadl_epi64(src);
-                src += src_stride;
-                s[1] = _mm_loadl_epi64(src);
-                src += src_stride;
-                _mm_storel_epi64(dst, s[0]);
-                dst += dst_stride;
-                _mm_storel_epi64(dst, s[1]);
-                dst += dst_stride;
-                h -= 2;
-            } while (h != 0);
-        }
-        else if (w == 16)
-        {
-            do
-            {
-                Arr2<__m128i> s = default;
-                s[0] = _mm_loadu_si128(src);
-                src += src_stride;
-                s[1] = _mm_loadu_si128(src);
-                src += src_stride;
-                _mm_store_si128(dst, s[0]);
-                dst += dst_stride;
-                _mm_store_si128(dst, s[1]);
-                dst += dst_stride;
-                h -= 2;
-            } while (h != 0);
-        }
-        else if (w == 32)
-        {
-            do
-            {
-                Arr2<__m256i> s = default;
-                s[0] = _mm256_loadu_si256(src);
-                src += src_stride;
-                s[1] = _mm256_loadu_si256(src);
-                src += src_stride;
-                _mm256_storeu_si256(dst, s[0]);
-                dst += dst_stride;
-                _mm256_storeu_si256(dst, s[1]);
-                dst += dst_stride;
-                h -= 2;
-            } while (h != 0);
-        }
-        else if (w == 64)
-        {
-            do
-            {
-                Arr4<__m256i> s = default;
-                s[0] = _mm256_loadu_si256((src + 0 * 32));
-                s[1] = _mm256_loadu_si256((src + 1 * 32));
-                src += src_stride;
-                s[2] = _mm256_loadu_si256((src + 0 * 32));
-                s[3] = _mm256_loadu_si256((src + 1 * 32));
-                src += src_stride;
-                _mm256_storeu_si256((dst + 0 * 32), s[0]);
-                _mm256_storeu_si256((dst + 1 * 32), s[1]);
-                dst += dst_stride;
-                _mm256_storeu_si256((dst + 0 * 32), s[2]);
-                _mm256_storeu_si256((dst + 1 * 32), s[3]);
-                dst += dst_stride;
-                h -= 2;
-            } while (h != 0);
-        }
         else
         {
-            do
+            // [port] From 8 columns on, the rows are copied through spans hoisted out of the
+            // loop and sliced once per row, so the vector loads and stores inside need no
+            // further bounds checks (through Ptr each one is checked). Same copies as C, one
+            // row at a time instead of two.
+            ReadOnlySpan<byte> sbuf = src.Array;
+            Span<byte> dbuf = dst.Array;
+            int so = src.Offset, d = dst.Offset;
+            if (w == 8)
             {
-                copy_128(src, dst);
-                src += src_stride;
-                dst += dst_stride;
-                copy_128(src, dst);
-                src += src_stride;
-                dst += dst_stride;
-                h -= 2;
-            } while (h != 0);
+                do
+                {
+                    _mm_storel_epi64(dbuf.Slice(d, 8), _mm_loadl_epi64(sbuf.Slice(so, 8)));
+                    so += src_stride;
+                    d += dst_stride;
+                } while (--h != 0);
+            }
+            else if (w == 16)
+            {
+                do
+                {
+                    _mm_storeu_si128(dbuf.Slice(d, 16), _mm_loadu_si128(sbuf.Slice(so, 16)));
+                    so += src_stride;
+                    d += dst_stride;
+                } while (--h != 0);
+            }
+            else if (w == 32)
+            {
+                do
+                {
+                    _mm256_storeu_si256(dbuf.Slice(d, 32), _mm256_loadu_si256(sbuf.Slice(so, 32)));
+                    so += src_stride;
+                    d += dst_stride;
+                } while (--h != 0);
+            }
+            else if (w == 64)
+            {
+                do
+                {
+                    ReadOnlySpan<byte> sr = sbuf.Slice(so, 64);
+                    Span<byte> dr = dbuf.Slice(d, 64);
+                    __m256i s0 = _mm256_loadu_si256(sr);
+                    __m256i s1 = _mm256_loadu_si256(sr.Slice(32));
+                    _mm256_storeu_si256(dr, s0);
+                    _mm256_storeu_si256(dr.Slice(32), s1);
+                    so += src_stride;
+                    d += dst_stride;
+                } while (--h != 0);
+            }
+            else
+            {
+                do
+                {
+                    // copy_128
+                    ReadOnlySpan<byte> sr = sbuf.Slice(so, 128);
+                    Span<byte> dr = dbuf.Slice(d, 128);
+                    __m256i s0 = _mm256_loadu_si256(sr);
+                    __m256i s1 = _mm256_loadu_si256(sr.Slice(32));
+                    __m256i s2 = _mm256_loadu_si256(sr.Slice(64));
+                    __m256i s3 = _mm256_loadu_si256(sr.Slice(96));
+                    _mm256_storeu_si256(dr, s0);
+                    _mm256_storeu_si256(dr.Slice(32), s1);
+                    _mm256_storeu_si256(dr.Slice(64), s2);
+                    _mm256_storeu_si256(dr.Slice(96), s3);
+                    so += src_stride;
+                    d += dst_stride;
+                } while (--h != 0);
+            }
         }
     }
 }

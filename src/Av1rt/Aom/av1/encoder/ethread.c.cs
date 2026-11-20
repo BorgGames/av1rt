@@ -1,6 +1,7 @@
 // Port of libaom av1/encoder/ethread.c
 using System;
 using System.Diagnostics;
+using Av1rt.Diagnostics;
 
 namespace Av1rt.Aom;
 
@@ -74,10 +75,17 @@ internal static partial class ethread
             pthread_mutex_t mutex = row_mt_sync.mutex_[r - 1];
             pthread_mutex_lock(mutex);
 
+            long tWait = 0;
             while (c > row_mt_sync.num_finished_cols[r - 1] - nsync -
                            row_mt_sync.intrabc_extra_top_right_sb_delay)
             {
+                if (tWait == 0) tWait = StageTimes.Start();
                 pthread_cond_wait(row_mt_sync.cond_[r - 1], mutex);
+            }
+            if (tWait != 0)
+            {
+                StageTimes.Add(StageTimes.Counter.RowSyncWait, Stopwatch.GetTimestamp() - tWait);
+                StageTimes.Add(StageTimes.Counter.RowSyncWaits, 1);
             }
             pthread_mutex_unlock(mutex);
         }
@@ -380,12 +388,14 @@ internal static partial class ethread
             int next_sb_row = AOMMIN(sb_rows - 1, cur_sb_row + 1);
             // Wait for current and next superblock row to finish encoding.
             pthread_mutex_lock(enc_row_mt_mutex_);
+            long tWait = StageTimes.Start();
             while (!enc_row_mt.row_mt_exit &&
                    (enc_row_mt.num_tile_cols_done[cur_sb_row] < cm.tiles.cols ||
                     enc_row_mt.num_tile_cols_done[next_sb_row] < cm.tiles.cols))
             {
                 pthread_cond_wait(enc_row_mt.cond_, enc_row_mt_mutex_);
             }
+            StageTimes.Add(StageTimes.Counter.LpfWait, StageTimes.Start() - tWait);
             row_mt_exit = enc_row_mt.row_mt_exit;
             pthread_mutex_unlock(enc_row_mt_mutex_);
             if (row_mt_exit) return;
@@ -441,6 +451,22 @@ internal static partial class ethread
     private static readonly AVxWorkerHook enc_row_mt_worker_hook_fn = enc_row_mt_worker_hook;
 
     private static int enc_row_mt_worker_hook(object arg1, object unused)
+    {
+        long tEnter = StageTimes.Start();
+        StageTimes.Add(StageTimes.Counter.EncLaunchDelay, tEnter - StageTimes.LaunchTimestamp);
+        if (((EncWorkerData)arg1).thread_id == 0)
+            StageTimes.Add(StageTimes.Counter.EncLaunchMain, tEnter - StageTimes.LaunchTimestamp);
+        try
+        {
+            return enc_row_mt_worker_hook_body(arg1);
+        }
+        finally
+        {
+            StageTimes.Add(StageTimes.Counter.EncBusy, StageTimes.Start() - tEnter);
+        }
+    }
+
+    private static int enc_row_mt_worker_hook_body(object arg1)
     {
         EncWorkerData thread_data = (EncWorkerData)arg1;
         AV1_COMP cpi = thread_data.cpi;
@@ -570,7 +596,9 @@ internal static partial class ethread
                 // superblock row is complete.
                 // TODO(deepa.kg @ittiam.com) Evaluate encoder speed by interleaving
                 // encoding and loop filter stage.
+                long tLpf = StageTimes.Start();
                 launch_loop_filter_rows(cm, thread_data, enc_row_mt, mib_size_log2);
+                StageTimes.Add(StageTimes.Counter.EncLpf, StageTimes.Start() - tLpf);
             }
             av1_free_pc_tree_recursive(thread_data.td.pc_root, av1_num_planes(cm), 0, 0,
                                        cpi.sf.part_sf.partition_search_type);
@@ -895,6 +923,74 @@ internal static partial class ethread
             AVxWorker worker = p_mt_info.workers[t];
             aom_get_worker_interface().end(worker);
         }
+    }
+
+    // [av1rt] Not in libaom: a parallel loop on the encoder's own workers, for the frame-wide
+    // passes the port spreads over threads where libaom runs them on the main thread (the
+    // lookahead copy and the scene detection SADs). Using the encoder's workers instead of the
+    // .NET thread pool keeps one set of threads busy through the frame: with two pools on the
+    // same cores, each stage started with the other pool's threads still spinning and its own
+    // asleep, and waking them cost about half a millisecond per stage on a 6-core desktop.
+    private sealed class ParallelForJob
+    {
+        internal int next;
+        internal int count;
+        internal Action<int> body;
+        internal Exception error;
+    }
+
+    private static readonly AVxWorkerHook parallel_for_hook_fn = parallel_for_hook;
+
+    private static int parallel_for_hook(object arg1, object arg2)
+    {
+        ParallelForJob job = (ParallelForJob)arg1;
+        try
+        {
+            int i;
+            while ((i = System.Threading.Interlocked.Increment(ref job.next) - 1) < job.count)
+                job.body(i);
+            return 1;
+        }
+        catch (Exception e)
+        {
+            System.Threading.Interlocked.CompareExchange(ref job.error, e, null);
+            job.next = job.count;  // stop handing out iterations
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Runs <paramref name="body"/> for 0 .. count-1 on up to <paramref name="max_workers"/> of
+    /// the encoder's workers (the calling thread is worker 0), or inline without workers.
+    /// </summary>
+    internal static void av1rt_parallel_for(PrimaryMultiThreadInfo p_mt_info, int max_workers,
+                                            int count, Action<int> body)
+    {
+        int num_workers = p_mt_info == null || p_mt_info.workers == null
+                              ? 1
+                              : AOMMIN(AOMMIN(max_workers, p_mt_info.num_workers), count);
+        if (num_workers <= 1)
+        {
+            for (int i = 0; i < count; i++) body(i);
+            return;
+        }
+        AVxWorkerInterface winterface = aom_get_worker_interface();
+        var job = new ParallelForJob { count = count, body = body };
+        for (int i = num_workers - 1; i >= 0; i--)
+        {
+            AVxWorker worker = p_mt_info.workers[i];
+            worker.hook = parallel_for_hook_fn;
+            worker.data1 = job;
+            worker.data2 = null;
+            worker.had_error = 0;
+            if (i == 0)
+                winterface.execute(worker);
+            else
+                winterface.launch(worker);
+        }
+        for (int i = num_workers - 1; i > 0; i--) winterface.sync(p_mt_info.workers[i]);
+        if (job.error != null)
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(job.error).Throw();
     }
 
     // This function returns 1 if frame parallel encode is supported for
@@ -1373,6 +1469,7 @@ internal static partial class ethread
         assign_tile_to_thread(thread_id_to_tile_id, tile_cols * tile_rows,
                               num_workers);
         prepare_enc_workers(cpi, enc_row_mt_worker_hook_fn, num_workers);
+        StageTimes.LaunchTimestamp = StageTimes.Start();
         launch_workers(cpi.mt_info, num_workers);
         sync_enc_workers(cpi.mt_info, cm, num_workers);
         if (cm.delta_q_info.delta_lf_present_flag != 0)
@@ -1608,7 +1705,14 @@ internal static partial class ethread
                 TileDataEnc this_tile = cpi.tile_data[tile_idx];
                 thread_data.td.mb.e_mbd.tile_ctx = this_tile.tctx;
 
+                long tTile = StageTimes.Start();
                 av1_pack_tile_info(cpi, thread_data.td, pack_bs_params[tile_idx]);
+                if (StageTimes.Enabled)
+                {
+                    long d = System.Diagnostics.Stopwatch.GetTimestamp() - tTile;
+                    StageTimes.Add(StageTimes.Counter.PackBusy, d);
+                    StageTimes.Max(ref StageTimes.FrameMax, d);
+                }
             }
 
             error_info.setjmp = 0;
@@ -1768,8 +1872,17 @@ internal static partial class ethread
                                  obu_extn_header);
         prepare_pack_bs_workers(cpi, pack_bs_params, pack_bs_worker_hook_fn,
                                 num_workers);
+        long tMt = StageTimes.Start();
+        StageTimes.FrameMax = 0;
         launch_workers(mt_info, num_workers);
         sync_enc_workers(mt_info, cpi.common, num_workers);
+        if (StageTimes.Enabled)
+        {
+            StageTimes.Add(StageTimes.Counter.PackMt,
+                           System.Diagnostics.Stopwatch.GetTimestamp() - tMt);
+            StageTimes.Add(StageTimes.Counter.PackMaxTile, StageTimes.FrameMax);
+            StageTimes.Add(StageTimes.Counter.PackWorkers, num_workers);
+        }
         accumulate_pack_bs_data(cpi, pack_bs_params, dst, ref total_size, in fh_info,
                                 ref largest_tile_id, ref max_tile_size, ref obu_header_size,
                                 ref tile_data_start, num_workers);

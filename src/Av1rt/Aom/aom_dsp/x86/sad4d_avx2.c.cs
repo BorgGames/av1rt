@@ -2,6 +2,7 @@
 
 global using static Av1rt.Aom.sad4d_avx2;
 
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Av1rt.Aom;
@@ -42,72 +43,69 @@ internal static class sad4d_avx2
         _mm_storeu_si128(res, sum);
     }
 
+    // [port] Bounds checks: each row is sliced once per buffer (M bytes) and the 32-byte loads at
+    // constant offsets inside it need no further checks, where loading through Ptr checks every
+    // load (and was the larger part of the instructions). C's peeled first row folds into
+    // zero-initialized sums (integer adds, same result). M is a constant after inlining, so the
+    // M checks below fold away; widths beyond 64 take the generic loop.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static __m256i Sad32(ReadOnlySpan<byte> r, __m256i src_reg) =>
+        _mm256_sad_epu8(_mm256_loadu_si256(r), src_reg);
+
     // AOM_FORCE_INLINE
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void aom_sadMxNx4d_avx2(
         int M, int N, Ptr<byte> src, int src_stride,
         Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res)
     {
-        __m256i src_reg, ref0_reg, ref1_reg, ref2_reg, ref3_reg;
+        __m256i src_reg;
         __m256i sum_ref0, sum_ref1, sum_ref2, sum_ref3;
         int i, j;
-        Ptr<byte> ref0, ref1, ref2, ref3;
+        Ptr<byte> ref0 = @ref[0], ref1 = @ref[1], ref2 = @ref[2], ref3 = @ref[3];
+        ReadOnlySpan<byte> sbuf = src.Array, buf0 = ref0.Array, buf1 = ref1.Array,
+                           buf2 = ref2.Array, buf3 = ref3.Array;
+        int so = src.Offset, o0 = ref0.Offset, o1 = ref1.Offset, o2 = ref2.Offset,
+            o3 = ref3.Offset;
 
-        ref0 = @ref[0];
-        ref1 = @ref[1];
-        ref2 = @ref[2];
-        ref3 = @ref[3];
-
-        src_reg = _mm256_loadu_si256(src);
-        sum_ref0 = _mm256_sad_epu8(_mm256_loadu_si256(ref0), src_reg);
-        sum_ref1 = _mm256_sad_epu8(_mm256_loadu_si256(ref1), src_reg);
-        sum_ref2 = _mm256_sad_epu8(_mm256_loadu_si256(ref2), src_reg);
-        sum_ref3 = _mm256_sad_epu8(_mm256_loadu_si256(ref3), src_reg);
-        for (j = 32; j < M; j += 32)
+        sum_ref0 = _mm256_setzero_si256();
+        sum_ref1 = _mm256_setzero_si256();
+        sum_ref2 = _mm256_setzero_si256();
+        sum_ref3 = _mm256_setzero_si256();
+        for (i = 0; i < N; i++)
         {
-            src_reg = _mm256_loadu_si256(src + j);
-            ref0_reg = _mm256_sad_epu8(_mm256_loadu_si256(ref0 + j), src_reg);
-            ref1_reg = _mm256_sad_epu8(_mm256_loadu_si256(ref1 + j), src_reg);
-            ref2_reg = _mm256_sad_epu8(_mm256_loadu_si256(ref2 + j), src_reg);
-            ref3_reg = _mm256_sad_epu8(_mm256_loadu_si256(ref3 + j), src_reg);
-            sum_ref0 = _mm256_add_epi32(sum_ref0, ref0_reg);
-            sum_ref1 = _mm256_add_epi32(sum_ref1, ref1_reg);
-            sum_ref2 = _mm256_add_epi32(sum_ref2, ref2_reg);
-            sum_ref3 = _mm256_add_epi32(sum_ref3, ref3_reg);
-        }
-        src += src_stride;
-        ref0 += ref_stride;
-        ref1 += ref_stride;
-        ref2 += ref_stride;
-        ref3 += ref_stride;
-
-        for (i = 1; i < N; i++)
-        {
-            for (j = 0; j < M; j += 32)
+            ReadOnlySpan<byte> s = sbuf.Slice(so, M), r0 = buf0.Slice(o0, M),
+                               r1 = buf1.Slice(o1, M), r2 = buf2.Slice(o2, M),
+                               r3 = buf3.Slice(o3, M);
+            // sum of the absolute differences between every ref-i to src
+            src_reg = _mm256_loadu_si256(s);
+            sum_ref0 = _mm256_add_epi32(sum_ref0, Sad32(r0, src_reg));
+            sum_ref1 = _mm256_add_epi32(sum_ref1, Sad32(r1, src_reg));
+            sum_ref2 = _mm256_add_epi32(sum_ref2, Sad32(r2, src_reg));
+            sum_ref3 = _mm256_add_epi32(sum_ref3, Sad32(r3, src_reg));
+            if (M == 64)
             {
-                // load src and all refs
-                src_reg = _mm256_loadu_si256(src + j);
-                ref0_reg = _mm256_loadu_si256(ref0 + j);
-                ref1_reg = _mm256_loadu_si256(ref1 + j);
-                ref2_reg = _mm256_loadu_si256(ref2 + j);
-                ref3_reg = _mm256_loadu_si256(ref3 + j);
-
-                // sum of the absolute differences between every ref-i to src
-                ref0_reg = _mm256_sad_epu8(ref0_reg, src_reg);
-                ref1_reg = _mm256_sad_epu8(ref1_reg, src_reg);
-                ref2_reg = _mm256_sad_epu8(ref2_reg, src_reg);
-                ref3_reg = _mm256_sad_epu8(ref3_reg, src_reg);
-                // sum every ref-i
-                sum_ref0 = _mm256_add_epi32(sum_ref0, ref0_reg);
-                sum_ref1 = _mm256_add_epi32(sum_ref1, ref1_reg);
-                sum_ref2 = _mm256_add_epi32(sum_ref2, ref2_reg);
-                sum_ref3 = _mm256_add_epi32(sum_ref3, ref3_reg);
+                src_reg = _mm256_loadu_si256(s.Slice(32));
+                sum_ref0 = _mm256_add_epi32(sum_ref0, Sad32(r0.Slice(32), src_reg));
+                sum_ref1 = _mm256_add_epi32(sum_ref1, Sad32(r1.Slice(32), src_reg));
+                sum_ref2 = _mm256_add_epi32(sum_ref2, Sad32(r2.Slice(32), src_reg));
+                sum_ref3 = _mm256_add_epi32(sum_ref3, Sad32(r3.Slice(32), src_reg));
             }
-            src += src_stride;
-            ref0 += ref_stride;
-            ref1 += ref_stride;
-            ref2 += ref_stride;
-            ref3 += ref_stride;
+            else
+            {
+                for (j = 32; j < M; j += 32)
+                {
+                    src_reg = _mm256_loadu_si256(s.Slice(j, 32));
+                    sum_ref0 = _mm256_add_epi32(sum_ref0, Sad32(r0.Slice(j, 32), src_reg));
+                    sum_ref1 = _mm256_add_epi32(sum_ref1, Sad32(r1.Slice(j, 32), src_reg));
+                    sum_ref2 = _mm256_add_epi32(sum_ref2, Sad32(r2.Slice(j, 32), src_reg));
+                    sum_ref3 = _mm256_add_epi32(sum_ref3, Sad32(r3.Slice(j, 32), src_reg));
+                }
+            }
+            so += src_stride;
+            o0 += ref_stride;
+            o1 += ref_stride;
+            o2 += ref_stride;
+            o3 += ref_stride;
         }
 
         aggregate_and_store_sum(res, in sum_ref0, in sum_ref1, in sum_ref2, in sum_ref3);
@@ -119,42 +117,48 @@ internal static class sad4d_avx2
         int M, int N, Ptr<byte> src, int src_stride,
         Ptr<Ptr<byte>> @ref, int ref_stride, Ptr<uint> res)
     {
-        __m256i src_reg, ref0_reg, ref1_reg, ref2_reg;
+        __m256i src_reg;
         __m256i sum_ref0, sum_ref1, sum_ref2;
         int i, j;
-        Ptr<byte> ref0, ref1, ref2;
+        Ptr<byte> ref0 = @ref[0], ref1 = @ref[1], ref2 = @ref[2];
+        ReadOnlySpan<byte> sbuf = src.Array, buf0 = ref0.Array, buf1 = ref1.Array,
+                           buf2 = ref2.Array;
+        int so = src.Offset, o0 = ref0.Offset, o1 = ref1.Offset, o2 = ref2.Offset;
         __m256i zero = _mm256_setzero_si256();
 
-        ref0 = @ref[0];
-        ref1 = @ref[1];
-        ref2 = @ref[2];
         sum_ref0 = _mm256_setzero_si256();
         sum_ref2 = _mm256_setzero_si256();
         sum_ref1 = _mm256_setzero_si256();
 
         for (i = 0; i < N; i++)
         {
-            for (j = 0; j < M; j += 32)
+            ReadOnlySpan<byte> s = sbuf.Slice(so, M), r0 = buf0.Slice(o0, M),
+                               r1 = buf1.Slice(o1, M), r2 = buf2.Slice(o2, M);
+            src_reg = _mm256_loadu_si256(s);
+            sum_ref0 = _mm256_add_epi32(sum_ref0, Sad32(r0, src_reg));
+            sum_ref1 = _mm256_add_epi32(sum_ref1, Sad32(r1, src_reg));
+            sum_ref2 = _mm256_add_epi32(sum_ref2, Sad32(r2, src_reg));
+            if (M == 64)
             {
-                // load src and all refs
-                src_reg = _mm256_loadu_si256(src + j);
-                ref0_reg = _mm256_loadu_si256(ref0 + j);
-                ref1_reg = _mm256_loadu_si256(ref1 + j);
-                ref2_reg = _mm256_loadu_si256(ref2 + j);
-
-                // sum of the absolute differences between every ref-i to src
-                ref0_reg = _mm256_sad_epu8(ref0_reg, src_reg);
-                ref1_reg = _mm256_sad_epu8(ref1_reg, src_reg);
-                ref2_reg = _mm256_sad_epu8(ref2_reg, src_reg);
-                // sum every ref-i
-                sum_ref0 = _mm256_add_epi32(sum_ref0, ref0_reg);
-                sum_ref1 = _mm256_add_epi32(sum_ref1, ref1_reg);
-                sum_ref2 = _mm256_add_epi32(sum_ref2, ref2_reg);
+                src_reg = _mm256_loadu_si256(s.Slice(32));
+                sum_ref0 = _mm256_add_epi32(sum_ref0, Sad32(r0.Slice(32), src_reg));
+                sum_ref1 = _mm256_add_epi32(sum_ref1, Sad32(r1.Slice(32), src_reg));
+                sum_ref2 = _mm256_add_epi32(sum_ref2, Sad32(r2.Slice(32), src_reg));
             }
-            src += src_stride;
-            ref0 += ref_stride;
-            ref1 += ref_stride;
-            ref2 += ref_stride;
+            else
+            {
+                for (j = 32; j < M; j += 32)
+                {
+                    src_reg = _mm256_loadu_si256(s.Slice(j, 32));
+                    sum_ref0 = _mm256_add_epi32(sum_ref0, Sad32(r0.Slice(j, 32), src_reg));
+                    sum_ref1 = _mm256_add_epi32(sum_ref1, Sad32(r1.Slice(j, 32), src_reg));
+                    sum_ref2 = _mm256_add_epi32(sum_ref2, Sad32(r2.Slice(j, 32), src_reg));
+                }
+            }
+            so += src_stride;
+            o0 += ref_stride;
+            o1 += ref_stride;
+            o2 += ref_stride;
         }
         aggregate_and_store_sum(res, in sum_ref0, in sum_ref1, in sum_ref2, in zero);
     }

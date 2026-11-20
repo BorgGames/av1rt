@@ -2641,6 +2641,7 @@ internal static partial class encoder
         }
 
         cpi.ppi.lookahead.copy_threads = AOMMAX(1, cpi.oxcf.max_threads);  // [port]
+        cpi.ppi.lookahead.copy_workers = cpi.ppi.p_mt_info;  // [av1rt]
         long tLa = StageTimes.Start();
         if (av1_lookahead_push(cpi.ppi.lookahead, sd, time_stamp, end_time,
                                use_highbitdepth, cpi.alloc_pyramid, frame_flags) != 0)

@@ -138,6 +138,8 @@ internal static class variance_avx2
         variance_kernel_avx2(s, r, ref sse, ref sum);
     }
 
+    // [port] The row loops below slice each row once per buffer, so the loads inside need no
+    // further bounds checks (loading through Ptr checks every load).
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void variance16_avx2(Ptr<byte> src, int src_stride,
                                         Ptr<byte> @ref, int ref_stride,
@@ -145,12 +147,21 @@ internal static class variance_avx2
                                         ref __m256i vsum)
     {
         vsum = _mm256_setzero_si256();
+        ReadOnlySpan<byte> sbuf = src.Array, rbuf = @ref.Array;
+        int so = src.Offset, ro = @ref.Offset;
 
         for (int i = 0; i < h; i += 2)
         {
-            variance16_kernel_avx2(src, src_stride, @ref, ref_stride, ref vsse, ref vsum);
-            src += 2 * src_stride;
-            @ref += 2 * ref_stride;
+            // variance16_kernel_avx2
+            __m128i s0 = _mm_loadu_si128(sbuf.Slice(so, 16));
+            __m128i s1 = _mm_loadu_si128(sbuf.Slice(so + src_stride, 16));
+            __m128i r0 = _mm_loadu_si128(rbuf.Slice(ro, 16));
+            __m128i r1 = _mm_loadu_si128(rbuf.Slice(ro + ref_stride, 16));
+            __m256i s = _mm256_inserti128_si256(_mm256_castsi128_si256(s0), s1, 1);
+            __m256i r = _mm256_inserti128_si256(_mm256_castsi128_si256(r0), r1, 1);
+            variance_kernel_avx2(s, r, ref vsse, ref vsum);
+            so += 2 * src_stride;
+            ro += 2 * ref_stride;
         }
     }
 
@@ -161,12 +172,15 @@ internal static class variance_avx2
                                         ref __m256i vsum)
     {
         vsum = _mm256_setzero_si256();
+        ReadOnlySpan<byte> sbuf = src.Array, rbuf = @ref.Array;
+        int so = src.Offset, ro = @ref.Offset;
 
         for (int i = 0; i < h; i++)
         {
-            variance32_kernel_avx2(src, @ref, ref vsse, ref vsum);
-            src += src_stride;
-            @ref += ref_stride;
+            variance_kernel_avx2(_mm256_loadu_si256(sbuf.Slice(so, 32)),
+                                 _mm256_loadu_si256(rbuf.Slice(ro, 32)), ref vsse, ref vsum);
+            so += src_stride;
+            ro += ref_stride;
         }
     }
 
@@ -177,13 +191,17 @@ internal static class variance_avx2
                                         ref __m256i vsum)
     {
         vsum = _mm256_setzero_si256();
+        ReadOnlySpan<byte> sbuf = src.Array, rbuf = @ref.Array;
+        int so = src.Offset, ro = @ref.Offset;
 
         for (int i = 0; i < h; i++)
         {
-            variance32_kernel_avx2(src + 0, @ref + 0, ref vsse, ref vsum);
-            variance32_kernel_avx2(src + 32, @ref + 32, ref vsse, ref vsum);
-            src += src_stride;
-            @ref += ref_stride;
+            ReadOnlySpan<byte> s = sbuf.Slice(so, 64), r = rbuf.Slice(ro, 64);
+            variance_kernel_avx2(_mm256_loadu_si256(s), _mm256_loadu_si256(r), ref vsse, ref vsum);
+            variance_kernel_avx2(_mm256_loadu_si256(s.Slice(32)), _mm256_loadu_si256(r.Slice(32)),
+                                 ref vsse, ref vsum);
+            so += src_stride;
+            ro += ref_stride;
         }
     }
 
@@ -194,15 +212,21 @@ internal static class variance_avx2
                                          ref __m256i vsum)
     {
         vsum = _mm256_setzero_si256();
+        ReadOnlySpan<byte> sbuf = src.Array, rbuf = @ref.Array;
+        int so = src.Offset, ro = @ref.Offset;
 
         for (int i = 0; i < h; i++)
         {
-            variance32_kernel_avx2(src + 0, @ref + 0, ref vsse, ref vsum);
-            variance32_kernel_avx2(src + 32, @ref + 32, ref vsse, ref vsum);
-            variance32_kernel_avx2(src + 64, @ref + 64, ref vsse, ref vsum);
-            variance32_kernel_avx2(src + 96, @ref + 96, ref vsse, ref vsum);
-            src += src_stride;
-            @ref += ref_stride;
+            ReadOnlySpan<byte> s = sbuf.Slice(so, 128), r = rbuf.Slice(ro, 128);
+            variance_kernel_avx2(_mm256_loadu_si256(s), _mm256_loadu_si256(r), ref vsse, ref vsum);
+            variance_kernel_avx2(_mm256_loadu_si256(s.Slice(32)), _mm256_loadu_si256(r.Slice(32)),
+                                 ref vsse, ref vsum);
+            variance_kernel_avx2(_mm256_loadu_si256(s.Slice(64)), _mm256_loadu_si256(r.Slice(64)),
+                                 ref vsse, ref vsum);
+            variance_kernel_avx2(_mm256_loadu_si256(s.Slice(96)), _mm256_loadu_si256(r.Slice(96)),
+                                 ref vsse, ref vsum);
+            so += src_stride;
+            ro += ref_stride;
         }
     }
 

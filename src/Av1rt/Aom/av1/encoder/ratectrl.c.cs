@@ -2106,9 +2106,8 @@ internal static partial class ratectrl
             var row_sads = new ulong[scan_rows];
             var row_zeros = new int[scan_rows];
             var row_maxes = new ulong[scan_rows];
-            System.Threading.Tasks.Parallel.For(0, scan_rows,
-                new System.Threading.Tasks.ParallelOptions { MaxDegreeOfParallelism = scan_threads },
-                r => scan_row(r, ref row_sads[r], ref row_zeros[r], ref row_maxes[r]));
+            av1rt_parallel_for(cpi.ppi.p_mt_info, scan_threads, scan_rows,
+                               r => scan_row(r, ref row_sads[r], ref row_zeros[r], ref row_maxes[r]));
             for (int r = 0; r < scan_rows; ++r)
             {
                 avg_sad += row_sads[r];

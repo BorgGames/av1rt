@@ -48,4 +48,6 @@ internal sealed partial class lookahead_ctx
     // [port] Not in C: threads av1_lookahead_push may use for the source copy (set by the
     // encoder from max_threads; the copy is memory bound and on the critical path).
     public int copy_threads = 1;
+    // [av1rt] The encoder's workers for the copy (see av1rt_parallel_for), or null.
+    public PrimaryMultiThreadInfo copy_workers;
 }

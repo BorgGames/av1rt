@@ -39,9 +39,12 @@ internal sealed partial class pthread_mutex_t
 // [port] CONDITION_VARIABLE. pthread_cond_wait enters this object's monitor before releasing the
 // mutex and waits on it, and signal/broadcast pulse under the same monitor, so a wakeup issued
 // after the waiter released the mutex cannot be lost (the SleepConditionVariableSRW contract).
+// Each signal/broadcast also bumps `generation`, which a waiter watches while it spins before
+// blocking (see pthread_cond_wait).
 internal sealed partial class pthread_cond_t
 {
     public readonly object sync = new();
+    public int generation;
 }
 
 // _beginthreadex requires __stdcall
@@ -149,6 +152,7 @@ internal static partial class aom_pthread
     {
         lock (condition.sync)
         {
+            condition.generation++;
             Monitor.Pulse(condition.sync);
         }
         return 0;
@@ -158,18 +162,44 @@ internal static partial class aom_pthread
     {
         lock (condition.sync)
         {
+            condition.generation++;
             Monitor.PulseAll(condition.sync);
         }
         return 0;
     }
 
+    // [port] How long pthread_cond_wait spins before it blocks. The encoder's waits are mostly
+    // short hand-offs (a worker waiting for the row above to advance a few superblocks, the
+    // workers waiting for the next stage of the same frame, the main thread waiting for the
+    // last worker), while waking a blocked thread costs tens to hundreds of microseconds on
+    // Windows, more when the power plan parks idle cores (measured about 0.5 ms per worker
+    // launch on a 6-core desktop in the Balanced plan, several percent of a 4K frame).
+    private static readonly long s_condSpinTicks = System.Diagnostics.Stopwatch.Frequency / 5000;  // 200 us
+
     internal static int pthread_cond_wait(pthread_cond_t condition, pthread_mutex_t mutex)
     {
+        // Spin while the generation is unchanged, then block. pthread_cond_wait may return
+        // without a matching signal (callers recheck their predicate in a loop), so returning
+        // as soon as any signal or broadcast happened is enough. The blocking path rechecks the
+        // generation under the monitor, so a signal between the spin and Monitor.Wait is kept.
+        int generation = Volatile.Read(ref condition.generation);
+        mutex.@lock.Exit();
+        long start = System.Diagnostics.Stopwatch.GetTimestamp();
+        do
+        {
+            for (int i = 0; i < 64; i++)
+            {
+                if (Volatile.Read(ref condition.generation) != generation) goto Signaled;
+                Thread.SpinWait(8);
+            }
+            // Let another thread that is ready on this processor run (SwitchToThread).
+            Thread.Yield();
+        } while (System.Diagnostics.Stopwatch.GetTimestamp() - start < s_condSpinTicks);
         lock (condition.sync)
         {
-            mutex.@lock.Exit();
-            Monitor.Wait(condition.sync);
+            if (condition.generation == generation) Monitor.Wait(condition.sync);
         }
+    Signaled:
         mutex.@lock.Enter();
         return 0;
     }

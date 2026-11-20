@@ -2115,13 +2115,16 @@ internal static partial class nonrd_pickmode
 
     // Function to check the inter mode can be skipped based on mode statistics and
     // speed features settings.
+    // [port] svc_mv is passed by reference: by value, the inlined call rebuilt the union from its
+    // two 16-bit halves and reread it as 32 bits on every mode iteration (a store-forwarding
+    // stall, about 0.6% of the encode time).
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool skip_inter_mode_nonrd(
         AV1_COMP cpi, MACROBLOCK x, InterModeSearchStateNonrd search_state,
         ref long thresh_sad_pred, ref int force_mv_inter_layer, ref int is_single_pred,
         ref PREDICTION_MODE this_mode, ref MV_REFERENCE_FRAME last_comp_ref_frame,
         ref MV_REFERENCE_FRAME ref_frame, ref MV_REFERENCE_FRAME ref_frame2, int idx,
-        int_mv svc_mv, int force_skip_low_temp_var, uint sse_zeromv_norm,
+        in int_mv svc_mv, int force_skip_low_temp_var, uint sse_zeromv_norm,
         int num_inter_modes, byte segment_id, BLOCK_SIZE bsize,
         bool comp_use_zero_zeromv_only, bool check_globalmv)
     {
@@ -3209,7 +3212,7 @@ internal static partial class nonrd_pickmode
             if (skip_inter_mode_nonrd(cpi, x, search_state, ref thresh_sad_pred,
                                       ref force_mv_inter_layer, ref is_single_pred,
                                       ref this_mode, ref last_comp_ref_frame, ref ref_frame,
-                                      ref ref_frame2, idx, svc_mv, force_skip_low_temp_var,
+                                      ref ref_frame2, idx, in svc_mv, force_skip_low_temp_var,
                                       sse_zeromv_norm, num_inter_modes, segment_id,
                                       bsize, comp_use_zero_zeromv_only, check_globalmv))
                 continue;

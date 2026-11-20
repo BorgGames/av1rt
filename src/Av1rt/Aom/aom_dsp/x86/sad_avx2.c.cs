@@ -2,6 +2,7 @@
 
 global using static Av1rt.Aom.sad_avx2;
 
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Av1rt.Aom;
@@ -11,25 +12,28 @@ namespace Av1rt.Aom;
 internal static partial class sad_avx2
 {
     // SAD, SAD_SKIP and SAD_AVG for 64xh blocks
+    // [port] Each row is sliced once per buffer; the loads inside need no further bounds checks
+    // (see aom_sadMxNx4d_avx2).
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint sad64xh_avx2(Ptr<byte> src_ptr, int src_stride,
                                      Ptr<byte> ref_ptr, int ref_stride,
                                      int h)
     {
         int i;
-        __m256i sad1_reg, sad2_reg, ref1_reg, ref2_reg;
+        __m256i sad1_reg, sad2_reg;
         __m256i sum_sad = _mm256_setzero_si256();
         __m256i sum_sad_h;
         __m128i sum_sad128;
+        ReadOnlySpan<byte> sbuf = src_ptr.Array, rbuf = ref_ptr.Array;
+        int so = src_ptr.Offset, ro = ref_ptr.Offset;
         for (i = 0; i < h; i++)
         {
-            ref1_reg = _mm256_loadu_si256(ref_ptr);
-            ref2_reg = _mm256_loadu_si256(ref_ptr + 32);
-            sad1_reg = _mm256_sad_epu8(ref1_reg, _mm256_loadu_si256(src_ptr));
-            sad2_reg = _mm256_sad_epu8(ref2_reg, _mm256_loadu_si256(src_ptr + 32));
+            ReadOnlySpan<byte> s = sbuf.Slice(so, 64), r = rbuf.Slice(ro, 64);
+            sad1_reg = _mm256_sad_epu8(_mm256_loadu_si256(r), _mm256_loadu_si256(s));
+            sad2_reg = _mm256_sad_epu8(_mm256_loadu_si256(r.Slice(32)), _mm256_loadu_si256(s.Slice(32)));
             sum_sad = _mm256_add_epi32(sum_sad, _mm256_add_epi32(sad1_reg, sad2_reg));
-            ref_ptr += ref_stride;
-            src_ptr += src_stride;
+            ro += ref_stride;
+            so += src_stride;
         }
         sum_sad_h = _mm256_srli_si256(sum_sad, 8);
         sum_sad = _mm256_add_epi32(sum_sad, sum_sad_h);
@@ -95,28 +99,31 @@ internal static partial class sad_avx2
         FSADAVG64_H(src_ptr, src_stride, ref_ptr, ref_stride, second_pred, 32);
 
     // SAD, SAD_SKIP and SAD_AVG for 32xh blocks
+    // [port] Row slices as in sad64xh_avx2.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint sad32xh_avx2(Ptr<byte> src_ptr, int src_stride,
                                      Ptr<byte> ref_ptr, int ref_stride,
                                      int h)
     {
         int i;
-        __m256i sad1_reg, sad2_reg, ref1_reg, ref2_reg;
+        __m256i sad1_reg, sad2_reg;
         __m256i sum_sad = _mm256_setzero_si256();
         __m256i sum_sad_h;
         __m128i sum_sad128;
         int ref2_stride = ref_stride << 1;
         int src2_stride = src_stride << 1;
         int max = h >> 1;
+        ReadOnlySpan<byte> sbuf = src_ptr.Array, rbuf = ref_ptr.Array;
+        int so = src_ptr.Offset, ro = ref_ptr.Offset;
         for (i = 0; i < max; i++)
         {
-            ref1_reg = _mm256_loadu_si256(ref_ptr);
-            ref2_reg = _mm256_loadu_si256(ref_ptr + ref_stride);
-            sad1_reg = _mm256_sad_epu8(ref1_reg, _mm256_loadu_si256(src_ptr));
-            sad2_reg = _mm256_sad_epu8(ref2_reg, _mm256_loadu_si256(src_ptr + src_stride));
+            sad1_reg = _mm256_sad_epu8(_mm256_loadu_si256(rbuf.Slice(ro, 32)),
+                                       _mm256_loadu_si256(sbuf.Slice(so, 32)));
+            sad2_reg = _mm256_sad_epu8(_mm256_loadu_si256(rbuf.Slice(ro + ref_stride, 32)),
+                                       _mm256_loadu_si256(sbuf.Slice(so + src_stride, 32)));
             sum_sad = _mm256_add_epi32(sum_sad, _mm256_add_epi32(sad1_reg, sad2_reg));
-            ref_ptr += ref2_stride;
-            src_ptr += src2_stride;
+            ro += ref2_stride;
+            so += src2_stride;
         }
         sum_sad_h = _mm256_srli_si256(sum_sad, 8);
         sum_sad = _mm256_add_epi32(sum_sad, sum_sad_h);

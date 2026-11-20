@@ -1,5 +1,6 @@
 // Port of libaom av1/encoder/extend.c
 
+using System;
 using System.Diagnostics;
 
 namespace Av1rt.Aom;
@@ -7,20 +8,12 @@ namespace Av1rt.Aom;
 // [subset] highbd_copy_and_extend_plane: CONFIG_AV1_HIGHBITDEPTH == 0 (source frames are 8-bit).
 internal static partial class extend
 {
-    // [port] threads > 1 (not in C) splits the row copy and then the border rows into bands;
-    // every byte written is the same as in the serial loops.
     private static void copy_and_extend_plane(Ptr<byte> src, int src_pitch,
                                               Ptr<byte> dst, int dst_pitch, int w, int h,
                                               int extend_top, int extend_left,
                                               int extend_bottom, int extend_right,
-                                              int chroma_step, int threads = 1)
+                                              int chroma_step)
     {
-        if (threads > 1 && chroma_step == 1 && h >= 256)
-        {
-            copy_and_extend_plane_mt(src, src_pitch, dst, dst_pitch, w, h, extend_top,
-                                     extend_left, extend_bottom, extend_right, threads);
-            return;
-        }
         int i, linesize;
         // copy the left and right most columns out
         Ptr<byte> src_ptr1 = src;
@@ -71,46 +64,73 @@ internal static partial class extend
         }
     }
 
-    private static void copy_and_extend_plane_mt(Ptr<byte> src, int src_pitch,
-                                                 Ptr<byte> dst, int dst_pitch, int w, int h,
-                                                 int extend_top, int extend_left,
-                                                 int extend_bottom, int extend_right,
-                                                 int threads)
+    // [av1rt] The planes of a copy_and_extend_frame_mt call.
+    private readonly record struct PlaneCopy(Ptr<byte> src, int src_pitch, Ptr<byte> dst,
+                                             int dst_pitch, int w, int h, int extend_top,
+                                             int extend_left, int extend_bottom,
+                                             int extend_right);
+
+    private const int kCopyBand = 64;
+
+    // [port] The multi-threaded form of copy_and_extend_plane for all planes at once: the rows
+    // of every plane in bands of 64 (copy plus left/right extension), then the border rows
+    // (copies of the extended first and last rows). Every byte written is the same as in the
+    // serial loops; two worker launches per frame instead of two per plane.
+    private static void copy_and_extend_frame_mt(PlaneCopy[] planes, int threads,
+                                                 PrimaryMultiThreadInfo workers)
     {
-        const int band = 64;
-        int linesize = extend_left + extend_right + w;
-        Debug.Assert(linesize <= dst_pitch);
-        var po = new System.Threading.Tasks.ParallelOptions { MaxDegreeOfParallelism = threads };
-        System.Threading.Tasks.Parallel.For(0, (h + band - 1) / band, po, b =>
+        Span<int> row_band_start = stackalloc int[planes.Length + 1];
+        Span<int> border_band_start = stackalloc int[planes.Length + 1];
+        for (int p = 0; p < planes.Length; p++)
         {
-            int r1 = AOMMIN(h, (b + 1) * band);
-            for (int i = b * band; i < r1; i++)
+            PlaneCopy pc = planes[p];
+            Debug.Assert(pc.extend_left + pc.extend_right + pc.w <= pc.dst_pitch);
+            row_band_start[p + 1] = row_band_start[p] + (pc.h + kCopyBand - 1) / kCopyBand;
+            border_band_start[p + 1] = border_band_start[p] +
+                (pc.extend_top + pc.extend_bottom + kCopyBand - 1) / kCopyBand;
+        }
+        int[] rows = row_band_start.ToArray(), borders = border_band_start.ToArray();
+
+        av1rt_parallel_for(workers, threads, rows[planes.Length], b =>
+        {
+            int p = 0;
+            while (b >= rows[p + 1]) p++;
+            PlaneCopy pc = planes[p];
+            int r0 = (b - rows[p]) * kCopyBand, r1 = AOMMIN(pc.h, r0 + kCopyBand);
+            for (int i = r0; i < r1; i++)
             {
-                Ptr<byte> s = src + i * src_pitch;
-                Ptr<byte> d = dst + i * dst_pitch;
-                memset(d - extend_left, s[0], extend_left);
-                memcpy(d, s, w);
-                memset(d + w, s[w - 1], extend_right);
+                Ptr<byte> s = pc.src + i * pc.src_pitch;
+                Ptr<byte> d = pc.dst + i * pc.dst_pitch;
+                memset(d - pc.extend_left, s[0], pc.extend_left);
+                memcpy(d, s, pc.w);
+                memset(d + pc.w, s[pc.w - 1], pc.extend_right);
             }
         });
-        Ptr<byte> top = dst - extend_left;
-        Ptr<byte> bottom = dst + dst_pitch * (h - 1) - extend_left;
-        int border_rows = extend_top + extend_bottom;
-        System.Threading.Tasks.Parallel.For(0, (border_rows + band - 1) / band, po, b =>
+        av1rt_parallel_for(workers, threads, borders[planes.Length], b =>
         {
-            int r1 = AOMMIN(border_rows, (b + 1) * band);
-            for (int i = b * band; i < r1; i++)
+            int p = 0;
+            while (b >= borders[p + 1]) p++;
+            PlaneCopy pc = planes[p];
+            int linesize = pc.extend_left + pc.extend_right + pc.w;
+            Ptr<byte> top = pc.dst - pc.extend_left;
+            Ptr<byte> bottom = pc.dst + pc.dst_pitch * (pc.h - 1) - pc.extend_left;
+            int border_rows = pc.extend_top + pc.extend_bottom;
+            int r0 = (b - borders[p]) * kCopyBand, r1 = AOMMIN(border_rows, r0 + kCopyBand);
+            for (int i = r0; i < r1; i++)
             {
-                if (i < extend_top)
-                    memcpy(dst + dst_pitch * (i - extend_top) - extend_left, top, linesize);
+                if (i < pc.extend_top)
+                    memcpy(pc.dst + pc.dst_pitch * (i - pc.extend_top) - pc.extend_left, top,
+                           linesize);
                 else
-                    memcpy(dst + dst_pitch * (h + i - extend_top) - extend_left, bottom, linesize);
+                    memcpy(pc.dst + pc.dst_pitch * (pc.h + i - pc.extend_top) - pc.extend_left,
+                           bottom, linesize);
             }
         });
     }
 
     internal static void av1_copy_and_extend_frame(YV12_BUFFER_CONFIG src,
-                                                   YV12_BUFFER_CONFIG dst, int threads = 1)
+                                                   YV12_BUFFER_CONFIG dst, int threads = 1,
+                                                   PrimaryMultiThreadInfo workers = null)
     {
         // Extend src frame in buffer
         int et_y = dst.border;
@@ -132,9 +152,25 @@ internal static partial class extend
         // == 0.
         Debug.Assert((src.flags & YV12_FLAG_HIGHBITDEPTH) == 0);
 
+        // [port] threads > 1 (not in C): copy_and_extend_frame_mt, for planar 4:2:0/4:4:4
+        // input of at least 256 rows.
+        if (threads > 1 && src.monochrome == 0 && !src.v_buffer.IsNull &&
+            src.y_crop_height >= 256)
+        {
+            copy_and_extend_frame_mt(new PlaneCopy[]
+            {
+                new(src.y_buffer, src.y_stride, dst.y_buffer, dst.y_stride, src.y_crop_width,
+                    src.y_crop_height, et_y, el_y, eb_y, er_y),
+                new(src.u_buffer, src.uv_stride, dst.u_buffer, dst.uv_stride,
+                    src.uv_crop_width, src.uv_crop_height, et_uv, el_uv, eb_uv, er_uv),
+                new(src.v_buffer, src.uv_stride, dst.v_buffer, dst.uv_stride,
+                    src.uv_crop_width, src.uv_crop_height, et_uv, el_uv, eb_uv, er_uv),
+            }, threads, workers);
+            return;
+        }
         copy_and_extend_plane(src.y_buffer, src.y_stride, dst.y_buffer,
                               dst.y_stride, src.y_crop_width, src.y_crop_height,
-                              et_y, el_y, eb_y, er_y, 1, threads);
+                              et_y, el_y, eb_y, er_y, 1);
         if (src.monochrome == 0)
         {
             // detect nv12 format
@@ -144,11 +180,11 @@ internal static partial class extend
             copy_and_extend_plane(src.u_buffer, src.uv_stride, dst.u_buffer,
                                   dst.uv_stride, src.uv_crop_width,
                                   src.uv_crop_height, et_uv, el_uv, eb_uv, er_uv,
-                                  chroma_step, threads);
+                                  chroma_step);
             copy_and_extend_plane(src_v_buffer, src.uv_stride, dst.v_buffer,
                                   dst.uv_stride, src.uv_crop_width,
                                   src.uv_crop_height, et_uv, el_uv, eb_uv, er_uv,
-                                  chroma_step, threads);
+                                  chroma_step);
         }
     }
 }
