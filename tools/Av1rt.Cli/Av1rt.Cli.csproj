@@ -11,6 +11,9 @@
     <!-- Native AOT compiles Avx2 code paths only when AVX2 is part of the instruction-set
          baseline; without it the SIMD kernels are unavailable (Simd.UseAvx2 is false). -->
     <IlcInstructionSet>x86-64-v3</IlcInstructionSet>
+    <!-- Otherwise restore downloads the Windows Desktop and ASP.NET Core runtime packs (175 MB),
+         which the CLI does not use. -->
+    <DisableTransitiveFrameworkReferenceDownloads>true</DisableTransitiveFrameworkReferenceDownloads>
   </PropertyGroup>
 
   <!-- The SIMD kernels are large AggressiveInlining bodies behind thin dispatch forwarders. The
