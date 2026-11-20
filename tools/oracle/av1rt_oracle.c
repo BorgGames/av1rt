@@ -226,9 +226,10 @@ int main(int argc, char **argv) {
     unsigned int sbsize = AOM_SUPERBLOCK_SIZE_DYNAMIC;
     if (sb == 64) sbsize = AOM_SUPERBLOCK_SIZE_64X64;
     if (sb == 128) sbsize = AOM_SUPERBLOCK_SIZE_128X128;
-    if (sb == 0 && threads >= 4 && y4m.w * y4m.h >= 960 * 540 &&
-        y4m.w * y4m.h < 1920 * 1080)
-      sbsize = AOM_SUPERBLOCK_SIZE_64X64; /* WebRTC GetSuperblockSize() */
+    /* WebRTC GetSuperblockSize() stops at 1080p (dynamic = 128x128 there); av1rt also uses
+       64x64 above: faster with threads and no worse in rate (Av1Encoder.SuperblockControl). */
+    if (sb == 0 && threads >= 4 && y4m.w * y4m.h >= 960 * 540)
+      sbsize = AOM_SUPERBLOCK_SIZE_64X64;
     CTRL(AV1E_SET_SUPERBLOCK_SIZE, sbsize);
   }
   CTRL(AV1E_SET_ENABLE_CFL_INTRA, 0);

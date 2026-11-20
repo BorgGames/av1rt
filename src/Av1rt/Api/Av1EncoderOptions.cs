@@ -6,8 +6,9 @@ namespace Av1rt;
 public enum Av1SuperblockSize
 {
     /// <summary>
-    /// WebRTC's rule: 64x64 for 960x540 up to (excluding) 1920x1080 with 4 or more threads, otherwise
-    /// libaom's dynamic choice (128x128 when the shorter side exceeds 720 pixels).
+    /// 64x64 from 960x540 with 4 or more threads (WebRTC's rule, which stops below 1920x1080,
+    /// extended to all larger sizes), otherwise libaom's dynamic choice (128x128 when the shorter
+    /// side exceeds 720 pixels).
     /// </summary>
     Auto = 0,
     /// <summary>libaom's dynamic choice.</summary>

@@ -312,8 +312,12 @@ public sealed class Av1Encoder : IDisposable
             case Av1SuperblockSize.Size128: return AOM_SUPERBLOCK_SIZE_128X128;
             case Av1SuperblockSize.Dynamic: return AOM_SUPERBLOCK_SIZE_DYNAMIC;
         }
+        // libwebrtc's rule (64x64 from 960x540 with 4+ threads) without its 1080p upper bound:
+        // libaom's dynamic choice is 128x128 from 1080p, which leaves too few superblocks per
+        // tile for row multithreading. At 1080p and 4K, 64x64 measured 10-20% faster with 12
+        // threads and 0.5-1.5% lower BD-rate.
         long area = (long)o.Width * o.Height;
-        return threads >= 4 && area >= 960 * 540 && area < 1920 * 1080
+        return threads >= 4 && area >= 960 * 540
             ? AOM_SUPERBLOCK_SIZE_64X64
             : AOM_SUPERBLOCK_SIZE_DYNAMIC;
     }
