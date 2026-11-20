@@ -97,8 +97,17 @@ internal static partial class pred_common
         return (byte)(above_sip + left_sip);
     }
 
-    // [subset] get_comp_index_context, get_comp_group_idx_context, av1_get_pred_cdf_seg_id,
+    // [subset] get_comp_index_context, get_comp_group_idx_context,
     // av1_get_skip_mode_context: never executed.
+
+    // f1 (bitstream.c write_inter_segment_id): the temporal segment-id predictor path is
+    // data-dependent (seg.temporal_update follows rd_counts.seg_tmp_pred_cost).
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Ptr<ushort> av1_get_pred_cdf_seg_id(
+        segmentation_probs segp, MACROBLOCKD xd)
+    {
+        return segp.pred_cdf[av1_get_pred_context_seg_id(xd)];
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int av1_get_skip_txfm_context(MACROBLOCKD xd)
@@ -141,7 +150,16 @@ internal static partial class pred_common
             .single_ref_cdf[av1_get_pred_context_single_ref_p4(xd)][3];
     }
 
-    // [subset] av1_get_pred_cdf_single_ref_p5, av1_get_pred_cdf_single_ref_p6: never executed.
+    // f1 (bitstream.c write_ref_frames): reached when a block uses LAST3_FRAME/GOLDEN_FRAME.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Ptr<ushort> av1_get_pred_cdf_single_ref_p5(
+        MACROBLOCKD xd)
+    {
+        return xd.tile_ctx
+            .single_ref_cdf[av1_get_pred_context_single_ref_p5(xd)][4];
+    }
+
+    // [subset] av1_get_pred_cdf_single_ref_p6: never executed.
 
     // Returns a context number for the given MB prediction signal
     // The mode info data structure has a one element border above and to the
