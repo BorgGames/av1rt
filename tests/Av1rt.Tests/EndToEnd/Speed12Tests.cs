@@ -16,6 +16,8 @@ public class Speed12Tests
 {
     [Theory]
     [Trait("Category", "EndToEnd")]
+    [InlineData("bbb352.y4m", 600, 1)]
+    [InlineData("bbb1080.y4m", 6000, 4)]
     [InlineData("dota352.y4m", 600, 1)]
     [InlineData("dota1080.y4m", 6000, 4)]
     public void DecodesCloseToSource(string clip, int kbps, int threads)

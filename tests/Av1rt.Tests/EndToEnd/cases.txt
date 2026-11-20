@@ -1,13 +1,27 @@
-# End-to-end bit-exactness cases: name | clip in .testdata | encoder options.
+# End-to-end bit-exactness cases: name | clip in .testdata | input API | encoder options.
 # Options use the names of tools/oracle/av1rt_oracle.c and the Av1rt.Cli. Threads are explicit
-# because the automatic tile layout depends on the thread count.
+# because the automatic tile layout depends on the thread count. The input API is how the test
+# hands pictures to Av1Encoder: i420 (I420Frame), input (GetInputFrame) or packed (byte[]).
 # tools/oracle/make-refs.sh encodes each case with the oracle into .oracle/ref/<name>.ivf/.log.
-q352        | dota352.y4m       | --limit 30 --threads 2
-q352_low    | dota352.y4m       | --limit 30 --threads 2 --bitrate 150 --drop 30
-q1366       | dota1366x766.y4m  | --limit 30 --threads 8
-q1080       | dota1080.y4m      | --limit 60 --threads 8 --bitrate 8000
-q1080_kf    | dota1080.y4m      | --limit 30 --threads 8 --kf-interval 10
-synth1080   | synth1080.y4m     | --limit 60 --threads 8 --bitrate 6000
-q4k         | dota4k.y4m        | --limit 60 --threads 8
-q4k_1t      | dota4k.y4m        | --limit 20 --threads 1 --tile-cols 2 --tile-rows 1
-desk4k      | desk4k.y4m        | --limit 40 --threads 8
+#
+# Public clips (Big Buck Bunny, made by tools/oracle/get-clips.ps1). CI runs only these, with
+# --filter "Category=EndToEnd&DisplayName~bbb".
+bbb352      | bbb352.y4m        | i420   | --limit 30 --threads 2
+bbb352_low  | bbb352.y4m        | i420   | --limit 30 --threads 2 --bitrate 80 --drop 30
+bbb1366     | bbb1366x766.y4m   | packed | --limit 30 --threads 8
+bbb1080     | bbb1080.y4m       | input  | --limit 60 --threads 8 --bitrate 8000
+bbb1080_kf  | bbb1080.y4m       | input  | --limit 30 --threads 8 --kf-interval 10
+bbb4k       | bbb4k.y4m         | packed | --limit 60 --threads 8
+bbb4k_1t    | bbb4k.y4m         | input  | --limit 20 --threads 1 --tile-cols 2 --tile-rows 1
+bbbtext4k   | bbbtext4k.y4m     | input  | --limit 40 --threads 8
+#
+# Local captures (not distributable):
+q352        | dota352.y4m       | i420   | --limit 30 --threads 2
+q352_low    | dota352.y4m       | i420   | --limit 30 --threads 2 --bitrate 150 --drop 30
+q1366       | dota1366x766.y4m  | packed | --limit 30 --threads 8
+q1080       | dota1080.y4m      | input  | --limit 60 --threads 8 --bitrate 8000
+q1080_kf    | dota1080.y4m      | input  | --limit 30 --threads 8 --kf-interval 10
+synth1080   | synth1080.y4m     | packed | --limit 60 --threads 8 --bitrate 6000
+q4k         | dota4k.y4m        | packed | --limit 60 --threads 8
+q4k_1t      | dota4k.y4m        | input  | --limit 20 --threads 1 --tile-cols 2 --tile-rows 1
+desk4k      | desk4k.y4m        | input  | --limit 40 --threads 8

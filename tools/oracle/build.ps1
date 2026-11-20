@@ -39,7 +39,7 @@ if ($Coverage) {
 
 & $cmake @aomArgs
 if ($LASTEXITCODE) { throw 'libaom configure failed' }
-& $cmake --build $aomBuild --config Release --parallel --target aom
+& $cmake --build $aomBuild --config Release --parallel --target aom aomdec
 if ($LASTEXITCODE) { throw 'libaom build failed' }
 & $cmake @oracleArgs
 if ($LASTEXITCODE) { throw 'oracle configure failed' }

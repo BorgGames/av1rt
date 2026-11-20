@@ -20,14 +20,14 @@ public class BitExactTests
         {
             if (line.Length == 0 || line[0] == '#') continue;
             string[] parts = line.Split('|');
-            yield return new object[] { parts[0].Trim(), parts[1].Trim(), parts[2].Trim() };
+            yield return new object[] { parts[0].Trim(), parts[1].Trim(), parts[2].Trim(), parts[3].Trim() };
         }
     }
 
     [Theory]
     [Trait("Category", "EndToEnd")]
     [MemberData(nameof(Cases))]
-    public void MatchesOracle(string name, string clip, string args)
+    public void MatchesOracle(string name, string clip, string api, string args)
     {
         string main = Paths.MainCheckout();
         string refIvf = Path.Combine(main, ".oracle", "ref", name + ".ivf");
@@ -46,21 +46,23 @@ public class BitExactTests
         while ((limit == 0 || framesIn < limit) && y4m.ReadFrame(frame))
         {
             output.ResetWrittenCount();
-            // The q352 cases go through the I420Frame overload, q1080*, q4k_1t and desk4k write
-            // into the encoder's own buffer (GetInputFrame), the rest use the byte[] overload.
+            // The case's input API: the I420Frame overload, the encoder's own buffer
+            // (GetInputFrame) or the byte[] overload.
             Av1EncodeResult r;
-            if (name.StartsWith("q352", StringComparison.Ordinal))
+            switch (api)
             {
-                r = encoder.Encode(I420Frame.FromPacked(frame, options.Width, options.Height), output);
-            }
-            else if (name.StartsWith("q1080", StringComparison.Ordinal) || name is "q4k_1t" or "desk4k")
-            {
-                WritePacked(frame, encoder.GetInputFrame());
-                r = encoder.EncodeInputFrame(output);
-            }
-            else
-            {
-                r = encoder.Encode(frame, output);
+                case "i420":
+                    r = encoder.Encode(I420Frame.FromPacked(frame, options.Width, options.Height), output);
+                    break;
+                case "input":
+                    WritePacked(frame, encoder.GetInputFrame());
+                    r = encoder.EncodeInputFrame(output);
+                    break;
+                case "packed":
+                    r = encoder.Encode(frame, output);
+                    break;
+                default:
+                    throw new ArgumentException($"{name}: unknown input API {api}");
             }
             framesIn++;
             if (r.Dropped) continue;

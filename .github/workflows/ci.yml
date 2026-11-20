@@ -29,15 +29,19 @@ jobs:
       - name: Test av1rt (managed)
         run: dotnet test tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release --no-build --filter "Category!=Native&Category!=EndToEnd"
 
-      # The differential tests call libaom itself through native shims linking the pure-C libaom
-      # at tools/oracle/libaom.commit. They are built here from the official sources (never
-      # committed) and cached until the pinned commit or the oracle build changes.
-      - name: Restore the libaom shims
+      # The differential and end-to-end tests run libaom itself: native shims linking the pure-C
+      # libaom at tools/oracle/libaom.commit, the oracle encoder and aomdec. They are built here
+      # from the official sources (never committed) and cached until the pinned commit or the
+      # oracle build changes.
+      - name: Restore the libaom tools
         id: shims
         uses: actions/cache/restore@v6
         with:
-          path: .oracle/shims
-          key: aomshims-${{ hashFiles('tools/oracle/libaom.commit', 'tools/oracle/*.ps1', 'tools/oracle/CMakeLists.txt', 'tools/oracle/shim/**') }}
+          path: |
+            .oracle/shims
+            .oracle/oracle/Release/av1rt_oracle.exe
+            .oracle/build/Release/aomdec.exe
+          key: libaom-tools-${{ hashFiles('tools/oracle/libaom.commit', 'tools/oracle/*.ps1', 'tools/oracle/CMakeLists.txt', 'tools/oracle/av1rt_oracle.c', 'tools/oracle/shim/**') }}
 
       - name: Fetch libaom
         if: steps.shims.outputs.cache-hit != 'true'
@@ -60,11 +64,14 @@ jobs:
           ./tools/oracle/build.ps1
           ./tools/oracle/shim/build-shim.ps1 -All
 
-      - name: Save the libaom shims
+      - name: Save the libaom tools
         if: steps.shims.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
-          path: .oracle/shims
+          path: |
+            .oracle/shims
+            .oracle/oracle/Release/av1rt_oracle.exe
+            .oracle/build/Release/aomdec.exe
           key: ${{ steps.shims.outputs.cache-primary-key }}
 
       - name: Build the tests with the shims
@@ -72,6 +79,35 @@ jobs:
 
       - name: Test av1rt against libaom
         run: dotnet test tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release --no-build --filter "Category=Native"
+
+      # End to end: whole encodes, byte-identical to the oracle's, on public Big Buck Bunny clips.
+      # Only the one-second excerpts are cached; the clips and reference streams are made per run.
+      - name: Install ffmpeg
+        run: choco install ffmpeg -y --no-progress
+
+      - name: Restore the Big Buck Bunny excerpts
+        id: bbb
+        uses: actions/cache/restore@v6
+        with:
+          path: .testdata/bbb-*.mp4
+          key: bbb-${{ hashFiles('tools/oracle/get-clips.ps1') }}
+
+      - name: Make the clips
+        run: ./tools/oracle/get-clips.ps1
+
+      - name: Save the Big Buck Bunny excerpts
+        if: steps.bbb.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .testdata/bbb-*.mp4
+          key: ${{ steps.bbb.outputs.cache-primary-key }}
+
+      - name: Make the oracle's reference streams
+        shell: bash
+        run: tools/oracle/make-refs.sh
+
+      - name: Test av1rt end to end
+        run: dotnet test tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release --no-build --filter "Category=EndToEnd&DisplayName~bbb"
 
   publish:
     name: Publish to NuGet
