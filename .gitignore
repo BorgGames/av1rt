@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+*.user
+.oracle/
+.testdata/
+*.ivf
+*.yuv
+*.y4m
+/artifacts/

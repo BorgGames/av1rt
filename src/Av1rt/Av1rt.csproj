@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Av1rt</RootNamespace>
+    <AssemblyName>Av1rt</AssemblyName>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- The port under Aom/ keeps libaom's C names (snake_case, ALL_CAPS types and
+         lowercase class names), so naming and missing-doc warnings are noise there. -->
+    <NoWarn>$(NoWarn);CS1591;CS8981;CS0649;CS0169;CS0414;CS0162;CS0219;IDE1006</NoWarn>
+    <Description>A safe, Native AOT compatible C# port of the realtime subset of the libaom AV1 encoder.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Av1rt.Tests" />
+    <InternalsVisibleTo Include="Av1rt.Cli" />
+  </ItemGroup>
+
+</Project>
