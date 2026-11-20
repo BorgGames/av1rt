@@ -26,4 +26,16 @@ internal static partial class stubs_av1_encoder_rd_c
                                      Ptr<byte> ref_y_buffer, int ref_y_stride,
                                      int ref_frame, BLOCK_SIZE block_size) =>
         throw new NotImplementedException();
+
+    // ---- av1/encoder/rd.c (called by av1_quantize.c, e2) --------------------------------
+    internal static int av1_compute_rd_mult(int qindex, aom_bit_depth_t bit_depth,
+                                            FRAME_UPDATE_TYPE update_type,
+                                            int layer_depth, int boost_index,
+                                            FRAME_TYPE frame_type,
+                                            int use_fixed_qp_offsets,
+                                            int is_stat_consumption_stage,
+                                            aom_tune_metric tuning, MODE mode) =>
+        throw new NotImplementedException();
+    internal static void av1_set_sad_per_bit(AV1_COMP cpi, ref int sadperbit, int qindex) =>
+        throw new NotImplementedException();
 }
