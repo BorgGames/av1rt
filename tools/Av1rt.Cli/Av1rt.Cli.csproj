@@ -20,8 +20,19 @@
   <PropertyGroup>
     <JitInlineBudget Condition="'$(JitInlineBudget)' == ''">50</JitInlineBudget>
   </PropertyGroup>
+  <!-- The JIT stops inlining into a method once it has JitMaxLocalsToTrack (1024) locals and
+       stops tracking (enregistering) locals beyond it. Each inlined intrinsic wrapper or Ptr
+       operation adds a few temps, so the large ported kernels (subpel variance, convolve,
+       forward transforms) hit the limit: the rest of their wrapper calls stayed real calls and
+       their vectors lived in a big zero-initialised stack frame. 16384 lifts it (+13% at 1T). -->
+  <PropertyGroup>
+    <JitMaxLocalsToTrack Condition="'$(JitMaxLocalsToTrack)' == ''">16384</JitMaxLocalsToTrack>
+  </PropertyGroup>
   <ItemGroup>
     <IlcArg Include="--codegenopt:JitInlineBudget=$(JitInlineBudget)" />
+    <IlcArg Include="--codegenopt:JitMaxLocalsToTrack=$(JitMaxLocalsToTrack)" />
+    <!-- Diagnostics: ExtraIlcArgs, semicolon (%3B) separated ILC arguments such as codegenopt JitDisasm. -->
+    <IlcArg Include="$([MSBuild]::Unescape($(ExtraIlcArgs)))" Condition="'$(ExtraIlcArgs)' != ''" />
   </ItemGroup>
 
   <ItemGroup>
