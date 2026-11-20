@@ -1,8 +1,12 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Av1rt/Av1rt.csproj" />
+    <Project Path="src/SIPSorceryMedia.AV1/SIPSorceryMedia.AV1.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Av1rt.Tests/Av1rt.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Av1rt.Cli/Av1rt.Cli.csproj" />
   </Folder>
 </Solution>

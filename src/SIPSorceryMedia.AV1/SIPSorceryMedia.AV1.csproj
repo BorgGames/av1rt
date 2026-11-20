@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>SIPSorceryMedia.AV1</RootNamespace>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>A realtime AV1 video encoder for SIPSorcery, built on av1rt (a safe, Native AOT compatible C# port of libaom's realtime encoder).</Description>
+    <PackageTags>AV1;WebRTC;SIPSorcery;video;encoder</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SIPSorceryMedia.Abstractions" Version="10.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Av1rt\Av1rt.csproj" />
+  </ItemGroup>
+
+</Project>
