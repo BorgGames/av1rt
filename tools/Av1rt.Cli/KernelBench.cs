@@ -91,6 +91,33 @@ internal static class KernelBench
             });
         }
         T("txb_init_levels 16x16", () => { for (int i = 0; i < 128; i++) encodetxb_avx2.av1_txb_init_levels_avx2(new Ptr<int>(coeff32, (i & 15) * 8), 16, 16, new Ptr<byte>(levels)); return 0; });
+        {
+            var nzctx = new sbyte[64 * 64];
+            SCAN_ORDER so16 = scan.av1_scan_orders[txfm_common.TX_16X16][txfm_common.DCT_DCT];
+            SCAN_ORDER so8 = scan.av1_scan_orders[txfm_common.TX_8X8][txfm_common.DCT_DCT];
+            encodetxb_avx2.av1_txb_init_levels_avx2(new Ptr<int>(coeff32), 16, 16, new Ptr<byte>(levels));
+            T("nz_map_ctx 16x16", () =>
+            {
+                uint s = 0;
+                for (int i = 0; i < 128; i++)
+                {
+                    encodetxb_sse2.av1_get_nz_map_contexts_sse2(new Ptr<byte>(levels), so16.scan, 256 - (i & 63), txfm_common.TX_16X16, entropy.TX_CLASS_2D, new Ptr<sbyte>(nzctx));
+                    s += (uint)nzctx[i & 255];
+                }
+                return s;
+            });
+            encodetxb_avx2.av1_txb_init_levels_avx2(new Ptr<int>(coeff32), 8, 8, new Ptr<byte>(levels));
+            T("nz_map_ctx 8x8", () =>
+            {
+                uint s = 0;
+                for (int i = 0; i < 128; i++)
+                {
+                    encodetxb_sse2.av1_get_nz_map_contexts_sse2(new Ptr<byte>(levels), so8.scan, 64 - (i & 31), txfm_common.TX_8X8, entropy.TX_CLASS_2D, new Ptr<sbyte>(nzctx));
+                    s += (uint)nzctx[i & 63];
+                }
+                return s;
+            });
+        }
 
         if (only == null)
         {
