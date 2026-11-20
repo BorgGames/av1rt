@@ -1076,7 +1076,7 @@ internal static partial class ethread
                 // in accumulate_counters_enc_workers().
                 if (cpi.sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF)
                 {
-                    thread_data.td.mv_costs_alloc = new MvCosts();
+                    thread_data.td.mv_costs_alloc = thread_data.td.mv_costs_pool ??= new MvCosts();
                     thread_data.td.mb.mv_costs = thread_data.td.mv_costs_alloc;
                     thread_data.td.mb.mv_costs.CopyFrom(cpi.td.mb.mv_costs);
                 }
@@ -1659,7 +1659,7 @@ internal static partial class ethread
 
         PackBSTileOrder[] pack_bs_tile_order = pack_bs_sync.pack_bs_tile_order;
         // Reset tile order data of pack bitstream
-        Array.Clear(pack_bs_tile_order, 0, num_tiles);
+        pack_bs_tile_order.AsSpan(0, num_tiles).Clear();
 
         // Populate pack bitstream tile order structure
         for (ushort tile_idx = 0; tile_idx < num_tiles; tile_idx++)
@@ -1746,10 +1746,16 @@ internal static partial class ethread
     {
         MultiThreadInfo mt_info = cpi.mt_info;
 
-        // TODO(perf): per-call allocation (once per frame).
-        PackBSParams[] pack_bs_params = new_array<PackBSParams>(MAX_TILES);
-        uint[] tile_size = new uint[MAX_TILES];
-
+        // [port] C stack arrays (pack_bs_params uninitialised, tile_size = { 0 }), kept in
+        // mt_info across frames.
+        PackBSParams[] pack_bs_params = mt_info.pack_bs_params_buf;
+        uint[] tile_size = mt_info.pack_bs_tile_size_buf;
+        if (pack_bs_params == null)
+        {
+            mt_info.pack_bs_params_buf = pack_bs_params = new_array<PackBSParams>(MAX_TILES);
+            mt_info.pack_bs_tile_size_buf = tile_size = new uint[MAX_TILES];
+        }
+        tile_size.AsSpan().Clear();
         for (int tile_idx = 0; tile_idx < MAX_TILES; tile_idx++)
             pack_bs_params[tile_idx].total_size = new Ptr<uint>(tile_size, tile_idx);
 

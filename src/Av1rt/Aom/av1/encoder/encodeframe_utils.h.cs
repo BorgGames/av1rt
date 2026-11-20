@@ -118,14 +118,18 @@ internal static partial class encodeframe_utils
 
         if (frame_is_intra_only(cm) == 0)
         {
-            mb.e_mbd.seg_mask = new byte[2 * MAX_SB_SQUARE];
+            // [port] Reused across frames (aom_memalign: uninitialised).
+            mb.e_mbd.seg_mask = mb.seg_mask_pool ??= new byte[2 * MAX_SB_SQUARE];
         }
 
         allocate_winner_mode_stats(cpi, mb);
 
         int max_sb_square_y = 1
                               << num_pels_log2_lookup[cm.seq_params.sb_size];
-        mb.dqcoeff_buf = new int[max_sb_square_y];
+        // [port] Reused across frames (aom_memalign: uninitialised).
+        if (mb.dqcoeff_pool == null || mb.dqcoeff_pool.Length < max_sb_square_y)
+            mb.dqcoeff_pool = new int[max_sb_square_y];
+        mb.dqcoeff_buf = mb.dqcoeff_pool;
     }
 
     // This function will compute the number of reference frames to be disabled

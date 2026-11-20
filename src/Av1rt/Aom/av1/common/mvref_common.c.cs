@@ -648,7 +648,7 @@ internal static partial class mvref_common
     {
         ref OrderHintInfo order_hint_info = ref cm.seq_params.order_hint_info;
 
-        Array.Clear(cm.ref_frame_side);
+        cm.ref_frame_side.AsSpan().Clear();
         if (order_hint_info.enable_order_hint == 0) return;
 
         // [subset] The per-reference side computation needs order hints, which are disabled in

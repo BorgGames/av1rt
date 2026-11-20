@@ -62,7 +62,7 @@ internal static partial class pickcdef
         int best_id0 = 0;
         int best_id1 = 0;
         int total_strengths = nb_cdef_strengths[pick_method];
-        Array.Clear(tot_mse);
+        tot_mse.AsSpan().Clear();
         for (i = 0; i < sb_count; i++)
         {
             int gi;

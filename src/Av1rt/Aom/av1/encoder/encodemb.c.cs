@@ -423,8 +423,8 @@ internal static partial class encodemb
         int ss_y = pd.subsampling_y;
         ENTROPY_CONTEXT[] ta = s_intra_ta ??= new ENTROPY_CONTEXT[MAX_MIB_SIZE];
         ENTROPY_CONTEXT[] tl = s_intra_tl ??= new ENTROPY_CONTEXT[MAX_MIB_SIZE];
-        Array.Clear(ta);
-        Array.Clear(tl);
+        ta.AsSpan().Clear();
+        tl.AsSpan().Clear();
         encode_b_args arg = s_intra_arg ??= new encode_b_args();
         arg.cpi = cpi;
         arg.x = x;

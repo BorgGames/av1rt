@@ -401,7 +401,7 @@ internal static partial class nonrd_pickmode
             segfeature_active(cm.seg, (byte)segment_id, SEG_LVL_REF_FRAME);
         if (seg_ref_active != 0)
         {
-            Array.Clear(ref_costs_single, 0, REF_FRAMES);
+            ref_costs_single.AsSpan(0, REF_FRAMES).Clear();
         }
         else
         {
@@ -782,8 +782,8 @@ internal static partial class nonrd_pickmode
         NONRD_SCRATCH scratch = x.nonrd_scratch;
         uint[] sse16x16 = scratch.sse16x16;  // unsigned int sse16x16[64] = { 0 }
         uint[] var16x16 = scratch.var16x16;  // unsigned int var16x16[64] = { 0 }
-        Array.Clear(sse16x16);
-        Array.Clear(var16x16);
+        sse16x16.AsSpan().Clear();
+        var16x16.AsSpan().Clear();
         Debug.Assert(xd.mi[0].tx_size == TX_16X16);
         Debug.Assert(bsize > BLOCK_32X32);
 
@@ -881,9 +881,9 @@ internal static partial class nonrd_pickmode
         uint[] sse8x8 = scratch.sse8x8;  // unsigned int sse8x8[256] = { 0 }
         int[] sum8x8 = scratch.sum8x8;   // int sum8x8[256] = { 0 }
         uint[] var8x8 = scratch.var8x8;  // unsigned int var8x8[256] = { 0 }
-        Array.Clear(sse8x8);
-        Array.Clear(sum8x8);
-        Array.Clear(var8x8);
+        sse8x8.AsSpan().Clear();
+        sum8x8.AsSpan().Clear();
+        var8x8.AsSpan().Clear();
         TX_SIZE tx_size;
 
         // Calculate variance for whole partition, and also save 8x8 blocks' variance
@@ -925,9 +925,9 @@ internal static partial class nonrd_pickmode
             uint[] sse16x16 = scratch.sse16x16;  // unsigned int sse16x16[64] = { 0 }
             int[] sum16x16 = scratch.sum16x16;   // int sum16x16[64] = { 0 }
             uint[] var16x16 = scratch.var16x16;  // unsigned int var16x16[64] = { 0 }
-            Array.Clear(sse16x16);
-            Array.Clear(sum16x16);
-            Array.Clear(var16x16);
+            sse16x16.AsSpan().Clear();
+            sum16x16.AsSpan().Clear();
+            var16x16.AsSpan().Clear();
             Ptr<uint> sse_tx = sse8x8;
             Ptr<uint> var_tx = var8x8;
             uint num_blks = 1u << (bw + bh - 2);

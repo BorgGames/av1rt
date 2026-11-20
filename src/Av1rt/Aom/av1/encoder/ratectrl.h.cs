@@ -292,7 +292,7 @@ internal sealed partial class RATE_CONTROL
         resize_count = other.resize_count;
         rtc_external_ratectrl = other.rtc_external_ratectrl;
         frame_level_fast_extra_bits = other.frame_level_fast_extra_bits;
-        Array.Copy(other.frame_level_rate_correction_factors, frame_level_rate_correction_factors, RATE_FACTOR_LEVELS);
+        other.frame_level_rate_correction_factors.AsSpan(0, RATE_FACTOR_LEVELS).CopyTo(frame_level_rate_correction_factors);
         frame_num_last_gf_refresh = other.frame_num_last_gf_refresh;
         prev_coded_width = other.prev_coded_width;
         prev_coded_height = other.prev_coded_height;
@@ -414,11 +414,11 @@ internal sealed partial class PRIMARY_RATE_CONTROL
         ni_frames = other.ni_frames;
         tot_q = other.tot_q;
         last_kf_qindex = other.last_kf_qindex;
-        Array.Copy(other.avg_frame_qindex, avg_frame_qindex, FRAME_TYPES);
+        other.avg_frame_qindex.AsSpan(0, FRAME_TYPES).CopyTo(avg_frame_qindex);
         last_boosted_qindex = other.last_boosted_qindex;
         avg_q = other.avg_q;
-        Array.Copy(other.last_q, last_q, FRAME_TYPES);
-        Array.Copy(other.rate_correction_factors, rate_correction_factors, RATE_FACTOR_LEVELS);
+        other.last_q.AsSpan(0, FRAME_TYPES).CopyTo(last_q);
+        other.rate_correction_factors.AsSpan(0, RATE_FACTOR_LEVELS).CopyTo(rate_correction_factors);
         total_actual_bits = other.total_actual_bits;
         total_target_bits = other.total_target_bits;
         buffer_level = other.buffer_level;

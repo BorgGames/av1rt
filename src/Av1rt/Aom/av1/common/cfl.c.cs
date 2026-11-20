@@ -17,8 +17,8 @@ internal static partial class cfl
         Debug.Assert(block_size_wide[CFL_MAX_BLOCK_SIZE] == CFL_BUF_LINE);
         Debug.Assert(block_size_high[CFL_MAX_BLOCK_SIZE] == CFL_BUF_LINE);
 
-        Array.Clear(cfl.recon_buf_q3);
-        Array.Clear(cfl.ac_buf_q3);
+        cfl.recon_buf_q3.AsSpan().Clear();
+        cfl.ac_buf_q3.AsSpan().Clear();
         cfl.subsampling_x = seq_params.subsampling_x;
         cfl.subsampling_y = seq_params.subsampling_y;
         cfl.are_parameters_computed = 0;

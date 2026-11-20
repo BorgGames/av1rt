@@ -1498,7 +1498,7 @@ internal sealed partial class AV1EncoderConfig
         max_threads = other.max_threads;
         speed = other.speed;
         enable_low_complexity_decode = other.enable_low_complexity_decode;
-        Array.Copy(other.target_seq_level_idx, target_seq_level_idx, MAX_NUM_OPERATING_POINTS);
+        other.target_seq_level_idx.AsSpan(0, MAX_NUM_OPERATING_POINTS).CopyTo(target_seq_level_idx);
         profile = other.profile;
         pass = other.pass;
         passes = other.passes;
@@ -1559,14 +1559,14 @@ internal sealed partial class FRAME_COUNTS
     public void CopyFrom(FRAME_COUNTS other)
     {
         for (int i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++)
-            Array.Copy(other.switchable_interp[i], switchable_interp[i], SWITCHABLE_FILTERS);
+            other.switchable_interp[i].AsSpan(0, SWITCHABLE_FILTERS).CopyTo(switchable_interp[i]);
     }
 
     /// <summary>av1_zero(*this).</summary>
     public void Clear()
     {
         for (int i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++)
-            Array.Clear(switchable_interp[i]);
+            switchable_interp[i].AsSpan().Clear();
     }
 }
 
@@ -1753,12 +1753,12 @@ internal sealed partial class RD_COUNTS
         compound_ref_used_flag = other.compound_ref_used_flag;
         skip_mode_used_flag = other.skip_mode_used_flag;
         for (int i = 0; i < TX_SIZES_ALL; i++)
-            Array.Copy(other.tx_type_used[i], tx_type_used[i], TX_TYPES);
+            other.tx_type_used[i].AsSpan(0, TX_TYPES).CopyTo(tx_type_used[i]);
         for (int i = 0; i < BLOCK_SIZES_ALL; i++)
-            Array.Copy(other.obmc_used[i], obmc_used[i], 2);
-        Array.Copy(other.warped_used, warped_used, 2);
+            other.obmc_used[i].AsSpan(0, 2).CopyTo(obmc_used[i]);
+        other.warped_used.AsSpan(0, 2).CopyTo(warped_used);
         newmv_or_intra_blocks = other.newmv_or_intra_blocks;
-        Array.Copy(other.seg_tmp_pred_cost, seg_tmp_pred_cost, 2);
+        other.seg_tmp_pred_cost.AsSpan(0, 2).CopyTo(seg_tmp_pred_cost);
     }
 }
 
@@ -1775,6 +1775,9 @@ internal sealed partial class ThreadData
 {
     public MACROBLOCK mb = new();
     public MvCosts mv_costs_alloc;
+    // [port] Not in C: the MvCosts prepare_enc_workers allocates for this thread, kept for the
+    // next frame (C mallocs it per frame; it is fully overwritten by the copy from cpi->td.mb).
+    public MvCosts mv_costs_pool;
     public RD_COUNTS rd_counts = new();
     public FRAME_COUNTS counts;
     public PC_TREE_SHARED_BUFFERS shared_coeff_buf = new();
@@ -1939,6 +1942,11 @@ internal sealed partial class MultiThreadInfo
     /// In multi-threaded realtime encoding with row-mt enabled, pipeline
     /// loop-filtering after encoding.
     public int pipeline_lpf_mt_with_enc;
+
+    // [port] Not in C: av1_write_tile_obu_mt's stack arrays (PackBSParams pack_bs_params[MAX_TILES],
+    // unsigned int tile_size[MAX_TILES]), kept across frames.
+    public PackBSParams[] pack_bs_params_buf;
+    public uint[] pack_bs_tile_size_buf;
 }
 
 internal sealed partial class ActiveMap

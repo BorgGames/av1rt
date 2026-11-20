@@ -56,7 +56,9 @@ internal static partial class thread_common
         }
         // [port] aom_malloc of num_workers LFWorkerData structs: the class instances are
         // created here (their fields are set by loop_filter_data_reset before use).
-        lf_sync.lfdata = new_array<LFWorkerData>(num_workers);
+        if (lf_sync.lfdata_pool == null || lf_sync.lfdata_pool.Length != num_workers)
+            lf_sync.lfdata_pool = new_array<LFWorkerData>(num_workers);
+        lf_sync.lfdata = lf_sync.lfdata_pool;
         lf_sync.num_workers = num_workers;
 
         for (int j = 0; j < MAX_MB_PLANE; j++)

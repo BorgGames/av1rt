@@ -23,7 +23,7 @@ internal static partial class common
     internal static void av1_copy<T>(T[] dest, T[] src)
     {
         Debug.Assert(dest.Length == src.Length);
-        Array.Copy(src, dest, src.Length);
+        src.AsSpan().CopyTo(dest);
     }
 
     internal static void av1_copy<T>(T[][] dest, T[][] src)
@@ -52,7 +52,7 @@ internal static partial class common
     // [port] Arrays (any rank) are cleared in place; value structs are reset to default.
     // Class-mapped structs need their own reset at the call site.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void av1_zero<T>(T[] dest) => Array.Clear(dest);
+    internal static void av1_zero<T>(T[] dest) => dest.AsSpan().Clear();
 
     internal static void av1_zero<T>(T[][] dest)
     {

@@ -457,7 +457,7 @@ internal static partial class encodeframe
 
         segmentation seg = cm.seg;
         byte[] sb_segment_ids = s_sb_segment_ids ??= new byte[MAX_TILE_WIDTH >> MIN_SB_SIZE_LOG2];
-        Array.Clear(sb_segment_ids);
+        sb_segment_ids.AsSpan().Clear();
         Debug.Assert(sb_cols_in_tile <= sb_segment_ids.Length);
         if (seg.enabled != 0)
         {

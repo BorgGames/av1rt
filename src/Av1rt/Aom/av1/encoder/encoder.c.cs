@@ -630,8 +630,7 @@ internal static partial class encoder
         x.e_mbd.bd = (int)seq_params.bit_depth;
         x.e_mbd.global_motion = cm.global_motion;
 
-        Array.Copy(cpi.oxcf.target_seq_level_idx, level_params.target_seq_level_idx,
-                   MAX_NUM_OPERATING_POINTS);
+        cpi.oxcf.target_seq_level_idx.AsSpan(0, MAX_NUM_OPERATING_POINTS).CopyTo(level_params.target_seq_level_idx);
         level_params.keep_level_stats = 0;
         for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i)
         {
@@ -2545,7 +2544,7 @@ internal static partial class encoder
             cpi.do_border_pad = false;
         }
 
-        Array.Copy(frame_params.remapped_ref_idx, cm.remapped_ref_idx, REF_FRAMES);
+        frame_params.remapped_ref_idx.AsSpan(0, REF_FRAMES).CopyTo(cm.remapped_ref_idx);
 
         cpi.refresh_frame = frame_params.refresh_frame;
 
@@ -2826,7 +2825,7 @@ internal static partial class encoder
                 ppi.gf_group.update_type[cpi.gf_frame_index - 1] ==
                     INTNL_ARF_UPDATE)
             {
-                Array.Copy(ppi.ref_frame_map_copy, cm.ref_frame_map, REF_FRAMES);
+                ppi.ref_frame_map_copy.AsSpan(0, REF_FRAMES).CopyTo(cm.ref_frame_map);
             }
             refresh_reference_frames(cpi);
             // For frame_parallel_level 1 frame in a parallel encode set of lower layer
@@ -2834,7 +2833,7 @@ internal static partial class encoder
             if (ppi.gf_group.frame_parallel_level[cpi.gf_frame_index] == 1 &&
                 ppi.gf_group.update_type[cpi.gf_frame_index] == INTNL_ARF_UPDATE)
             {
-                Array.Copy(cm.ref_frame_map, ppi.ref_frame_map_copy, REF_FRAMES);
+                cm.ref_frame_map.AsSpan(0, REF_FRAMES).CopyTo(ppi.ref_frame_map_copy);
             }
             av1_rc_postencode_update(cpi, (ulong)cpi_data.frame_size);
         }

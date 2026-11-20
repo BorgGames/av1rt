@@ -45,7 +45,7 @@ internal static partial class entropymv
 
         static void take(aom_cdf_prob[] src, ref int p, aom_cdf_prob[] dst)
         {
-            System.Array.Copy(src, p, dst, 0, dst.Length);
+            new System.ReadOnlySpan<ushort>(src, p, dst.Length).CopyTo(dst);
             p += dst.Length;
         }
     }

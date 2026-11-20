@@ -93,13 +93,27 @@ internal static partial class entenc
 
     /*Initializes the encoder.
       size: The initial size of the buffer, in bytes.*/
+    // [port] Not in C: buffers released by od_ec_enc_clear on this thread, handed out again by
+    // od_ec_enc_init (C mallocs and frees one per tile and frame).
+    [ThreadStatic] private static byte[][] t_buf_pool;
+    [ThreadStatic] private static int t_buf_pool_count;
+
     internal static void od_ec_enc_init(od_ec_enc enc, uint size)
     {
         od_ec_enc_reset(enc);
-        // [port] malloc. Every byte that is read back has been written first, so the zeroing
-        // of new byte[] does not change the output. The allocation failure path is unreachable.
-        enc.buf = new byte[size];
-        enc.storage = size;
+        // [port] malloc. Every byte that is read back has been written first, so neither the
+        // zeroing of new byte[] nor a recycled buffer's old contents change the output. The
+        // allocation failure path is unreachable. storage is the real capacity: it only decides
+        // when the buffer grows.
+        byte[] buf = null;
+        if (t_buf_pool_count > 0)
+        {
+            buf = t_buf_pool[--t_buf_pool_count];
+            t_buf_pool[t_buf_pool_count] = null;
+            if (buf.Length < size) buf = null;
+        }
+        enc.buf = buf ??= new byte[size];
+        enc.storage = (uint)buf.Length;
     }
 
     /*Reinitializes the encoder.*/
@@ -115,7 +129,16 @@ internal static partial class entenc
     }
 
     /*Frees the buffers used by the encoder.*/
-    internal static void od_ec_enc_clear(od_ec_enc enc) { enc.buf = null; }
+    internal static void od_ec_enc_clear(od_ec_enc enc)
+    {
+        // [port] free: the buffer goes back to this thread's pool.
+        if (enc.buf != null)
+        {
+            t_buf_pool ??= new byte[4][];
+            if (t_buf_pool_count < t_buf_pool.Length) t_buf_pool[t_buf_pool_count++] = enc.buf;
+        }
+        enc.buf = null;
+    }
 
     /*Encode a single binary value.
       val: The value to encode (0 or 1).

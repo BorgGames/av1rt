@@ -40,6 +40,11 @@ internal sealed partial class AV1LfSync
 
     // Row-based parallel loopfilter data
     public LFWorkerData[] lfdata;
+    // [port] Not in C: the last lfdata array, reused by the next av1_loop_filter_alloc for the
+    // same worker count. The encoder re-allocates the sync every frame (av1_init_mt_sync counts
+    // 128-pixel superblock rows, lpf_pipeline_mt_init the sequence's), which is a cheap malloc
+    // in C but rebuilds every LFWorkerData's plane buffers here.
+    public LFWorkerData[] lfdata_pool;
     public int num_workers;
     public pthread_mutex_t job_mutex;
     public Ptr<AV1LfMTInfo> job_queue;

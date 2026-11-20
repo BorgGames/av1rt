@@ -28,6 +28,9 @@ internal static class KernelBench
             for (int i = 0; i < 4096; i += 32) s += sad_avx2.aom_sad32x32_avx2(new Ptr<byte>(src, i), stride, new Ptr<byte>(refb, i + 1), stride);
             return s;
         });
+        var fc0 = new FRAME_CONTEXT();
+        var fc1 = new FRAME_CONTEXT();
+        Time("FRAME_CONTEXT.CopyFrom/128", () => { fc1.CopyFrom(fc0); return 0; });
         Console.WriteLine(ShiftVar(Vector128.Create(-1000, 1000, 77, -77).AsInt64(), args.Length + 1));
         return 0;
     }

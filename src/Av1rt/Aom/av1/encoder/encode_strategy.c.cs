@@ -816,7 +816,7 @@ internal static partial class encode_strategy
         // frame_params->remapped_ref_idx here and they will be used when encoding
         // this frame.  If frame_params->remapped_ref_idx is setup independently of
         // cm->remapped_ref_idx then update_ref_frame_map() will have no effect.
-        Array.Copy(cm.remapped_ref_idx, frame_params.remapped_ref_idx, REF_FRAMES);
+        cm.remapped_ref_idx.AsSpan(0, REF_FRAMES).CopyTo(frame_params.remapped_ref_idx);
 
         cpi.td.mb.rdmult_delta_qindex = cpi.td.mb.delta_qindex = 0;
 

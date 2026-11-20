@@ -38,5 +38,5 @@ internal static partial class CRuntime
 
     /// <summary>Copies a whole array; for C struct-array assignments.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void copy_array<T>(T[] dst, T[] src) => System.Array.Copy(src, dst, src.Length);
+    public static void copy_array<T>(T[] dst, T[] src) => src.AsSpan().CopyTo(dst);
 }

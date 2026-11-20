@@ -176,7 +176,7 @@ internal sealed partial class MB_MODE_INFO
         palette_mode_info = other.palette_mode_info;
         skip_txfm = other.skip_txfm;
         tx_size = other.tx_size;
-        Array.Copy(other.inter_tx_size, inter_tx_size, INTER_TX_SIZE_BUF_LEN);
+        other.inter_tx_size.AsSpan(0, INTER_TX_SIZE_BUF_LEN).CopyTo(inter_tx_size);
         delta_lf_from_base = other.delta_lf_from_base;
         delta_lf = other.delta_lf;
         segment_id = other.segment_id;

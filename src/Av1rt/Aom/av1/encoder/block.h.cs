@@ -823,6 +823,13 @@ internal sealed partial class MACROBLOCK
     internal int pix_to_bottom_edge;
     internal int pix_to_right_edge;
 
+    // [port] Not in C: the buffers av1_alloc_mb_data hands out again on the next frame instead
+    // of allocating new ones (C mallocs them before and frees them after every frame; their
+    // contents are uninitialised either way). Per MACROBLOCK, not copied by CopyFrom.
+    internal readonly short[][] src_diff_pool = new short[MAX_MB_PLANE][];
+    internal byte[] seg_mask_pool;
+    internal int[] dqcoeff_pool;
+
     // C: `*dst = *src` of the whole MACROBLOCK. Pointer members are copied as pointers
     // (shared), embedded structs/arrays are deep-copied.
     internal void CopyFrom(MACROBLOCK o)
@@ -944,7 +951,7 @@ internal static partial class EncArrays
         return r;
     }
 
-    internal static void Copy1<T>(T[] dst, T[] src) => Array.Copy(src, dst, src.Length);
+    internal static void Copy1<T>(T[] dst, T[] src) => src.AsSpan().CopyTo(dst);
 
     internal static void Copy2<T>(T[][] dst, T[][] src)
     {

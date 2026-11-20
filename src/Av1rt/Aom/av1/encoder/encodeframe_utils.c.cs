@@ -620,7 +620,10 @@ internal static partial class encodeframe_utils
                 plane != 0 ? cm.seq_params.subsampling_x + cm.seq_params.subsampling_y
                            : 0;
             int sb_size = MAX_SB_SQUARE >> subsampling_xy;
-            mb.plane[plane].src_diff = new short[sb_size];
+            // [port] Reused across frames (aom_memalign: uninitialised).
+            short[] buf = mb.src_diff_pool[plane];
+            if (buf == null || buf.Length < sb_size) mb.src_diff_pool[plane] = buf = new short[sb_size];
+            mb.plane[plane].src_diff = buf;
         }
     }
 }
