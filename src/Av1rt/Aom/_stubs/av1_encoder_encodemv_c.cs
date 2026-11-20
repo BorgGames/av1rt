@@ -15,4 +15,14 @@ internal static partial class stubs_av1_encoder_encodemv_c
                                                           ref int_mv near_mv,
                                                           int is_integer) =>
         throw new NotImplementedException();
+    // C: int *mvcost[2].
+    internal static void av1_build_nmv_cost_table(Ptr<int> mvjoint, Ptr<int>[] mvcost,
+                                                  nmv_context mvctx,
+                                                  MvSubpelPrecision precision) =>
+        throw new NotImplementedException();
+    internal static int_mv av1_get_ref_mv_from_stack(int ref_idx,
+                                                     Ptr<MV_REFERENCE_FRAME> ref_frame,
+                                                     int ref_mv_idx,
+                                                     MB_MODE_INFO_EXT mbmi_ext) =>
+        throw new NotImplementedException();
 }
