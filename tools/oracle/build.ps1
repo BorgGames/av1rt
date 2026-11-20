@@ -3,16 +3,18 @@
 #   ./tools/oracle/build.ps1            pure-C realtime-only libaom + av1rt_oracle (MSVC)
 #   ./tools/oracle/build.ps1 -Coverage  same, instrumented for llvm-cov (clang-cl)
 #
-# Outputs go to .oracle/ in the repository root. Requires Visual Studio 2026 and
-# the libaom sources next to this repository (..\aom).
+# Outputs go to .oracle/ in the repository root. Requires Visual Studio 2026 and the libaom
+# sources at the commit in libaom.commit, next to this repository (..\aom) or in $env:AOM_ROOT.
 param([switch]$Coverage)
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot\common.ps1"
 
 $repo = (Resolve-Path "$PSScriptRoot\..\..").Path
-$aomRoot = (Resolve-Path "$repo\..\aom").Path
-$vs = 'C:\Program Files\Microsoft Visual Studio\18\Community'
-$cmake = "$vs\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
-$perl = 'C:/Program Files/Git/usr/bin/perl.exe'
+$tools = Get-OracleTools $repo
+$aomRoot = $tools.AomRoot
+$vs = $tools.VS
+$cmake = $tools.CMake
+$perl = $tools.Perl
 
 $suffix = if ($Coverage) { '-cov' } else { '' }
 $aomBuild = "$repo\.oracle\build$suffix"

@@ -12,10 +12,13 @@ self-contained functions, call libaom's C implementation and the C# port with th
    you need (`__declspec(dllexport)`, plain C types and pointers only). Internal libaom
    functions are reachable because the shim links the static `aom.lib` of the pure-C oracle
    build. File-`static` functions are not reachable: test them through a public caller.
-2. Build it: `pwsh -NoProfile -ExecutionPolicy Bypass -File tools/oracle/shim/build-shim.ps1 -Name <pkg>`
+2. Build it: `pwsh -NoProfile -ExecutionPolicy Bypass -File tools/oracle/shim/build-shim.ps1 -Name <pkg>` (or `-All`)
    → `.oracle/shims/aomshim_<pkg>.dll` (copied next to the tests on build).
 3. Add xunit tests in `tests/Av1rt.Tests/<Area>/`, declaring the imports with `[DllImport("aomshim_<pkg>")]`
    and passing arrays (they are pinned automatically). See `tests/Av1rt.Tests/Shims/SmokeShim.cs`.
+   Mark every test class that reaches a shim with `[Trait("Category", "Native")]`: CI runs the other
+   tests first, then fetches libaom at `tools/oracle/libaom.commit`, builds it and all shims
+   (`build-shim.ps1 -All`, with `$env:AOM_ROOT` pointing at the sources) and runs `Category=Native`.
 4. Run with a private output dir when others may be building:
    `dotnet test tests/Av1rt.Tests/Av1rt.Tests.csproj -p:IntermediateOutputPath=obj/<pkg>/ -p:OutputPath=bin/<pkg>/ --filter <YourTests>`
 
