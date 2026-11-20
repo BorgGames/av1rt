@@ -921,7 +921,15 @@ internal static partial class blockd
         return B(mbmi.ref_frame[1] > INTRA_FRAME);
     }
 
-    // [subset] has_uni_comp_refs: never executed (compound prediction is disabled).
+    // [port] Only reached from the comp-pred branches of av1_get_comp_reference_type_context
+    // (pred_common.c), which depend on the neighbours' data; ported so that function is complete.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int has_uni_comp_refs(MB_MODE_INFO mbmi)
+    {
+        return B(has_second_ref(mbmi) != 0 &&
+                 !((mbmi.ref_frame[0] >= BWDREF_FRAME) ^
+                   (mbmi.ref_frame[1] >= BWDREF_FRAME)));
+    }
 
     // [port] comp_ref0 / comp_ref1 never execute (compound prediction is disabled); ported
     // because get_uni_comp_ref_idx (mvref_common.h) calls them.
