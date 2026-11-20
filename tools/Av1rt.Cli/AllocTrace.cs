@@ -6,9 +6,11 @@ using System.Linq;
 using System.Text;
 
 /// <summary>
-/// AV1RT_ALLOCS=1 (JIT runs only: <c>dotnet Av1rt.Cli.dll bench ...</c>): samples the GC's
-/// allocation ticks (one per ~100 KB allocated) by type once <see cref="Start"/> is called, and
-/// <see cref="Report"/> lists the types that allocate the most.
+/// AV1RT_ALLOCS=1: samples the GC's allocation ticks (one per ~100 KB allocated) by type once
+/// <see cref="Start"/> is called, and <see cref="Report"/> lists the types that allocate the most.
+/// Works on a JIT build only (<c>dotnet build -o dir</c>, then <c>dotnet dir/Av1rt.Cli.dll bench
+/// ...</c>), with "System.Diagnostics.Tracing.EventSource.IsSupported" set to true in
+/// dir/Av1rt.Cli.runtimeconfig.json (PublishAot turns it off).
 /// </summary>
 internal sealed class AllocTrace : EventListener
 {
@@ -16,7 +18,6 @@ internal sealed class AllocTrace : EventListener
 
     private readonly ConcurrentDictionary<string, long> _bytes = new();
     private volatile bool _started;
-    private readonly ConcurrentDictionary<int, byte> _seen = new();
 
     internal void Start() => _started = true;
 
@@ -28,10 +29,7 @@ internal sealed class AllocTrace : EventListener
 
     protected override void OnEventWritten(EventWrittenEventArgs e)
     {
-        if (!_started) return;
-        if (Environment.GetEnvironmentVariable("AV1RT_ALLOCS_DEBUG") == "1" && _seen.TryAdd(e.EventId, 0))
-            Console.Error.WriteLine($"event {e.EventId} {e.EventName} {string.Join(",", e.PayloadNames ?? new System.Collections.ObjectModel.ReadOnlyCollection<string>(Array.Empty<string>()))}");
-        if (e.EventName == null || !e.EventName.StartsWith("GCAllocationTick", StringComparison.Ordinal)) return;
+        if (!_started || e.EventName == null || !e.EventName.StartsWith("GCAllocationTick", StringComparison.Ordinal)) return;
         string type = "?";
         long amount = 0;
         for (int i = 0; i < e.PayloadNames!.Count; i++)
