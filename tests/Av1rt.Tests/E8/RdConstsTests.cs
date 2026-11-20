@@ -17,6 +17,7 @@ namespace Av1rt.Tests.E8;
 // logic, av1_fill_coeff_costs and av1_fill_mode_rates) against libaom, starting from libaom's
 // default CDFs for the frame's base_qindex. The shim leaves x->mv_costs NULL (as the C# MACROBLOCK
 // does), so av1_fill_mv_costs returns early on both sides.
+[Trait("Category", "Native")]
 public class RdConstsTests
 {
     private readonly ITestOutputHelper _output;

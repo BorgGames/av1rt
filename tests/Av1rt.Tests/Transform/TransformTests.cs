@@ -12,6 +12,7 @@ namespace Av1rt.Tests.Transform;
 
 // Differential tests of the 2-D forward / inverse transforms against the pure-C libaom build
 // (tools/oracle/shim/shim_e2.c).
+[Trait("Category", "Native")]
 public class TransformTests
 {
     // Every TX_SIZE of the subset (TX64 and the 1:4 sizes are excluded, see the [subset] notes

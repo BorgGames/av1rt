@@ -10,6 +10,7 @@ namespace Av1rt.Tests.F1;
 /// header) on random, self-consistent frame parameters, against libaom: bytes, header sizes
 /// and the saved bit buffer position (where the tile size / context tile id are patched in).
 /// </summary>
+[Trait("Category", "Native")]
 public class FrameHeaderTests
 {
     [Theory]

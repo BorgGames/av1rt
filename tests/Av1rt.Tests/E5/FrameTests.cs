@@ -12,6 +12,7 @@ namespace Av1rt.Tests.E5;
 // lookahead.c) against libaom: both sides allocate the frame with aom_alloc_frame_buffer from
 // the same random content (borders included), run the operation and compare every byte of the
 // allocation.
+[Trait("Category", "Native")]
 public class FrameTests
 {
     private static readonly (int w, int h)[] Sizes =

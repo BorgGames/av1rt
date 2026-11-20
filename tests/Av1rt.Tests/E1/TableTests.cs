@@ -12,6 +12,7 @@ using static Av1rt.Aom.txfm_common;
 namespace Av1rt.Tests.E1;
 
 /// <summary>scan.c, txb_common.c and cost.c tables compared whole with libaom's.</summary>
+[Trait("Category", "Native")]
 public class TableTests
 {
     // The 64-point sizes use the scans of their 32-point adjusted size.

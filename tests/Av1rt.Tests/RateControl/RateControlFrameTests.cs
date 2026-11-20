@@ -10,6 +10,7 @@ namespace Av1rt.Tests.RateControl;
 /// <summary>Differential tests that need source frames or block data: scene detection,
 /// av1_get_one_pass_rt_params, cyclic refresh segment updates, and a multi-frame rate
 /// control simulation.</summary>
+[Trait("Category", "Native")]
 [Collection("e7")]
 public class RateControlFrameTests
 {

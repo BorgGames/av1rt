@@ -11,6 +11,7 @@ using static Av1rt.Aom.entropymv;
 namespace Av1rt.Tests.E1;
 
 /// <summary>cost.c against libaom, on every default CDF.</summary>
+[Trait("Category", "Native")]
 public class CostTests
 {
     public CostTests()

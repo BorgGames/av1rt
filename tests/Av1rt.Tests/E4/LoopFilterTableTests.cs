@@ -6,6 +6,7 @@ using static Av1rt.Aom.av1_loopfilter;
 namespace Av1rt.Tests.E4;
 
 /// <summary>av1/common/av1_loopfilter.c: threshold and level tables against libaom.</summary>
+[Trait("Category", "Native")]
 public class LoopFilterTableTests
 {
     private static void AssertThresholds(byte[] expected, AV1_COMMON cm, string what)

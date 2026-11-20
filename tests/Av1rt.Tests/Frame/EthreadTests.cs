@@ -12,6 +12,7 @@ namespace Av1rt.Tests.Frame;
 
 // ethread.c: worker counts per multi-threaded module, tile-to-thread assignment, the row-mt job
 // dispatch, frame counter accumulation and the pack bitstream tile order, against libaom.
+[Trait("Category", "Native")]
 public class EthreadTests
 {
     [Fact]

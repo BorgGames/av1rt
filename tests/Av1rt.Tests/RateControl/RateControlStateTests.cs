@@ -10,6 +10,7 @@ namespace Av1rt.Tests.RateControl;
 /// <summary>Differential tests of the stateful rate control functions: libaom and the port
 /// start from the same random <see cref="E7State"/>; results and the whole resulting state
 /// must match.</summary>
+[Trait("Category", "Native")]
 [Collection("e7")]
 public class RateControlStateTests
 {

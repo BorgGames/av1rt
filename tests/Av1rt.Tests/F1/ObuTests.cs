@@ -10,6 +10,7 @@ namespace Av1rt.Tests.F1;
 /// OBU header, OBU size (leb128), sequence header OBU, av1_neg_interleave and
 /// av1_get_eob_pos_token against libaom.
 /// </summary>
+[Trait("Category", "Native")]
 public class ObuTests
 {
     [Fact]

@@ -7,6 +7,7 @@ using static Av1rt.Aom.encoder;
 namespace Av1rt.Tests.G1;
 
 /// <summary>av1_convert_sect5obus_to_annexb (encoder.c) against libaom.</summary>
+[Trait("Category", "Native")]
 public class AnnexbTests
 {
     // A section 5 temporal unit: OBUs with obu_has_size_field, random extension headers,

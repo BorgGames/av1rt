@@ -11,6 +11,7 @@ using static Av1rt.Aom.speed_features;
 namespace Av1rt.Tests.F3;
 
 // Differential tests of context_tree.c against libaom (shim_f3.c).
+[Trait("Category", "Native")]
 public class ContextTreeTests
 {
     // av1_setup_sms_tree(): node block sizes, child links and the root.

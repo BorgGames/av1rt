@@ -13,6 +13,7 @@ namespace Av1rt.Tests.E5;
 
 // Differential tests of tile_common.c, alloccommon.c (CDEF buffer sizing, av1_get_MBs) and
 // timing.c against libaom.
+[Trait("Category", "Native")]
 public class TileAndBufferTests
 {
     private static readonly (int w, int h)[] FrameSizes =

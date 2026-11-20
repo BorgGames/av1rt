@@ -11,6 +11,7 @@ using static Av1rt.Aom.txfm_common;
 namespace Av1rt.Tests.Prediction;
 
 // av1_setup_scale_factors_for_frame, pred_common contexts, av1_set_entropy_contexts.
+[Trait("Category", "Native")]
 public class ContextTests
 {
     // Copy of av1_ss_size_lookup (common_data.c, another package; still a stub in this tree), so

@@ -11,6 +11,7 @@ namespace Av1rt.Tests.Simd.S6;
 /// aom_dsp/x86/loopfilter_sse2.c: every ported aom_lpf_*_sse2 kernel against the aom_lpf_*_c
 /// port, on random edges with realistic (av1_loop_filter_init) and lpf_test.cc thresholds.
 /// </summary>
+[Trait("Category", "Native")]
 public class LoopFilterSse2Tests
 {
     private delegate void Single(Ptr<byte> s, int p, Ptr<byte> b, Ptr<byte> l, Ptr<byte> t);

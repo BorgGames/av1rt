@@ -6,6 +6,7 @@ using static Av1rt.Aom.entenc;
 
 namespace Av1rt.Tests.Entropy;
 
+[Trait("Category", "Native")]
 public class RangeCoderTests
 {
     [Theory]

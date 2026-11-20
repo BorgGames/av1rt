@@ -14,6 +14,7 @@ internal static class SmokeShim
     public static extern int aomshim_smoke_ec(int[] symbols, int count, ushort[] icdf, int nsyms, byte[] output, int outputCapacity);
 }
 
+[Trait("Category", "Native")]
 public class SmokeShimTests
 {
     [Fact]

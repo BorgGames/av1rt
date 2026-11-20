@@ -15,6 +15,7 @@ namespace Av1rt.Tests.E1;
 /// The txb_common.h context helpers that read the txb_common.c / scan.c tables, against the
 /// same static inline C functions compiled into the shim.
 /// </summary>
+[Trait("Category", "Native")]
 public class TxbContextTests
 {
     [Fact]

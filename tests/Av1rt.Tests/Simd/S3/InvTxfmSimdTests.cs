@@ -26,6 +26,7 @@ namespace Av1rt.Tests.Simd.S3;
 /// coefficient forced to INT16_MAX * 100 / 141 (the gt_int16 test) or run through a quantize /
 /// dequantize round trip with an encoder-like eob.
 /// </summary>
+[Trait("Category", "Native")]
 public class InvTxfmSimdTests
 {
     private readonly ITestOutputHelper _out;

@@ -12,6 +12,7 @@ namespace Av1rt.Tests.E5;
 // Differential tests of the aom_dsp kernels of work package e5 (sad.c, variance.c, avg.c, sse.c,
 // subtract.c) against libaom's C code (shim_e5.c), for every block size, random and extreme
 // pixels and strides that are not the block width.
+[Trait("Category", "Native")]
 public class DspTests
 {
     // Block sizes compiled with CONFIG_REALTIME_ONLY.

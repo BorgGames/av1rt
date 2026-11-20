@@ -38,6 +38,7 @@ internal static class F2Shim
 /// model_skip_for_sb_y_large, set_early_term_based_on_uv_plane, ...) and the entry points
 /// av1_nonrd_pick_inter_mode_sb / av1_nonrd_pick_intra_mode / av1_estimate_intra_mode, which
 /// need a whole encoder state; they are covered by the end-to-end bit-exact tests.</summary>
+[Trait("Category", "Native")]
 public class NonrdOptTests
 {
     private const int Stride = 64 + 24;

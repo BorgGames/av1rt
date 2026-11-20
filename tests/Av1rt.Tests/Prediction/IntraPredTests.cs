@@ -9,6 +9,7 @@ using static Av1rt.Aom.txfm_common;
 
 namespace Av1rt.Tests.Prediction;
 
+[Trait("Category", "Native")]
 public class IntraPredTests
 {
     // Same order as the shim's family table.

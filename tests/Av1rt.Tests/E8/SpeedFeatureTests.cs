@@ -15,6 +15,7 @@ namespace Av1rt.Tests.E8;
 // Runs av1_set_speed_features_framesize_independent / _framesize_dependent / _qindex_dependent
 // on the same encoder state in libaom and in the port and compares every SPEED_FEATURES field,
 // WinnerModeParams, the selected sub-pixel search and the sequence header flags they update.
+[Trait("Category", "Native")]
 public class SpeedFeatureTests
 {
     private static readonly (int W, int H)[] Resolutions =

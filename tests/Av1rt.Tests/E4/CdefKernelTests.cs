@@ -9,6 +9,7 @@ using static Av1rt.Aom.cdef_block;
 namespace Av1rt.Tests.E4;
 
 /// <summary>av1/common/cdef_block.c and cdef.c kernels against libaom.</summary>
+[Trait("Category", "Native")]
 public class CdefKernelTests
 {
     // An 8x8 block in one of several shapes: noise, flat, a directional ramp in each of the 8

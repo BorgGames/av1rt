@@ -8,6 +8,7 @@ namespace Av1rt.Tests.Frame;
 
 // ethread.c row synchronization (av1_row_mt_sync_read / av1_row_mt_sync_write): the
 // num_finished_cols updates against libaom, and the top-right dependency hand-off on real threads.
+[Trait("Category", "Native")]
 public class RowSyncTests
 {
     // A sync object as row_mt_sync_mem_alloc() + av1_encode_tiles_row_mt() set it up.

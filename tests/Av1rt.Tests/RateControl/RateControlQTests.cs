@@ -7,6 +7,7 @@ using static Av1rt.Tests.RateControl.E7Harness;
 namespace Av1rt.Tests.RateControl;
 
 /// <summary>Differential tests of the q / bits helpers of ratectrl.c and aq_cyclicrefresh.c.</summary>
+[Trait("Category", "Native")]
 [Collection("e7")]
 public class RateControlQTests
 {

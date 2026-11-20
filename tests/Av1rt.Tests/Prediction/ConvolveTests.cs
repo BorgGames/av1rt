@@ -8,6 +8,7 @@ using static Av1rt.Aom.filter;
 
 namespace Av1rt.Tests.Prediction;
 
+[Trait("Category", "Native")]
 public class ConvolveTests
 {
     private static readonly int[] Sizes = { 2, 4, 8, 16, 32, 64, 128 };

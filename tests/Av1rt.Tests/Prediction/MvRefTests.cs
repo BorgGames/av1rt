@@ -10,6 +10,7 @@ namespace Av1rt.Tests.Prediction;
 
 // av1_find_mv_refs on random mode-info grids (single reference frames and INTRA_FRAME; the
 // compound branches are [subset] in the port).
+[Trait("Category", "Native")]
 public class MvRefTests
 {
     private static readonly int[] SbSizes = { BLOCK_64X64, BLOCK_128X128 };

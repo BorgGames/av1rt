@@ -62,6 +62,7 @@ internal sealed class SearchPlanes
     public static int BlockOffset(int by, int bx) => (B + by) * Stride + (B + bx);
 }
 
+[Trait("Category", "Native")]
 public class MotionSearchTests
 {
     private static readonly int[] Bsizes =

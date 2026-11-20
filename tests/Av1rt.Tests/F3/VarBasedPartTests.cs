@@ -16,6 +16,7 @@ using static Av1rt.Aom.var_based_part;
 namespace Av1rt.Tests.F3;
 
 // Differential tests of var_based_part.c against libaom (shim_f3.c).
+[Trait("Category", "Native")]
 public class VarBasedPartTests
 {
     private readonly ITestOutputHelper _output;

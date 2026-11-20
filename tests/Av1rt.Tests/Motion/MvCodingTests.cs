@@ -107,6 +107,7 @@ internal sealed class CostTables
     }
 }
 
+[Trait("Category", "Native")]
 public class MvCostTests
 {
     [Fact]
@@ -173,6 +174,7 @@ public class MvCostTests
     }
 }
 
+[Trait("Category", "Native")]
 public class MvEncodeTests
 {
     [Theory]
@@ -233,6 +235,7 @@ public class MvEncodeTests
     }
 }
 
+[Trait("Category", "Native")]
 public class RefMvTests
 {
     [Fact]
@@ -336,6 +339,7 @@ public class RefMvTests
     }
 }
 
+[Trait("Category", "Native")]
 public class SearchSiteTests
 {
     private static int[] Serialize(search_site_config cfg)

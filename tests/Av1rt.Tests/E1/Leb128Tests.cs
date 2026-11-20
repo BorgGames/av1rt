@@ -6,6 +6,7 @@ using static Av1rt.Aom.aom_integer;
 namespace Av1rt.Tests.E1;
 
 /// <summary>aom_integer.c (leb128) against libaom.</summary>
+[Trait("Category", "Native")]
 public class Leb128Tests
 {
     private static IEnumerable<ulong> Values()

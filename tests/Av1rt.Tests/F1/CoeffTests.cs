@@ -18,6 +18,7 @@ namespace Av1rt.Tests.F1;
 /// av1_txb_init_levels_c, av1_get_nz_map_contexts_c and av1_write_coeffs_txb (with
 /// av1_write_tx_type) against libaom: output bytes and the adapted FRAME_CONTEXT.
 /// </summary>
+[Trait("Category", "Native")]
 public class CoeffTests
 {
     private const int TX_SIZES_ALL_ = 19, TX_TYPES_ = 16, TX_32X32_ = 3;

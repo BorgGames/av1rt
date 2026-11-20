@@ -18,6 +18,7 @@ namespace Av1rt.Tests.G1;
 /// aom_codec_enc_config_default, validate_config, set_encoder_config, av1_get_encoder_config,
 /// aom_codec_enc_init (reject path) and init_seq_coding_tools (via av1_create_primary_compressor).
 /// </summary>
+[Trait("Category", "Native")]
 public class ConfigTests
 {
     private readonly ITestOutputHelper output;

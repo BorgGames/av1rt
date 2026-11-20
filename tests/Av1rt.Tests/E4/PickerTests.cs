@@ -11,6 +11,7 @@ namespace Av1rt.Tests.E4;
 /// over every qindex against libaom. Both read av1_ac_quant_QTX (quant_common.c, package e1),
 /// so they are skipped while that is still a stub in this branch.
 /// </summary>
+[Trait("Category", "Native")]
 public class PickerTests
 {
     [FactUnlessStub("av1_ac_quant_QTX")]

@@ -8,6 +8,7 @@ using static Av1rt.Aom.enums;
 namespace Av1rt.Tests.E8;
 
 // av1_mv_pred (with enc_clamp_mv) against libaom. Needs av1_get_ref_mv_from_stack (encodemv.c).
+[Trait("Category", "Native")]
 public class MvPredTests
 {
     private readonly ITestOutputHelper _output;

@@ -59,6 +59,7 @@ internal sealed class LibaomQuantTables
 
 // Differential tests of the quantizers (aom_dsp/quantize.c, av1/encoder/av1_quantize.c)
 // against the pure-C libaom build (tools/oracle/shim/shim_e2.c).
+[Trait("Category", "Native")]
 public class QuantizeTests
 {
     private static readonly int[] QIndices = { 0, 10, 37, 64, 100, 143, 190, 230, 255 };

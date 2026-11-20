@@ -6,6 +6,7 @@ using static Av1rt.Aom.loopfilter_h;
 namespace Av1rt.Tests.E4;
 
 /// <summary>aom_dsp/loopfilter.c: every aom_lpf_*_c kernel against libaom.</summary>
+[Trait("Category", "Native")]
 public class LoopFilterKernelTests
 {
     private delegate void Single(Ptr<byte> s, int p, Ptr<byte> b, Ptr<byte> l, Ptr<byte> t);

@@ -12,6 +12,7 @@ using static Av1rt.Aom.ratectrl;
 namespace Av1rt.Tests.E8;
 
 // Differential tests of the leaf functions of rd.c and rdopt.c against libaom.
+[Trait("Category", "Native")]
 public class RdTests
 {
     private readonly ITestOutputHelper _output;

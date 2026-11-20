@@ -19,6 +19,7 @@ namespace Av1rt.Tests.E4;
 /// CDEF (cdef.c + cdef_block.c) on random 8-bit 4:2:0 frames with random mode info, against
 /// libaom's av1_loop_filter_frame_mt / av1_cdef_frame.
 /// </summary>
+[Trait("Category", "Native")]
 public class FrameFilterTests
 {
     // BLOCK_SIZE by (log2 width, log2 height) in mi units; -1 where AV1 has no such block.

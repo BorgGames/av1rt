@@ -13,6 +13,7 @@ namespace Av1rt.Tests.E1;
 /// FRAME_CONTEXT, compared with libaom's FRAME_CONTEXT memory, plus the counter reset and
 /// av1_setup_past_independence.
 /// </summary>
+[Trait("Category", "Native")]
 public class DefaultCdfTests
 {
     [Fact]

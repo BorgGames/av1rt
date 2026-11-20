@@ -17,6 +17,7 @@ namespace Av1rt.Tests.Prediction;
 // av1_setup_pre_planes, av1_enc_build_inter_predictor (reconinter_template: 8x8-and-bigger and
 // sub-8x8 chroma paths, av1_init_warp_params, av1_make_inter_predictor, inter_predictor,
 // av1_convolve_2d_facade) and av1_enc_build_inter_predictor_y_nonrd.
+[Trait("Category", "Native")]
 public class InterPredTests
 {
     private const int Border = 296;  // > AOM_BORDER_IN_PIXELS + filter taps

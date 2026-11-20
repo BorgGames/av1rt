@@ -8,6 +8,7 @@ using static Av1rt.Aom.txfm_common;
 namespace Av1rt.Tests.E1;
 
 /// <summary>quant_common.c and seg_common.c against libaom.</summary>
+[Trait("Category", "Native")]
 public class QuantSegTests
 {
     [Theory]
