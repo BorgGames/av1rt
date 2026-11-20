@@ -132,6 +132,11 @@ public class QuantizeTests
                         {
                             var coeff = new int[n];
                             for (int i = 0; i < n; i++) coeff[i] = RandomCoeff(rng, dequant[1], kase);
+                            // [s2] With SIMD on, the facade's aom_quantize_b* are the AVX2
+                            // versions, which (like libaom's) take the 16-bit coefficients the
+                            // lowbd forward transform produces: keep the inputs in that domain.
+                            if (Av1rt.Aom.Simd.UseAvx2)
+                                for (int i = 0; i < n; i++) coeff[i] = Math.Clamp(coeff[i], -short.MaxValue, short.MaxValue);
 
                             var qC = new int[n];
                             var dqC = new int[n];
@@ -209,7 +214,10 @@ public class QuantizeTests
                         Array.Fill(qCs, (short)0x1234);
 
                         E2Shim.e2_quantize_lp(coeff, n, round, quant, qC, dqC, dequant, eobC, scan, iscan);
-                        av1_quantize_lp(coeff, n, round, quant, qCs, dqCs, dequant, eobCs, scan, iscan);
+                        // [s2] The C port: the av1_quantize_lp forwarder dispatches to the AVX2
+                        // version, which (like libaom's) cannot take INT16_MIN; it is tested
+                        // against this in Simd/S2/QuantizeSimdTests.cs.
+                        av1_quantize_lp_c(coeff, n, round, quant, qCs, dqCs, dequant, eobCs, scan, iscan);
 
                         string ctx = $"quantize_lp tx_size={txSize} q={q} plane={plane} case={kase}";
                         TransformTests.AssertSame(eobC, eobCs, ctx + " eob");

@@ -122,8 +122,11 @@ internal static partial class hybrid_fwd_txfm
     // av1_rtcd.h dispatched name.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void av1_lowbd_fwd_txfm(Ptr<short> src_diff, Ptr<tran_low_t> coeff,
-                                            int diff_stride, ref TxfmParam txfm_param) =>
-        av1_lowbd_fwd_txfm_c(src_diff, coeff, diff_stride, ref txfm_param);
+                                            int diff_stride, ref TxfmParam txfm_param)
+    {
+        if (Simd.UseAvx2) av1_lowbd_fwd_txfm_avx2(src_diff, coeff, diff_stride, ref txfm_param);
+        else av1_lowbd_fwd_txfm_c(src_diff, coeff, diff_stride, ref txfm_param);
+    }
 
     internal static void av1_highbd_fwd_txfm(Ptr<short> src_diff, Ptr<tran_low_t> coeff,
                                              int diff_stride, ref TxfmParam txfm_param)
