@@ -155,7 +155,9 @@ public class TransformTests
 
                 E2Shim.e2_inv_txfm_add((int[])coeff.Clone(), dstC, stride, txSize, txType, eob);
                 TxfmParam p = MakeParam(txSize, txType, eob);
-                av1_inv_txfm_add(coeff, dstCs, stride, in p);
+                // The C function, not the av1_inv_txfm_add dispatcher: these extreme coefficients
+                // are outside what the 16-bit SIMD kernels match C on (Simd/S3 covers those).
+                av1_inv_txfm_add_c(coeff, dstCs, stride, in p);
 
                 AssertSame(dstC, dstCs, $"inv tx_size={txSize} tx_type={txType} case={kase} eob={eob}");
             }

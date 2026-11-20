@@ -232,6 +232,9 @@ internal static partial class idct
     // av1_rtcd.h dispatched name.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void av1_inv_txfm_add(Ptr<tran_low_t> dqcoeff, Ptr<byte> dst, int stride,
-                                          in TxfmParam txfm_param) =>
-        av1_inv_txfm_add_c(dqcoeff, dst, stride, in txfm_param);
+                                          in TxfmParam txfm_param)
+    {
+        if (Simd.UseAvx2) av1_inv_txfm_add_avx2(dqcoeff, dst, stride, in txfm_param);
+        else av1_inv_txfm_add_c(dqcoeff, dst, stride, in txfm_param);
+    }
 }
