@@ -221,19 +221,34 @@ Rules:
 * Hot paths (per block / per pixel) must not allocate per call (see §4 scratch rules).
 * Don't optimise yet beyond that; correctness first. SIMD comes after bit-exactness.
 
-## 8. Workflow
+## 8. Workflow (phase 2 onwards)
 
-* Build only your own outputs so parallel porters do not fight over `obj/`:
-  `dotnet build src/Av1rt/Av1rt.csproj --no-restore -p:IntermediateOutputPath=obj/<you>/ -p:OutputPath=bin/<you>/`
-  (pick `<you>` = your work-package id). Restore was done once already.
-* Fix every compiler error in files you own. Errors that only say a symbol owned by another
-  work package is missing are expected while others are still porting; list them in your
-  report. If you need a function from another package to compile, **do not** port it
-  yourself; add a stub in `src/Av1rt/Aom/_stubs/<you>.cs` with the exact C name and the
-  signature derived by these rules, body `throw new NotImplementedException();`. Stubs are
-  deleted at integration, and mismatches surface as compile errors then.
-* Never edit files owned by another work package. If something there is wrong, say so in
-  your report.
-* Mark anything uncertain with `// PORT-NOTE: ...` so it can be reviewed.
-* Your final report: files written, functions ported, functions deliberately skipped
-  (and why), stubs you added, open questions, and remaining compile errors.
+* You work in your own **git worktree** (a full checkout on its own branch). Run
+  `dotnet restore src/Av1rt/Av1rt.csproj` once, then build normally:
+  `dotnet build src/Av1rt/Av1rt.csproj`. The tree builds with 0 errors at the start; keep it so.
+* Paths outside your worktree (not committed, so only in the main checkout):
+  * libaom sources (read-only): `C:/Users/LOST/Projects/Media/aom`
+  * coverage: `C:/Users/LOST/Projects/Media/av1rt/.oracle/cov/` (`summary/functions.txt`,
+    `summary/unexecuted.txt`, `show/coverage/C/Users/LOST/Projects/Media/aom/<path>.txt`)
+  * pure-C libaom build: `C:/Users/LOST/Projects/Media/av1rt/.oracle/build`
+    (generated `config/aom_dsp_rtcd.h`, `config/av1_rtcd.h`)
+  * test clips: `C:/Users/LOST/Projects/Media/av1rt/.testdata`
+* **Stubs.** `src/Av1rt/Aom/_stubs/<dir>_<name>_c.cs` holds placeholders for functions of
+  `<dir>/<name>.c` that already-ported code calls. When you port `<name>.c`, delete its stub
+  file and make your real signatures match how the callers use them. If a stub signature was
+  wrong, fix the call site (a minimal edit in someone else's file is allowed for this; list it in
+  your report). If you call a function owned by another package that has no stub yet, add it to
+  that C file's stub file (create it in the same format if missing), derived mechanically from
+  the C prototype per §4.
+* **Missing fields.** Every port type is `partial`. If a shared type lacks a field you need,
+  add it in `src/Av1rt/Aom/_fields/<you>.cs`
+  (`internal partial class MACROBLOCK { internal int foo; }`) rather than editing the type's
+  own file. If the type has a `CopyFrom`, say so in your report so the copy can be extended.
+* **Tests are part of the job** for self-contained functions (DSP kernels, transforms,
+  quantisers, filters, context derivation, table builders): differential tests against libaom's
+  C code through a shim, see `docs/TESTING.md`. Name your shim after your package id.
+* Never touch files owned by another package beyond the minimal call-site fixes above.
+* Mark anything uncertain with `// PORT-NOTE: ...`.
+* At the end, `git add -A` and `git commit` on your branch (message: what you ported). Final
+  report: branch name, files written, functions ported, functions deliberately skipped (and
+  why), stubs deleted/added, fields added, edits to others' files, test results, open questions.
