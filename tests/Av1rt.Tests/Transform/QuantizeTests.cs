@@ -257,7 +257,7 @@ public class QuantizeTests
         return flat;
     }
 
-    [Theory(Skip = "av1_build_quantizer needs av1_dc_quant_QTX/av1_ac_quant_QTX (av1/common/quant_common.c, e1), still stubbed on this branch")]
+    [Theory]
     [InlineData(0)]
     [InlineData(3)]
     [InlineData(7)]

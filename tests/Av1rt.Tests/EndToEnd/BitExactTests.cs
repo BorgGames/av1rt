@@ -25,6 +25,7 @@ public class BitExactTests
     }
 
     [Theory]
+    [Trait("Category", "EndToEnd")]
     [MemberData(nameof(Cases))]
     public void MatchesOracle(string name, string clip, string args)
     {
