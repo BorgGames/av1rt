@@ -26,3 +26,17 @@ not the width, extreme pixel values (0/255), and boundary cases.
 
 `av1rt` and `tools/oracle/av1rt_oracle.exe` encode the same `.y4m` with the same settings; the IVF
 payloads must be byte-identical, and the reconstruction must match `ffmpeg -c:v libdav1d`'s decode.
+
+## Finding the first divergence
+
+When an end-to-end case fails, write the C# output to an IVF with the CLI
+(`dotnet run --project tools/Av1rt.Cli -c Release -- encode .testdata/<clip> out.ivf <case options>`) and run
+
+    python -I tools/oracle/inspect_diff.py .oracle/ref/<case>.ivf out.ivf [--limit N]
+
+It decodes both streams with libaom's inspection decoder (`.oracle/build-inspect`, a pure-C decoder
+built with `-DCONFIG_INSPECTION=1 -DCONFIG_AV1_ENCODER=0`, targets `inspect` and `aomdec`) and prints the
+first frame whose header fields or per-4x4 decisions (block size, modes, MVs, references, skip,
+transform size/type, filters, CDEF, delta q, segment, bits per superblock) differ. If decisions agree
+but bytes differ, the difference is in coefficients or entropy coding: compare reconstructions
+(`aomdec --rawvideo -o out.yuv`) or the per-superblock bit counts.
