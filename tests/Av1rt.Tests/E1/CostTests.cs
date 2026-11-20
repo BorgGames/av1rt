@@ -13,6 +13,15 @@ namespace Av1rt.Tests.E1;
 /// <summary>cost.c against libaom, on every default CDF.</summary>
 public class CostTests
 {
+    public CostTests()
+    {
+        // The low-probability costs come from av1_cost_lut_low, which av1_init_cost_luts fills
+        // (av1_initialize_enc does it in the encoder). Initialise it on both sides, otherwise the
+        // results depend on which tests ran first.
+        av1_init_cost_luts();
+        E1Shim.aomshim_e1_cost_lut_low(new ushort[COST_LUT_LOW]);
+    }
+
     private static FRAME_CONTEXT DefaultContext(int base_qindex)
     {
         var cm = new AV1_COMMON { fc = new FRAME_CONTEXT() };

@@ -6,30 +6,49 @@ using System;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Av1rt.Aom;
 
-// [port] `const void *` parameters are generic Ptr<T>: the loads read 2/4/8 bytes from the
-// pointer whatever its element type, like the C memcpy / casts. `__m128i *` and
-// `const __m128i *` parameters are Span<__m128i>; ptrdiff_t strides are int.
-internal static class mem_sse2
+// [port] `const void *` parameters are generic Ptr<T> (like synonyms.h.cs): the loads read
+// 2/4/8 bytes from the pointer whatever its element type, like the C memcpy. The
+// `int8_t *` + byte_stride helpers (load_8bit_*) take Ptr<byte>.
+internal static partial class mem_sse2
 {
     private const MethodImplOptions AI = MethodImplOptions.AggressiveInlining;
 
-    [MethodImpl(AI)] private static ReadOnlySpan<byte> bytes_of<T>(Ptr<T> p) where T : unmanaged =>
-        MemoryMarshal.AsBytes(new ReadOnlySpan<T>(p.Array, p.Offset, p.Array.Length - p.Offset));
+    // The bytes [p, p + nbytes) of the array behind p (bounds checked).
+    [MethodImpl(AI)]
+    private static ReadOnlySpan<byte> Bytes<T>(Ptr<T> p, int nbytes) where T : unmanaged
+    {
+        int size = 16 / Vector128<T>.Count;
+        return MemoryMarshal.AsBytes(new ReadOnlySpan<T>(p.Array, p.Offset, (nbytes + size - 1) / size))
+            .Slice(0, nbytes);
+    }
 
     [MethodImpl(AI)]
-    internal static short loadu_int16<T>(Ptr<T> src) where T : unmanaged =>
-        BinaryPrimitives.ReadInt16LittleEndian(bytes_of(src));
+    internal static short loadu_int16<T>(Ptr<T> src) where T : unmanaged
+    {
+        short v;
+        v = BinaryPrimitives.ReadInt16LittleEndian(Bytes(src, 2));
+        return v;
+    }
 
     [MethodImpl(AI)]
-    internal static int loadu_int32<T>(Ptr<T> src) where T : unmanaged =>
-        BinaryPrimitives.ReadInt32LittleEndian(bytes_of(src));
+    internal static int loadu_int32<T>(Ptr<T> src) where T : unmanaged
+    {
+        int v;
+        v = BinaryPrimitives.ReadInt32LittleEndian(Bytes(src, 4));
+        return v;
+    }
 
     [MethodImpl(AI)]
-    internal static long loadu_int64<T>(Ptr<T> src) where T : unmanaged =>
-        BinaryPrimitives.ReadInt64LittleEndian(bytes_of(src));
+    internal static long loadu_int64<T>(Ptr<T> src) where T : unmanaged
+    {
+        long v;
+        v = BinaryPrimitives.ReadInt64LittleEndian(Bytes(src, 8));
+        return v;
+    }
 
     [MethodImpl(AI)]
     internal static void _mm_storeh_epi64<T>(Ptr<T> d, __m128i s) where T : unmanaged
@@ -44,8 +63,6 @@ internal static class mem_sse2
             _mm_loadh_pi(_mm_castsi128_ps(s), src));
     }
 
-    // [port] (int8_t *)src + n * byte_stride: the byte offsets are applied to a byte view, so
-    // src is Ptr<byte> (the only element type the callers use).
     [MethodImpl(AI)]
     internal static __m128i load_8bit_4x4_to_1_reg_sse2(Ptr<byte> src,
                                                         int byte_stride)
@@ -67,7 +84,7 @@ internal static class mem_sse2
     }
 
     [MethodImpl(AI)]
-    internal static void store_8bit_8x4_from_16x2(Span<__m128i> s,
+    internal static void store_8bit_8x4_from_16x2(ReadOnlySpan<__m128i> s,
                                                   Ptr<byte> d,
                                                   int stride)
     {
@@ -78,7 +95,7 @@ internal static class mem_sse2
     }
 
     [MethodImpl(AI)]
-    internal static void store_8bit_4x4(Span<__m128i> s, Ptr<byte> d,
+    internal static void store_8bit_4x4(ReadOnlySpan<__m128i> s, Ptr<byte> d,
                                         int stride)
     {
         _mm_storeu_si32(d + 0 * stride, s[0]);
@@ -91,7 +108,7 @@ internal static class mem_sse2
     internal static void store_8bit_4x4_sse2(__m128i s, Ptr<byte> d,
                                              int stride)
     {
-        Span<__m128i> ss = stackalloc __m128i[4];
+        Arr4<__m128i> ss = default;
 
         ss[0] = s;
         ss[1] = _mm_srli_si128(s, 4);
@@ -169,7 +186,7 @@ internal static class mem_sse2
     }
 
     [MethodImpl(AI)]
-    internal static void store_8bit_8x8(Span<__m128i> s, Ptr<byte> d,
+    internal static void store_8bit_8x8(ReadOnlySpan<__m128i> s, Ptr<byte> d,
                                         int stride)
     {
         _mm_storel_epi64(d + 0 * stride, s[0]);
@@ -183,7 +200,7 @@ internal static class mem_sse2
     }
 
     [MethodImpl(AI)]
-    internal static void storeu_8bit_16x4(Span<__m128i> s, Ptr<byte> d,
+    internal static void storeu_8bit_16x4(ReadOnlySpan<__m128i> s, Ptr<byte> d,
                                           int stride)
     {
         _mm_storeu_si128(d + 0 * stride, s[0]);

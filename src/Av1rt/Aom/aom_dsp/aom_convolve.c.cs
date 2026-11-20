@@ -22,6 +22,11 @@ internal static partial class aom_convolve
     }
 
     internal static void aom_convolve_copy(Ptr<byte> src, int src_stride, Ptr<byte> dst,
-                                           int dst_stride, int w, int h) =>
-        aom_convolve_copy_c(src, src_stride, dst, dst_stride, w, h);
+                                           int dst_stride, int w, int h)
+    {
+        if (Simd.UseAvx2)
+            aom_convolve_copy_avx2(src, src_stride, dst, dst_stride, w, h);
+        else
+            aom_convolve_copy_c(src, src_stride, dst, dst_stride, w, h);
+    }
 }

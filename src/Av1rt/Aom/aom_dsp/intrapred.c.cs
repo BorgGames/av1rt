@@ -231,112 +231,154 @@ internal static partial class intrapred
         dc_predictor_rect(dst, stride, 4, 8, above, left, 2, DC_MULTIPLIER_1X2);
     }
 
-    internal static void aom_dc_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_4x8_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_4x8_sse2(dst, stride, above, left);
+        else aom_dc_predictor_4x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_8x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 8, 4, above, left, 2, DC_MULTIPLIER_1X2);
     }
 
-    internal static void aom_dc_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_8x4_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_8x4_sse2(dst, stride, above, left);
+        else aom_dc_predictor_8x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_4x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 4, 16, above, left, 2, DC_MULTIPLIER_1X4);
     }
 
-    internal static void aom_dc_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_4x16_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_4x16_sse2(dst, stride, above, left);
+        else aom_dc_predictor_4x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_16x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 16, 4, above, left, 2, DC_MULTIPLIER_1X4);
     }
 
-    internal static void aom_dc_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_16x4_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_16x4_sse2(dst, stride, above, left);
+        else aom_dc_predictor_16x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_8x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 8, 16, above, left, 3, DC_MULTIPLIER_1X2);
     }
 
-    internal static void aom_dc_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_8x16_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_8x16_sse2(dst, stride, above, left);
+        else aom_dc_predictor_8x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_16x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 16, 8, above, left, 3, DC_MULTIPLIER_1X2);
     }
 
-    internal static void aom_dc_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_16x8_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_16x8_sse2(dst, stride, above, left);
+        else aom_dc_predictor_16x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_8x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 8, 32, above, left, 3, DC_MULTIPLIER_1X4);
     }
 
-    internal static void aom_dc_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_8x32_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_8x32_sse2(dst, stride, above, left);
+        else aom_dc_predictor_8x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_32x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 32, 8, above, left, 3, DC_MULTIPLIER_1X4);
     }
 
-    internal static void aom_dc_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_32x8_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_32x8_sse2(dst, stride, above, left);
+        else aom_dc_predictor_32x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_16x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 16, 32, above, left, 4, DC_MULTIPLIER_1X2);
     }
 
-    internal static void aom_dc_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_16x32_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_16x32_sse2(dst, stride, above, left);
+        else aom_dc_predictor_16x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_32x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 32, 16, above, left, 4, DC_MULTIPLIER_1X2);
     }
 
-    internal static void aom_dc_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_32x16_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_32x16_avx2(dst, stride, above, left);
+        else aom_dc_predictor_32x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_16x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 16, 64, above, left, 4, DC_MULTIPLIER_1X4);
     }
 
-    internal static void aom_dc_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_16x64_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_16x64_sse2(dst, stride, above, left);
+        else aom_dc_predictor_16x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_64x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 64, 16, above, left, 4, DC_MULTIPLIER_1X4);
     }
 
-    internal static void aom_dc_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_64x16_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_64x16_avx2(dst, stride, above, left);
+        else aom_dc_predictor_64x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_32x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 32, 64, above, left, 5, DC_MULTIPLIER_1X2);
     }
 
-    internal static void aom_dc_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_32x64_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_32x64_avx2(dst, stride, above, left);
+        else aom_dc_predictor_32x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_64x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor_rect(dst, stride, 64, 32, above, left, 5, DC_MULTIPLIER_1X2);
     }
 
-    internal static void aom_dc_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_64x32_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_64x32_avx2(dst, stride, above, left);
+        else aom_dc_predictor_64x32_c(dst, stride, above, left);
+    }
 
     // ---- intra_pred_allsizes(v, h, smooth, dc_128, dc_left, dc_top) ----
     // [subset] intra_pred_allsizes(smooth_v), (smooth_h), (paeth): never selected.
@@ -346,912 +388,1254 @@ internal static partial class intrapred
         v_predictor(dst, stride, 4, 4, above, left);
     }
 
-    internal static void aom_v_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_4x4_c(dst, stride, above, left);
+    internal static void aom_v_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_4x4_sse2(dst, stride, above, left);
+        else aom_v_predictor_4x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_8x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 8, 8, above, left);
     }
 
-    internal static void aom_v_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_8x8_c(dst, stride, above, left);
+    internal static void aom_v_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_8x8_sse2(dst, stride, above, left);
+        else aom_v_predictor_8x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_16x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 16, 16, above, left);
     }
 
-    internal static void aom_v_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_16x16_c(dst, stride, above, left);
+    internal static void aom_v_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_16x16_sse2(dst, stride, above, left);
+        else aom_v_predictor_16x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_32x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 32, 32, above, left);
     }
 
-    internal static void aom_v_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_32x32_c(dst, stride, above, left);
+    internal static void aom_v_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_32x32_avx2(dst, stride, above, left);
+        else aom_v_predictor_32x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_64x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 64, 64, above, left);
     }
 
-    internal static void aom_v_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_64x64_c(dst, stride, above, left);
+    internal static void aom_v_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_64x64_avx2(dst, stride, above, left);
+        else aom_v_predictor_64x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_4x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 4, 8, above, left);
     }
 
-    internal static void aom_v_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_4x8_c(dst, stride, above, left);
+    internal static void aom_v_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_4x8_sse2(dst, stride, above, left);
+        else aom_v_predictor_4x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_8x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 8, 4, above, left);
     }
 
-    internal static void aom_v_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_8x4_c(dst, stride, above, left);
+    internal static void aom_v_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_8x4_sse2(dst, stride, above, left);
+        else aom_v_predictor_8x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_8x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 8, 16, above, left);
     }
 
-    internal static void aom_v_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_8x16_c(dst, stride, above, left);
+    internal static void aom_v_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_8x16_sse2(dst, stride, above, left);
+        else aom_v_predictor_8x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_16x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 16, 8, above, left);
     }
 
-    internal static void aom_v_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_16x8_c(dst, stride, above, left);
+    internal static void aom_v_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_16x8_sse2(dst, stride, above, left);
+        else aom_v_predictor_16x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_16x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 16, 32, above, left);
     }
 
-    internal static void aom_v_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_16x32_c(dst, stride, above, left);
+    internal static void aom_v_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_16x32_sse2(dst, stride, above, left);
+        else aom_v_predictor_16x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_32x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 32, 16, above, left);
     }
 
-    internal static void aom_v_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_32x16_c(dst, stride, above, left);
+    internal static void aom_v_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_32x16_avx2(dst, stride, above, left);
+        else aom_v_predictor_32x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_32x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 32, 64, above, left);
     }
 
-    internal static void aom_v_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_32x64_c(dst, stride, above, left);
+    internal static void aom_v_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_32x64_avx2(dst, stride, above, left);
+        else aom_v_predictor_32x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_64x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 64, 32, above, left);
     }
 
-    internal static void aom_v_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_64x32_c(dst, stride, above, left);
+    internal static void aom_v_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_64x32_avx2(dst, stride, above, left);
+        else aom_v_predictor_64x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_4x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 4, 16, above, left);
     }
 
-    internal static void aom_v_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_4x16_c(dst, stride, above, left);
+    internal static void aom_v_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_4x16_sse2(dst, stride, above, left);
+        else aom_v_predictor_4x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_16x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 16, 4, above, left);
     }
 
-    internal static void aom_v_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_16x4_c(dst, stride, above, left);
+    internal static void aom_v_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_16x4_sse2(dst, stride, above, left);
+        else aom_v_predictor_16x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_8x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 8, 32, above, left);
     }
 
-    internal static void aom_v_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_8x32_c(dst, stride, above, left);
+    internal static void aom_v_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_8x32_sse2(dst, stride, above, left);
+        else aom_v_predictor_8x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_32x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 32, 8, above, left);
     }
 
-    internal static void aom_v_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_32x8_c(dst, stride, above, left);
+    internal static void aom_v_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_32x8_sse2(dst, stride, above, left);
+        else aom_v_predictor_32x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_16x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 16, 64, above, left);
     }
 
-    internal static void aom_v_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_16x64_c(dst, stride, above, left);
+    internal static void aom_v_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_16x64_sse2(dst, stride, above, left);
+        else aom_v_predictor_16x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_v_predictor_64x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         v_predictor(dst, stride, 64, 16, above, left);
     }
 
-    internal static void aom_v_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_v_predictor_64x16_c(dst, stride, above, left);
+    internal static void aom_v_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_v_predictor_64x16_avx2(dst, stride, above, left);
+        else aom_v_predictor_64x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_4x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 4, 4, above, left);
     }
 
-    internal static void aom_h_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_4x4_c(dst, stride, above, left);
+    internal static void aom_h_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_4x4_sse2(dst, stride, above, left);
+        else aom_h_predictor_4x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_8x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 8, 8, above, left);
     }
 
-    internal static void aom_h_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_8x8_c(dst, stride, above, left);
+    internal static void aom_h_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_8x8_sse2(dst, stride, above, left);
+        else aom_h_predictor_8x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_16x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 16, 16, above, left);
     }
 
-    internal static void aom_h_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_16x16_c(dst, stride, above, left);
+    internal static void aom_h_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_16x16_sse2(dst, stride, above, left);
+        else aom_h_predictor_16x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_32x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 32, 32, above, left);
     }
 
-    internal static void aom_h_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_32x32_c(dst, stride, above, left);
+    internal static void aom_h_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_32x32_avx2(dst, stride, above, left);
+        else aom_h_predictor_32x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_64x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 64, 64, above, left);
     }
 
-    internal static void aom_h_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_64x64_c(dst, stride, above, left);
+    internal static void aom_h_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_64x64_sse2(dst, stride, above, left);
+        else aom_h_predictor_64x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_4x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 4, 8, above, left);
     }
 
-    internal static void aom_h_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_4x8_c(dst, stride, above, left);
+    internal static void aom_h_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_4x8_sse2(dst, stride, above, left);
+        else aom_h_predictor_4x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_8x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 8, 4, above, left);
     }
 
-    internal static void aom_h_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_8x4_c(dst, stride, above, left);
+    internal static void aom_h_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_8x4_sse2(dst, stride, above, left);
+        else aom_h_predictor_8x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_8x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 8, 16, above, left);
     }
 
-    internal static void aom_h_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_8x16_c(dst, stride, above, left);
+    internal static void aom_h_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_8x16_sse2(dst, stride, above, left);
+        else aom_h_predictor_8x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_16x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 16, 8, above, left);
     }
 
-    internal static void aom_h_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_16x8_c(dst, stride, above, left);
+    internal static void aom_h_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_16x8_sse2(dst, stride, above, left);
+        else aom_h_predictor_16x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_16x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 16, 32, above, left);
     }
 
-    internal static void aom_h_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_16x32_c(dst, stride, above, left);
+    internal static void aom_h_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_16x32_sse2(dst, stride, above, left);
+        else aom_h_predictor_16x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_32x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 32, 16, above, left);
     }
 
-    internal static void aom_h_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_32x16_c(dst, stride, above, left);
+    internal static void aom_h_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_32x16_sse2(dst, stride, above, left);
+        else aom_h_predictor_32x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_32x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 32, 64, above, left);
     }
 
-    internal static void aom_h_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_32x64_c(dst, stride, above, left);
+    internal static void aom_h_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_32x64_sse2(dst, stride, above, left);
+        else aom_h_predictor_32x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_64x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 64, 32, above, left);
     }
 
-    internal static void aom_h_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_64x32_c(dst, stride, above, left);
+    internal static void aom_h_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_64x32_sse2(dst, stride, above, left);
+        else aom_h_predictor_64x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_4x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 4, 16, above, left);
     }
 
-    internal static void aom_h_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_4x16_c(dst, stride, above, left);
+    internal static void aom_h_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_4x16_sse2(dst, stride, above, left);
+        else aom_h_predictor_4x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_16x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 16, 4, above, left);
     }
 
-    internal static void aom_h_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_16x4_c(dst, stride, above, left);
+    internal static void aom_h_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_16x4_sse2(dst, stride, above, left);
+        else aom_h_predictor_16x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_8x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 8, 32, above, left);
     }
 
-    internal static void aom_h_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_8x32_c(dst, stride, above, left);
+    internal static void aom_h_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_8x32_sse2(dst, stride, above, left);
+        else aom_h_predictor_8x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_32x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 32, 8, above, left);
     }
 
-    internal static void aom_h_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_32x8_c(dst, stride, above, left);
+    internal static void aom_h_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_32x8_sse2(dst, stride, above, left);
+        else aom_h_predictor_32x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_16x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 16, 64, above, left);
     }
 
-    internal static void aom_h_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_16x64_c(dst, stride, above, left);
+    internal static void aom_h_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_16x64_sse2(dst, stride, above, left);
+        else aom_h_predictor_16x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_h_predictor_64x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         h_predictor(dst, stride, 64, 16, above, left);
     }
 
-    internal static void aom_h_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_h_predictor_64x16_c(dst, stride, above, left);
+    internal static void aom_h_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_h_predictor_64x16_sse2(dst, stride, above, left);
+        else aom_h_predictor_64x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_4x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 4, 4, above, left);
     }
 
-    internal static void aom_smooth_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_4x4_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_4x4_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_4x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_8x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 8, 8, above, left);
     }
 
-    internal static void aom_smooth_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_8x8_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_8x8_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_8x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_16x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 16, 16, above, left);
     }
 
-    internal static void aom_smooth_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_16x16_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_16x16_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_16x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_32x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 32, 32, above, left);
     }
 
-    internal static void aom_smooth_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_32x32_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_32x32_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_32x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_64x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 64, 64, above, left);
     }
 
-    internal static void aom_smooth_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_64x64_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_64x64_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_64x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_4x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 4, 8, above, left);
     }
 
-    internal static void aom_smooth_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_4x8_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_4x8_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_4x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_8x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 8, 4, above, left);
     }
 
-    internal static void aom_smooth_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_8x4_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_8x4_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_8x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_8x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 8, 16, above, left);
     }
 
-    internal static void aom_smooth_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_8x16_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_8x16_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_8x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_16x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 16, 8, above, left);
     }
 
-    internal static void aom_smooth_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_16x8_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_16x8_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_16x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_16x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 16, 32, above, left);
     }
 
-    internal static void aom_smooth_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_16x32_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_16x32_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_16x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_32x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 32, 16, above, left);
     }
 
-    internal static void aom_smooth_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_32x16_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_32x16_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_32x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_32x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 32, 64, above, left);
     }
 
-    internal static void aom_smooth_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_32x64_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_32x64_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_32x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_64x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 64, 32, above, left);
     }
 
-    internal static void aom_smooth_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_64x32_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_64x32_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_64x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_4x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 4, 16, above, left);
     }
 
-    internal static void aom_smooth_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_4x16_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_4x16_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_4x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_16x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 16, 4, above, left);
     }
 
-    internal static void aom_smooth_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_16x4_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_16x4_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_16x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_8x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 8, 32, above, left);
     }
 
-    internal static void aom_smooth_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_8x32_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_8x32_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_8x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_32x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 32, 8, above, left);
     }
 
-    internal static void aom_smooth_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_32x8_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_32x8_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_32x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_16x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 16, 64, above, left);
     }
 
-    internal static void aom_smooth_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_16x64_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_16x64_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_16x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_smooth_predictor_64x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         smooth_predictor(dst, stride, 64, 16, above, left);
     }
 
-    internal static void aom_smooth_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_smooth_predictor_64x16_c(dst, stride, above, left);
+    internal static void aom_smooth_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_smooth_predictor_64x16_ssse3(dst, stride, above, left);
+        else aom_smooth_predictor_64x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_4x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 4, 4, above, left);
     }
 
-    internal static void aom_dc_128_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_4x4_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_4x4_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_4x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_8x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 8, 8, above, left);
     }
 
-    internal static void aom_dc_128_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_8x8_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_8x8_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_8x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_16x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 16, 16, above, left);
     }
 
-    internal static void aom_dc_128_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_16x16_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_16x16_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_16x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_32x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 32, 32, above, left);
     }
 
-    internal static void aom_dc_128_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_32x32_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_32x32_avx2(dst, stride, above, left);
+        else aom_dc_128_predictor_32x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_64x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 64, 64, above, left);
     }
 
-    internal static void aom_dc_128_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_64x64_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_64x64_avx2(dst, stride, above, left);
+        else aom_dc_128_predictor_64x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_4x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 4, 8, above, left);
     }
 
-    internal static void aom_dc_128_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_4x8_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_4x8_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_4x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_8x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 8, 4, above, left);
     }
 
-    internal static void aom_dc_128_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_8x4_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_8x4_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_8x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_8x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 8, 16, above, left);
     }
 
-    internal static void aom_dc_128_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_8x16_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_8x16_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_8x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_16x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 16, 8, above, left);
     }
 
-    internal static void aom_dc_128_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_16x8_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_16x8_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_16x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_16x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 16, 32, above, left);
     }
 
-    internal static void aom_dc_128_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_16x32_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_16x32_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_16x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_32x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 32, 16, above, left);
     }
 
-    internal static void aom_dc_128_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_32x16_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_32x16_avx2(dst, stride, above, left);
+        else aom_dc_128_predictor_32x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_32x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 32, 64, above, left);
     }
 
-    internal static void aom_dc_128_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_32x64_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_32x64_avx2(dst, stride, above, left);
+        else aom_dc_128_predictor_32x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_64x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 64, 32, above, left);
     }
 
-    internal static void aom_dc_128_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_64x32_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_64x32_avx2(dst, stride, above, left);
+        else aom_dc_128_predictor_64x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_4x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 4, 16, above, left);
     }
 
-    internal static void aom_dc_128_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_4x16_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_4x16_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_4x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_16x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 16, 4, above, left);
     }
 
-    internal static void aom_dc_128_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_16x4_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_16x4_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_16x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_8x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 8, 32, above, left);
     }
 
-    internal static void aom_dc_128_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_8x32_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_8x32_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_8x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_32x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 32, 8, above, left);
     }
 
-    internal static void aom_dc_128_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_32x8_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_32x8_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_32x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_16x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 16, 64, above, left);
     }
 
-    internal static void aom_dc_128_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_16x64_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_16x64_sse2(dst, stride, above, left);
+        else aom_dc_128_predictor_16x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_128_predictor_64x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_128_predictor(dst, stride, 64, 16, above, left);
     }
 
-    internal static void aom_dc_128_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_128_predictor_64x16_c(dst, stride, above, left);
+    internal static void aom_dc_128_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_128_predictor_64x16_avx2(dst, stride, above, left);
+        else aom_dc_128_predictor_64x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_4x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 4, 4, above, left);
     }
 
-    internal static void aom_dc_left_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_4x4_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_4x4_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_4x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_8x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 8, 8, above, left);
     }
 
-    internal static void aom_dc_left_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_8x8_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_8x8_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_8x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_16x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 16, 16, above, left);
     }
 
-    internal static void aom_dc_left_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_16x16_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_16x16_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_16x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_32x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 32, 32, above, left);
     }
 
-    internal static void aom_dc_left_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_32x32_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_32x32_avx2(dst, stride, above, left);
+        else aom_dc_left_predictor_32x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_64x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 64, 64, above, left);
     }
 
-    internal static void aom_dc_left_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_64x64_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_64x64_avx2(dst, stride, above, left);
+        else aom_dc_left_predictor_64x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_4x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 4, 8, above, left);
     }
 
-    internal static void aom_dc_left_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_4x8_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_4x8_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_4x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_8x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 8, 4, above, left);
     }
 
-    internal static void aom_dc_left_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_8x4_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_8x4_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_8x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_8x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 8, 16, above, left);
     }
 
-    internal static void aom_dc_left_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_8x16_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_8x16_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_8x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_16x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 16, 8, above, left);
     }
 
-    internal static void aom_dc_left_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_16x8_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_16x8_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_16x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_16x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 16, 32, above, left);
     }
 
-    internal static void aom_dc_left_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_16x32_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_16x32_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_16x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_32x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 32, 16, above, left);
     }
 
-    internal static void aom_dc_left_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_32x16_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_32x16_avx2(dst, stride, above, left);
+        else aom_dc_left_predictor_32x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_32x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 32, 64, above, left);
     }
 
-    internal static void aom_dc_left_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_32x64_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_32x64_avx2(dst, stride, above, left);
+        else aom_dc_left_predictor_32x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_64x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 64, 32, above, left);
     }
 
-    internal static void aom_dc_left_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_64x32_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_64x32_avx2(dst, stride, above, left);
+        else aom_dc_left_predictor_64x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_4x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 4, 16, above, left);
     }
 
-    internal static void aom_dc_left_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_4x16_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_4x16_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_4x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_16x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 16, 4, above, left);
     }
 
-    internal static void aom_dc_left_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_16x4_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_16x4_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_16x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_8x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 8, 32, above, left);
     }
 
-    internal static void aom_dc_left_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_8x32_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_8x32_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_8x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_32x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 32, 8, above, left);
     }
 
-    internal static void aom_dc_left_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_32x8_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_32x8_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_32x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_16x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 16, 64, above, left);
     }
 
-    internal static void aom_dc_left_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_16x64_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_16x64_sse2(dst, stride, above, left);
+        else aom_dc_left_predictor_16x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_left_predictor_64x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_left_predictor(dst, stride, 64, 16, above, left);
     }
 
-    internal static void aom_dc_left_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_left_predictor_64x16_c(dst, stride, above, left);
+    internal static void aom_dc_left_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_left_predictor_64x16_avx2(dst, stride, above, left);
+        else aom_dc_left_predictor_64x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_4x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 4, 4, above, left);
     }
 
-    internal static void aom_dc_top_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_4x4_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_4x4_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_4x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_8x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 8, 8, above, left);
     }
 
-    internal static void aom_dc_top_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_8x8_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_8x8_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_8x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_16x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 16, 16, above, left);
     }
 
-    internal static void aom_dc_top_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_16x16_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_16x16_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_16x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_32x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 32, 32, above, left);
     }
 
-    internal static void aom_dc_top_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_32x32_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_32x32_avx2(dst, stride, above, left);
+        else aom_dc_top_predictor_32x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_64x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 64, 64, above, left);
     }
 
-    internal static void aom_dc_top_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_64x64_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_64x64_avx2(dst, stride, above, left);
+        else aom_dc_top_predictor_64x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_4x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 4, 8, above, left);
     }
 
-    internal static void aom_dc_top_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_4x8_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_4x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_4x8_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_4x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_8x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 8, 4, above, left);
     }
 
-    internal static void aom_dc_top_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_8x4_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_8x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_8x4_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_8x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_8x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 8, 16, above, left);
     }
 
-    internal static void aom_dc_top_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_8x16_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_8x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_8x16_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_8x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_16x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 16, 8, above, left);
     }
 
-    internal static void aom_dc_top_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_16x8_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_16x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_16x8_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_16x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_16x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 16, 32, above, left);
     }
 
-    internal static void aom_dc_top_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_16x32_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_16x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_16x32_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_16x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_32x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 32, 16, above, left);
     }
 
-    internal static void aom_dc_top_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_32x16_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_32x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_32x16_avx2(dst, stride, above, left);
+        else aom_dc_top_predictor_32x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_32x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 32, 64, above, left);
     }
 
-    internal static void aom_dc_top_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_32x64_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_32x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_32x64_avx2(dst, stride, above, left);
+        else aom_dc_top_predictor_32x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_64x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 64, 32, above, left);
     }
 
-    internal static void aom_dc_top_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_64x32_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_64x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_64x32_avx2(dst, stride, above, left);
+        else aom_dc_top_predictor_64x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_4x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 4, 16, above, left);
     }
 
-    internal static void aom_dc_top_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_4x16_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_4x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_4x16_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_4x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_16x4_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 16, 4, above, left);
     }
 
-    internal static void aom_dc_top_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_16x4_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_16x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_16x4_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_16x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_8x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 8, 32, above, left);
     }
 
-    internal static void aom_dc_top_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_8x32_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_8x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_8x32_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_8x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_32x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 32, 8, above, left);
     }
 
-    internal static void aom_dc_top_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_32x8_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_32x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_32x8_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_32x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_16x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 16, 64, above, left);
     }
 
-    internal static void aom_dc_top_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_16x64_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_16x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_16x64_sse2(dst, stride, above, left);
+        else aom_dc_top_predictor_16x64_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_top_predictor_64x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_top_predictor(dst, stride, 64, 16, above, left);
     }
 
-    internal static void aom_dc_top_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_top_predictor_64x16_c(dst, stride, above, left);
+    internal static void aom_dc_top_predictor_64x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_top_predictor_64x16_avx2(dst, stride, above, left);
+        else aom_dc_top_predictor_64x16_c(dst, stride, above, left);
+    }
 
     // ---- intra_pred_square(dc) ----
 
@@ -1260,38 +1644,53 @@ internal static partial class intrapred
         dc_predictor(dst, stride, 4, 4, above, left);
     }
 
-    internal static void aom_dc_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_4x4_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_4x4(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_4x4_sse2(dst, stride, above, left);
+        else aom_dc_predictor_4x4_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_8x8_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor(dst, stride, 8, 8, above, left);
     }
 
-    internal static void aom_dc_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_8x8_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_8x8(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_8x8_sse2(dst, stride, above, left);
+        else aom_dc_predictor_8x8_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_16x16_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor(dst, stride, 16, 16, above, left);
     }
 
-    internal static void aom_dc_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_16x16_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_16x16(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_16x16_sse2(dst, stride, above, left);
+        else aom_dc_predictor_16x16_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_32x32_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor(dst, stride, 32, 32, above, left);
     }
 
-    internal static void aom_dc_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_32x32_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_32x32(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_32x32_avx2(dst, stride, above, left);
+        else aom_dc_predictor_32x32_c(dst, stride, above, left);
+    }
 
     internal static void aom_dc_predictor_64x64_c(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
     {
         dc_predictor(dst, stride, 64, 64, above, left);
     }
 
-    internal static void aom_dc_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left) =>
-        aom_dc_predictor_64x64_c(dst, stride, above, left);
+    internal static void aom_dc_predictor_64x64(Ptr<byte> dst, int stride, Ptr<byte> above, Ptr<byte> left)
+    {
+        if (Simd.UseAvx2) aom_dc_predictor_64x64_avx2(dst, stride, above, left);
+        else aom_dc_predictor_64x64_c(dst, stride, above, left);
+    }
 }

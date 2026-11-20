@@ -59,6 +59,11 @@ public class ConvolveTests
 
     private static void Check(int kind, Buffers b, int w, int h, int fx, int fy, int sx, int sy)
     {
+        // The facade dispatches to av1_convolve_2d_sr, whose SIMD versions (libaom's and the
+        // port's) require both or neither filter to be the 12-tap MULTITAP_SHARP2; libaom's
+        // av1_convolve_test skips mixed pairs likewise, and the encoder never builds one.
+        if (kind == 3 && sx != 0 && sy != 0 && (fx == MULTITAP_SHARP2) != (fy == MULTITAP_SHARP2))
+            return;
         E3Shim.aomshim_e3_convolve(kind, ref b.Src[Margin * SrcStride + Margin], SrcStride, ref b.Expected[0],
                                    DstStride, w, h, fx, fy, sx, sy);
         RunCSharp(kind, b, w, h, fx, fy, sx, sy);

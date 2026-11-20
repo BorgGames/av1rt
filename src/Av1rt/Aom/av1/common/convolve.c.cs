@@ -85,9 +85,15 @@ internal static partial class convolve
                                             InterpFilterParams filter_params_x,
                                             InterpFilterParams filter_params_y,
                                             int subpel_x_qn, int subpel_y_qn,
-                                            ref ConvolveParams conv_params) =>
-        av1_convolve_2d_sr_c(src, src_stride, dst, dst_stride, w, h, filter_params_x,
-                             filter_params_y, subpel_x_qn, subpel_y_qn, ref conv_params);
+                                            ref ConvolveParams conv_params)
+    {
+        if (Simd.UseAvx2)
+            av1_convolve_2d_sr_avx2(src, src_stride, dst, dst_stride, w, h, filter_params_x,
+                                    filter_params_y, subpel_x_qn, subpel_y_qn, ref conv_params);
+        else
+            av1_convolve_2d_sr_c(src, src_stride, dst, dst_stride, w, h, filter_params_x,
+                                 filter_params_y, subpel_x_qn, subpel_y_qn, ref conv_params);
+    }
 
     internal static void av1_convolve_y_sr_c(Ptr<byte> src, int src_stride, Ptr<byte> dst,
                                              int dst_stride, int w, int h,
@@ -117,9 +123,15 @@ internal static partial class convolve
     internal static void av1_convolve_y_sr(Ptr<byte> src, int src_stride, Ptr<byte> dst,
                                            int dst_stride, int w, int h,
                                            InterpFilterParams filter_params_y,
-                                           int subpel_y_qn) =>
-        av1_convolve_y_sr_c(src, src_stride, dst, dst_stride, w, h, filter_params_y,
-                            subpel_y_qn);
+                                           int subpel_y_qn)
+    {
+        if (Simd.UseAvx2)
+            av1_convolve_y_sr_avx2(src, src_stride, dst, dst_stride, w, h, filter_params_y,
+                                   subpel_y_qn);
+        else
+            av1_convolve_y_sr_c(src, src_stride, dst, dst_stride, w, h, filter_params_y,
+                                subpel_y_qn);
+    }
 
     internal static void av1_convolve_x_sr_c(Ptr<byte> src, int src_stride, Ptr<byte> dst,
                                              int dst_stride, int w, int h,
@@ -155,9 +167,15 @@ internal static partial class convolve
     internal static void av1_convolve_x_sr(Ptr<byte> src, int src_stride, Ptr<byte> dst,
                                            int dst_stride, int w, int h,
                                            InterpFilterParams filter_params_x,
-                                           int subpel_x_qn, ref ConvolveParams conv_params) =>
-        av1_convolve_x_sr_c(src, src_stride, dst, dst_stride, w, h, filter_params_x,
-                            subpel_x_qn, ref conv_params);
+                                           int subpel_x_qn, ref ConvolveParams conv_params)
+    {
+        if (Simd.UseAvx2)
+            av1_convolve_x_sr_avx2(src, src_stride, dst, dst_stride, w, h, filter_params_x,
+                                   subpel_x_qn, ref conv_params);
+        else
+            av1_convolve_x_sr_c(src, src_stride, dst, dst_stride, w, h, filter_params_x,
+                                subpel_x_qn, ref conv_params);
+    }
 
     // [subset] av1_convolve_2d_sr_intrabc_c, av1_convolve_y_sr_intrabc_c,
     // av1_convolve_x_sr_intrabc_c: intra block copy is not used in the subset.
