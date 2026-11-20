@@ -44,17 +44,31 @@ internal readonly partial struct Ptr<T> : IEquatable<Ptr<T>>
     }
 
     /// <summary>C's <c>p[index]</c>.</summary>
+    /// <remarks>
+    /// For a reference-type <typeparamref name="T"/>, <c>ref Array[i]</c> is an <c>ldelema</c> that
+    /// RyuJIT always compiles to a call to the array-covariance helper (<c>LdelemaRef</c>), even
+    /// when <typeparamref name="T"/> is sealed. Going through <see cref="Span{T}"/> does the same
+    /// check as one inline type compare in its constructor. Value types take the plain path.
+    /// </remarks>
     public ref T this[int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref Array[Offset + index];
+        get
+        {
+            if (typeof(T).IsValueType) return ref Array[Offset + index];
+            return ref new Span<T>(Array)[Offset + index];
+        }
     }
 
     /// <summary>C's <c>*p</c>.</summary>
     public ref T Value
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref Array[Offset];
+        get
+        {
+            if (typeof(T).IsValueType) return ref Array[Offset];
+            return ref new Span<T>(Array)[Offset];
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

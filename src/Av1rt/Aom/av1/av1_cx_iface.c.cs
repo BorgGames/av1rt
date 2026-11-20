@@ -179,7 +179,7 @@ internal partial struct av1_extracfg
 }
 
 // struct aom_codec_alg_priv (the base class aom_codec_priv_t is the C `base` member).
-internal partial class aom_codec_alg_priv_t
+internal sealed partial class aom_codec_alg_priv_t
 {
     public readonly aom_codec_enc_cfg_t cfg = new();
     public av1_extracfg extra_cfg;
