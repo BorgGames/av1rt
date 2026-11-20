@@ -8,6 +8,8 @@
 # --filter "Category=EndToEnd&DisplayName~bbb".
 bbb352      | bbb352.y4m        | i420   | --limit 30 --threads 2
 bbb352_low  | bbb352.y4m        | i420   | --limit 30 --threads 2 --bitrate 80 --drop 30
+bbb352_709  | bbb352.y4m        | i420   | --limit 10 --threads 2 --primaries 1 --transfer 1 --matrix 1
+bbb352_full | bbb352.y4m        | i420   | --limit 10 --threads 2 --range 1
 bbb1366     | bbb1366x766.y4m   | packed | --limit 30 --threads 8
 bbb1080     | bbb1080.y4m       | input  | --limit 60 --threads 8 --bitrate 8000
 bbb1080_kf  | bbb1080.y4m       | input  | --limit 30 --threads 8 --kf-interval 10

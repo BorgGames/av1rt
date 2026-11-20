@@ -2962,6 +2962,39 @@ internal static partial class av1_cx_iface
         }
     }
 
+    private static aom_codec_err_t ctrl_set_color_primaries(aom_codec_alg_priv_t ctx,
+                                                            va_list args)
+    {
+        av1_extracfg extra_cfg = ctx.extra_cfg;
+        extra_cfg.color_primaries = CAST<int>(AV1E_SET_COLOR_PRIMARIES, args);
+        return update_extra_cfg(ctx, in extra_cfg);
+    }
+
+    private static aom_codec_err_t ctrl_set_transfer_characteristics(
+        aom_codec_alg_priv_t ctx, va_list args)
+    {
+        av1_extracfg extra_cfg = ctx.extra_cfg;
+        extra_cfg.transfer_characteristics =
+            CAST<int>(AV1E_SET_TRANSFER_CHARACTERISTICS, args);
+        return update_extra_cfg(ctx, in extra_cfg);
+    }
+
+    private static aom_codec_err_t ctrl_set_matrix_coefficients(aom_codec_alg_priv_t ctx,
+                                                                va_list args)
+    {
+        av1_extracfg extra_cfg = ctx.extra_cfg;
+        extra_cfg.matrix_coefficients = CAST<int>(AV1E_SET_MATRIX_COEFFICIENTS, args);
+        return update_extra_cfg(ctx, in extra_cfg);
+    }
+
+    private static aom_codec_err_t ctrl_set_color_range(aom_codec_alg_priv_t ctx,
+                                                        va_list args)
+    {
+        av1_extracfg extra_cfg = ctx.extra_cfg;
+        extra_cfg.color_range = CAST<int>(AV1E_SET_COLOR_RANGE, args);
+        return update_extra_cfg(ctx, in extra_cfg);
+    }
+
     private static aom_codec_err_t ctrl_set_superblock_size(aom_codec_alg_priv_t ctx,
                                                             va_list args)
     {
@@ -3014,6 +3047,10 @@ internal static partial class av1_cx_iface
         new(AV1E_SET_MODE_COST_UPD_FREQ, ctrl_set_mode_cost_upd_freq),
         new(AV1E_SET_MV_COST_UPD_FREQ, ctrl_set_mv_cost_upd_freq),
         new(AV1E_SET_DELTAQ_MODE, ctrl_set_deltaq_mode),
+        new(AV1E_SET_COLOR_PRIMARIES, ctrl_set_color_primaries),
+        new(AV1E_SET_TRANSFER_CHARACTERISTICS, ctrl_set_transfer_characteristics),
+        new(AV1E_SET_MATRIX_COEFFICIENTS, ctrl_set_matrix_coefficients),
+        new(AV1E_SET_COLOR_RANGE, ctrl_set_color_range),
         new(AV1E_SET_NOISE_SENSITIVITY, ctrl_set_noise_sensitivity),
         new(AV1E_SET_SUPERBLOCK_SIZE, ctrl_set_superblock_size),
         new(AV1E_SET_AUTO_TILES, ctrl_set_auto_tiles),

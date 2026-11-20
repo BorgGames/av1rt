@@ -27,6 +27,7 @@ static int Usage()
         options (defaults match tools/oracle/av1rt_oracle.c):
           --speed 11 --bitrate 35000 --threads 0(auto) --limit 0 --qmax 56 --drop 0
           --kf-interval 0 --fps 60 --sb 0|64|128 --tile-cols -1 --tile-rows -1 --aq 3 --cdef 1
+          --primaries 2 --transfer 2 --matrix 2 (H.273 code points; 2 = unspecified) --range 0|1
         """);
     return 2;
 }
@@ -59,6 +60,10 @@ static (Av1EncoderOptions Options, Dictionary<string, string> Extra) Parse(strin
             case "--tile-rows": o.TileRowsLog2 = n; break;
             case "--aq": o.EnableCyclicRefresh = n == 3; break;
             case "--cdef": o.EnableCdef = n != 0; break;
+            case "--primaries": o.ColorPrimaries = (Av1ColorPrimaries)n; break;
+            case "--transfer": o.TransferCharacteristics = (Av1TransferCharacteristics)n; break;
+            case "--matrix": o.MatrixCoefficients = (Av1MatrixCoefficients)n; break;
+            case "--range": o.FullRange = n != 0; break;
             case "--limit": case "--frames": extra[k] = v; break;
             default: throw new ArgumentException($"unknown option {k}");
         }

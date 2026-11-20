@@ -89,6 +89,29 @@ public sealed class Av1EncoderOptions
     /// <summary>Use cyclic-refresh adaptive quantization (libwebrtc's aq-mode 3).</summary>
     public bool EnableCyclicRefresh { get; set; } = true;
 
+    /// <summary>
+    /// Colour primaries signalled in the sequence header. Like the transfer characteristics, matrix
+    /// coefficients and range, it tells the decoder how to interpret the samples and does not change
+    /// the encoding. The header carries a colour description only when at least one of the three is
+    /// specified.
+    /// </summary>
+    public Av1ColorPrimaries ColorPrimaries { get; set; } = Av1ColorPrimaries.Unspecified;
+
+    /// <summary>Transfer characteristics signalled in the sequence header.</summary>
+    public Av1TransferCharacteristics TransferCharacteristics { get; set; } = Av1TransferCharacteristics.Unspecified;
+
+    /// <summary>
+    /// Matrix coefficients signalled in the sequence header: the RGB to YCbCr conversion the input
+    /// was made with, such as <see cref="Av1MatrixCoefficients.Bt709"/>.
+    /// </summary>
+    public Av1MatrixCoefficients MatrixCoefficients { get; set; } = Av1MatrixCoefficients.Unspecified;
+
+    /// <summary>
+    /// The input uses the full 0 to 255 range instead of the limited one (16 to 235 luma, 16 to 240
+    /// chroma); signalled in the sequence header.
+    /// </summary>
+    public bool FullRange { get; set; }
+
     internal void Validate()
     {
         if (Width <= 0 || Height <= 0 || Width > 65536 || Height > 65536)
@@ -111,6 +134,12 @@ public sealed class Av1EncoderOptions
             throw new ArgumentOutOfRangeException(nameof(FrameDropThreshold));
         if (KeyFrameInterval < 0)
             throw new ArgumentOutOfRangeException(nameof(KeyFrameInterval));
+        if (!Enum.IsDefined(ColorPrimaries))
+            throw new ArgumentOutOfRangeException(nameof(ColorPrimaries));
+        if (!Enum.IsDefined(TransferCharacteristics))
+            throw new ArgumentOutOfRangeException(nameof(TransferCharacteristics));
+        if (!Enum.IsDefined(MatrixCoefficients))
+            throw new ArgumentOutOfRangeException(nameof(MatrixCoefficients));
     }
 
     /// <summary>

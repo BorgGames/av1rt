@@ -170,8 +170,15 @@ public class ConverterTests
     {
         const int w = 194, h = 130;
         int stride = I420Converter.PackedStride(format, w);
-        using var adapter = new AV1VideoEncoder(new Av1EncoderOptions { Threads = 2 });
-        using var direct = new Av1Encoder(new Av1EncoderOptions { Width = w, Height = h, Threads = 2 });
+        // With colour signalling, which the adapter must pass on to the encoder it creates.
+        using var adapter = new AV1VideoEncoder(new Av1EncoderOptions
+        {
+            Threads = 2, MatrixCoefficients = Av1MatrixCoefficients.Bt709, FullRange = true,
+        });
+        using var direct = new Av1Encoder(new Av1EncoderOptions
+        {
+            Width = w, Height = h, Threads = 2, MatrixCoefficients = Av1MatrixCoefficients.Bt709, FullRange = true,
+        });
         var output = new ArrayBufferWriter<byte>();
         for (int t = 0; t < 6; t++)
         {

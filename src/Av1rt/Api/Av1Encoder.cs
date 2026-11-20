@@ -61,6 +61,8 @@ public sealed class Av1Encoder : IDisposable
             Superblock = options.Superblock, MinQuantizer = options.MinQuantizer, MaxQuantizer = options.MaxQuantizer,
             FrameDropThreshold = options.FrameDropThreshold, KeyFrameInterval = options.KeyFrameInterval,
             EnableCdef = options.EnableCdef, EnableCyclicRefresh = options.EnableCyclicRefresh,
+            ColorPrimaries = options.ColorPrimaries, TransferCharacteristics = options.TransferCharacteristics,
+            MatrixCoefficients = options.MatrixCoefficients, FullRange = options.FullRange,
         };
         var o = _options;
         _intervals = new FrameIntervals(TimestampRate / o.FrameRate);
@@ -154,6 +156,10 @@ public sealed class Av1Encoder : IDisposable
             Control(AV1E_SET_MAX_REFERENCE_FRAMES, 3);
             Control(AV1E_SET_MAX_CONSEC_FRAME_DROP_MS_CBR, 250);
             Control(AV1E_SET_POSTENCODE_DROP_RTC, 1);
+            Control(AV1E_SET_COLOR_PRIMARIES, (int)o.ColorPrimaries);
+            Control(AV1E_SET_TRANSFER_CHARACTERISTICS, (int)o.TransferCharacteristics);
+            Control(AV1E_SET_MATRIX_COEFFICIENTS, (int)o.MatrixCoefficients);
+            Control(AV1E_SET_COLOR_RANGE, o.FullRange ? 1 : 0);
 
             _image = aom_img_alloc(null, AOM_IMG_FMT_I420, (uint)o.Width, (uint)o.Height, 32)
                      ?? throw new OutOfMemoryException("aom_img_alloc failed");

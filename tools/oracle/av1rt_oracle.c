@@ -16,6 +16,7 @@
  *          [--threads 8] [--limit N] [--recon recon.yuv] [--qmax 56]
  *          [--drop 0] [--kf-interval 0] [--fps 60] [--sb 0|64|128]
  *          [--tile-cols log2 --tile-rows log2] [--aq 3] [--cdef 1]
+ *          [--primaries 2] [--transfer 2] [--matrix 2] [--range 0]
  *
  * stderr gets the time of the aom_codec_encode calls after a warmup of
  * min(10, frames / 10) frames, as `Av1rt.Cli bench` reports it.
@@ -165,13 +166,16 @@ int main(int argc, char **argv) {
             "usage: av1rt_oracle in.y4m out.ivf [--speed 11] [--bitrate kbps]"
             " [--threads N] [--limit N] [--recon f.yuv] [--qmax 56]"
             " [--drop 0] [--kf-interval 0] [--fps 60] [--sb 0|64|128]"
-            " [--tile-cols L] [--tile-rows L] [--aq 3] [--cdef 1]\n");
+            " [--tile-cols L] [--tile-rows L] [--aq 3] [--cdef 1]"
+            " [--primaries 2] [--transfer 2] [--matrix 2] [--range 0]\n");
     return 2;
   }
   const char *in_path = argv[1], *out_path = argv[2], *recon_path = NULL;
   int speed = 11, bitrate = 35000, threads = -1, limit = 0, qmax = 56;
   int drop = 0, kf_interval = 0, fps = 60, sb = 0, tile_cols = -1,
       tile_rows = -1, aq = 3, cdef = 1;
+  int primaries = AOM_CICP_CP_UNSPECIFIED, transfer = AOM_CICP_TC_UNSPECIFIED,
+      matrix = AOM_CICP_MC_UNSPECIFIED, range = AOM_CR_STUDIO_RANGE;
   for (int i = 3; i + 1 < argc; i += 2) {
     const char *k = argv[i];
     const char *v = argv[i + 1];
@@ -189,6 +193,10 @@ int main(int argc, char **argv) {
     else if (!strcmp(k, "--tile-rows")) tile_rows = atoi(v);
     else if (!strcmp(k, "--aq")) aq = atoi(v);
     else if (!strcmp(k, "--cdef")) cdef = atoi(v);
+    else if (!strcmp(k, "--primaries")) primaries = atoi(v);
+    else if (!strcmp(k, "--transfer")) transfer = atoi(v);
+    else if (!strcmp(k, "--matrix")) matrix = atoi(v);
+    else if (!strcmp(k, "--range")) range = atoi(v);
     else die("unknown option");
   }
 
@@ -286,6 +294,10 @@ int main(int argc, char **argv) {
   CTRL(AV1E_SET_MAX_REFERENCE_FRAMES, 3);
   CTRL(AV1E_SET_MAX_CONSEC_FRAME_DROP_MS_CBR, 250);
   CTRL(AV1E_SET_POSTENCODE_DROP_RTC, 1);
+  CTRL(AV1E_SET_COLOR_PRIMARIES, primaries);
+  CTRL(AV1E_SET_TRANSFER_CHARACTERISTICS, transfer);
+  CTRL(AV1E_SET_MATRIX_COEFFICIENTS, matrix);
+  CTRL(AV1E_SET_COLOR_RANGE, range);
 
   aom_image_t raw;
   if (!aom_img_alloc(&raw, AOM_IMG_FMT_I420, (unsigned)y4m.w,

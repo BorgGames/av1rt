@@ -202,6 +202,8 @@ public sealed class AV1VideoEncoder : IVideoEncoder
             Superblock = o.Superblock, MinQuantizer = o.MinQuantizer, MaxQuantizer = o.MaxQuantizer,
             FrameDropThreshold = o.FrameDropThreshold, KeyFrameInterval = o.KeyFrameInterval,
             EnableCdef = o.EnableCdef, EnableCyclicRefresh = o.EnableCyclicRefresh,
+            ColorPrimaries = o.ColorPrimaries, TransferCharacteristics = o.TransferCharacteristics,
+            MatrixCoefficients = o.MatrixCoefficients, FullRange = o.FullRange,
         });
         return _encoder;
     }

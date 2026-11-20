@@ -118,6 +118,10 @@ public class BitExactTests
                 case "--tile-rows": o.TileRowsLog2 = n; break;
                 case "--aq": o.EnableCyclicRefresh = n == 3; break;
                 case "--cdef": o.EnableCdef = n != 0; break;
+                case "--primaries": o.ColorPrimaries = (Av1ColorPrimaries)n; break;
+                case "--transfer": o.TransferCharacteristics = (Av1TransferCharacteristics)n; break;
+                case "--matrix": o.MatrixCoefficients = (Av1MatrixCoefficients)n; break;
+                case "--range": o.FullRange = n != 0; break;
                 default: throw new ArgumentException($"unknown option {a[i]}");
             }
         }
