@@ -21,7 +21,12 @@ public class RdConstsTests
 {
     private readonly ITestOutputHelper _output;
 
-    public RdConstsTests(ITestOutputHelper output) => _output = output;
+    public RdConstsTests(ITestOutputHelper output)
+    {
+        _output = output;
+        // libaom does this in av1_initialize_enc; the 2- and 4-symbol cost paths read the LUT.
+        Av1rt.Aom.cost.av1_init_cost_luts();
+    }
 
     // FRAME_CONTEXT members up to `initialized`, in the declaration order of entropymode.h.
     private static readonly string[] FrameContextFields =
