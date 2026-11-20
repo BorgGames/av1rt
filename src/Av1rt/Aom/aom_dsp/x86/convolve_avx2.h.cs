@@ -457,32 +457,34 @@ internal static partial class convolve_avx2
                                                           Ptr<byte> dst_ptr, int dst_stride,
                                                           __m256i round_const_v)
     {
+        // [port] C keeps the rolling window in a local __m256i s[] array; here it is in locals
+        // (the same arithmetic as convolve*(s, coeffs)) so the JIT keeps it in registers.
         int i;
-        Arr6<__m256i> s = default;
-        Span<__m256i> sp = s;
+        __m256i c0 = coeffs_v[0], c1 = coeffs_v[1];
         __m256i src_0 = _mm256_loadu_si256(im_block + 0 * im_stride);
         __m256i src_1 = _mm256_loadu_si256(im_block + 1 * im_stride);
 
-        s[0] = _mm256_unpacklo_epi16(src_0, src_1);
-        s[2] = _mm256_unpackhi_epi16(src_0, src_1);
+        __m256i s0 = _mm256_unpacklo_epi16(src_0, src_1);
+        __m256i s2 = _mm256_unpackhi_epi16(src_0, src_1);
 
         for (i = 0; i < h; i += 2)
         {
             Ptr<short> data = im_block + i * im_stride;
             __m256i s4 = _mm256_loadu_si256(data + 2 * im_stride);
             __m256i s5 = _mm256_loadu_si256(data + 3 * im_stride);
-            s[1] = _mm256_unpacklo_epi16(s4, s5);
-            s[3] = _mm256_unpackhi_epi16(s4, s5);
+            __m256i s1 = _mm256_unpacklo_epi16(s4, s5);
+            __m256i s3 = _mm256_unpackhi_epi16(s4, s5);
 
-            __m256i res_a = convolve_4tap(sp, coeffs_v);
-            __m256i res_b = convolve_4tap(sp.Slice(2), coeffs_v);
+            // convolve_4tap(s, coeffs_v), convolve_4tap(s + 2, coeffs_v)
+            __m256i res_a = _mm256_add_epi32(_mm256_madd_epi16(s0, c0), _mm256_madd_epi16(s1, c1));
+            __m256i res_b = _mm256_add_epi32(_mm256_madd_epi16(s2, c0), _mm256_madd_epi16(s3, c1));
 
             sr_2d_ver_round_and_store(res_a, res_b, dst_ptr, dst_stride,
                                       round_const_v);
             dst_ptr += 2 * dst_stride;
 
-            s[0] = s[1];
-            s[2] = s[3];
+            s0 = s1;
+            s2 = s3;
         }
     }
 
@@ -499,13 +501,14 @@ internal static partial class convolve_avx2
         __m256i src_2 = _mm256_loadu_si256(im_block + 2 * im_stride);
         __m256i src_3 = _mm256_loadu_si256(im_block + 3 * im_stride);
 
-        Arr8<__m256i> s = default;
-        Span<__m256i> sp = s;
-        s[0] = _mm256_unpacklo_epi16(src_0, src_1);
-        s[1] = _mm256_unpacklo_epi16(src_2, src_3);
+        // [port] C keeps the rolling window in a local __m256i s[] array; here it is in locals
+        // (the same arithmetic as convolve*(s, coeffs)) so the JIT keeps it in registers.
+        __m256i c0 = coeffs_v[0], c1 = coeffs_v[1], c2 = coeffs_v[2];
+        __m256i s0 = _mm256_unpacklo_epi16(src_0, src_1);
+        __m256i s1 = _mm256_unpacklo_epi16(src_2, src_3);
 
-        s[3] = _mm256_unpackhi_epi16(src_0, src_1);
-        s[4] = _mm256_unpackhi_epi16(src_2, src_3);
+        __m256i s3 = _mm256_unpackhi_epi16(src_0, src_1);
+        __m256i s4 = _mm256_unpackhi_epi16(src_2, src_3);
 
         for (i = 0; i < h; i += 2)
         {
@@ -514,21 +517,26 @@ internal static partial class convolve_avx2
             __m256i s6 = _mm256_loadu_si256(data + 4 * im_stride);
             __m256i s7 = _mm256_loadu_si256(data + 5 * im_stride);
 
-            s[2] = _mm256_unpacklo_epi16(s6, s7);
-            s[5] = _mm256_unpackhi_epi16(s6, s7);
+            __m256i s2 = _mm256_unpacklo_epi16(s6, s7);
+            __m256i s5 = _mm256_unpackhi_epi16(s6, s7);
 
-            __m256i res_a = convolve_6tap(sp, coeffs_v);
-            __m256i res_b = convolve_6tap(sp.Slice(3), coeffs_v);
+            // convolve_6tap(s, coeffs_v), convolve_6tap(s + 3, coeffs_v)
+            __m256i res_a = _mm256_add_epi32(
+                _mm256_add_epi32(_mm256_madd_epi16(s0, c0), _mm256_madd_epi16(s1, c1)),
+                _mm256_madd_epi16(s2, c2));
+            __m256i res_b = _mm256_add_epi32(
+                _mm256_add_epi32(_mm256_madd_epi16(s3, c0), _mm256_madd_epi16(s4, c1)),
+                _mm256_madd_epi16(s5, c2));
 
             sr_2d_ver_round_and_store(res_a, res_b, dst_ptr, dst_stride,
                                       round_const_v);
             dst_ptr += 2 * dst_stride;
 
-            s[0] = s[1];
-            s[1] = s[2];
+            s0 = s1;
+            s1 = s2;
 
-            s[3] = s[4];
-            s[4] = s[5];
+            s3 = s4;
+            s4 = s5;
         }
     }
 
@@ -547,15 +555,16 @@ internal static partial class convolve_avx2
         __m256i src_4 = _mm256_loadu_si256(im_block + 4 * im_stride);
         __m256i src_5 = _mm256_loadu_si256(im_block + 5 * im_stride);
 
-        Arr8<__m256i> s = default;
-        Span<__m256i> sp = s;
-        s[0] = _mm256_unpacklo_epi16(src_0, src_1);
-        s[1] = _mm256_unpacklo_epi16(src_2, src_3);
-        s[2] = _mm256_unpacklo_epi16(src_4, src_5);
+        // [port] C keeps the rolling window in a local __m256i s[] array; here it is in locals
+        // (the same arithmetic as convolve*(s, coeffs)) so the JIT keeps it in registers.
+        __m256i c0 = coeffs_v[0], c1 = coeffs_v[1], c2 = coeffs_v[2], c3 = coeffs_v[3];
+        __m256i s0 = _mm256_unpacklo_epi16(src_0, src_1);
+        __m256i s1 = _mm256_unpacklo_epi16(src_2, src_3);
+        __m256i s2 = _mm256_unpacklo_epi16(src_4, src_5);
 
-        s[4] = _mm256_unpackhi_epi16(src_0, src_1);
-        s[5] = _mm256_unpackhi_epi16(src_2, src_3);
-        s[6] = _mm256_unpackhi_epi16(src_4, src_5);
+        __m256i s4 = _mm256_unpackhi_epi16(src_0, src_1);
+        __m256i s5 = _mm256_unpackhi_epi16(src_2, src_3);
+        __m256i s6w = _mm256_unpackhi_epi16(src_4, src_5);
 
         for (i = 0; i < h; i += 2)
         {
@@ -564,23 +573,28 @@ internal static partial class convolve_avx2
             __m256i s6 = _mm256_loadu_si256(data + 6 * im_stride);
             __m256i s7 = _mm256_loadu_si256(data + 7 * im_stride);
 
-            s[3] = _mm256_unpacklo_epi16(s6, s7);
-            s[7] = _mm256_unpackhi_epi16(s6, s7);
+            __m256i s3 = _mm256_unpacklo_epi16(s6, s7);
+            __m256i s7w = _mm256_unpackhi_epi16(s6, s7);
 
-            __m256i res_a = convolve(sp, coeffs_v);
-            __m256i res_b = convolve(sp.Slice(4), coeffs_v);
+            // convolve(s, coeffs_v), convolve(s + 4, coeffs_v)
+            __m256i res_a = _mm256_add_epi32(
+                _mm256_add_epi32(_mm256_madd_epi16(s0, c0), _mm256_madd_epi16(s1, c1)),
+                _mm256_add_epi32(_mm256_madd_epi16(s2, c2), _mm256_madd_epi16(s3, c3)));
+            __m256i res_b = _mm256_add_epi32(
+                _mm256_add_epi32(_mm256_madd_epi16(s4, c0), _mm256_madd_epi16(s5, c1)),
+                _mm256_add_epi32(_mm256_madd_epi16(s6w, c2), _mm256_madd_epi16(s7w, c3)));
 
             sr_2d_ver_round_and_store(res_a, res_b, dst_ptr, dst_stride,
                                       round_const_v);
             dst_ptr += 2 * dst_stride;
 
-            s[0] = s[1];
-            s[1] = s[2];
-            s[2] = s[3];
+            s0 = s1;
+            s1 = s2;
+            s2 = s3;
 
-            s[4] = s[5];
-            s[5] = s[6];
-            s[6] = s[7];
+            s4 = s5;
+            s5 = s6w;
+            s6w = s7w;
         }
     }
 
@@ -1168,14 +1182,20 @@ internal static partial class convolve_avx2
                                              ReadOnlySpan<__m256i> coeffs,
                                              ReadOnlySpan<__m256i> filt)
     {
-        Arr4<__m256i> s = default;
+        // [port] C fills a local __m256i s[] and calls convolve_lowbd*(s, coeffs). The same
+        // arithmetic on locals: as a stack array passed by span, the JIT zeroed and spilled it on
+        // every call.
+        __m256i s0 = _mm256_shuffle_epi8(data, filt[0]);
+        __m256i s1 = _mm256_shuffle_epi8(data, filt[1]);
+        __m256i s2 = _mm256_shuffle_epi8(data, filt[2]);
+        __m256i s3 = _mm256_shuffle_epi8(data, filt[3]);
 
-        s[0] = _mm256_shuffle_epi8(data, filt[0]);
-        s[1] = _mm256_shuffle_epi8(data, filt[1]);
-        s[2] = _mm256_shuffle_epi8(data, filt[2]);
-        s[3] = _mm256_shuffle_epi8(data, filt[3]);
-
-        return convolve_lowbd(s, coeffs);
+        __m256i res_01 = _mm256_maddubs_epi16(s0, coeffs[0]);
+        __m256i res_23 = _mm256_maddubs_epi16(s1, coeffs[1]);
+        __m256i res_45 = _mm256_maddubs_epi16(s2, coeffs[2]);
+        __m256i res_67 = _mm256_maddubs_epi16(s3, coeffs[3]);
+        return _mm256_add_epi16(_mm256_add_epi16(res_01, res_45),
+                                _mm256_add_epi16(res_23, res_67));
     }
 
     [MethodImpl(AI)]
@@ -1183,13 +1203,17 @@ internal static partial class convolve_avx2
                                                   ReadOnlySpan<__m256i> coeffs,
                                                   ReadOnlySpan<__m256i> filt)
     {
-        Arr4<__m256i> s = default;
+        // [port] C fills a local __m256i s[] and calls convolve_lowbd*(s, coeffs). The same
+        // arithmetic on locals: as a stack array passed by span, the JIT zeroed and spilled it on
+        // every call.
+        __m256i s0 = _mm256_shuffle_epi8(data, filt[0]);
+        __m256i s1 = _mm256_shuffle_epi8(data, filt[1]);
+        __m256i s2 = _mm256_shuffle_epi8(data, filt[2]);
 
-        s[0] = _mm256_shuffle_epi8(data, filt[0]);
-        s[1] = _mm256_shuffle_epi8(data, filt[1]);
-        s[2] = _mm256_shuffle_epi8(data, filt[2]);
-
-        return convolve_lowbd_6tap(s, coeffs);
+        __m256i res_01 = _mm256_maddubs_epi16(s0, coeffs[0]);
+        __m256i res_23 = _mm256_maddubs_epi16(s1, coeffs[1]);
+        __m256i res_45 = _mm256_maddubs_epi16(s2, coeffs[2]);
+        return _mm256_add_epi16(_mm256_add_epi16(res_01, res_45), res_23);
     }
 
     [MethodImpl(AI)]
@@ -1197,12 +1221,15 @@ internal static partial class convolve_avx2
                                                   ReadOnlySpan<__m256i> coeffs,
                                                   ReadOnlySpan<__m256i> filt)
     {
-        Arr2<__m256i> s = default;
+        // [port] C fills a local __m256i s[] and calls convolve_lowbd*(s, coeffs). The same
+        // arithmetic on locals: as a stack array passed by span, the JIT zeroed and spilled it on
+        // every call.
+        __m256i s0 = _mm256_shuffle_epi8(data, filt[0]);
+        __m256i s1 = _mm256_shuffle_epi8(data, filt[1]);
 
-        s[0] = _mm256_shuffle_epi8(data, filt[0]);
-        s[1] = _mm256_shuffle_epi8(data, filt[1]);
-
-        return convolve_lowbd_4tap(s, coeffs);
+        __m256i res_23 = _mm256_maddubs_epi16(s0, coeffs[0]);
+        __m256i res_45 = _mm256_maddubs_epi16(s1, coeffs[1]);
+        return _mm256_add_epi16(res_45, res_23);
     }
 
     [MethodImpl(AI)]
