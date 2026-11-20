@@ -8,6 +8,7 @@
 
 using System;
 using System.Diagnostics;
+using Av1rt.Diagnostics;
 using static System.Math;
 
 namespace Av1rt.Aom;
@@ -2336,7 +2337,9 @@ internal static partial class ratectrl
             if (rc.prev_coded_width == cm.width &&
                 rc.prev_coded_height == cm.height)
             {
+                long tSd = StageTimes.Start();
                 av1_rc_scene_detection_onepass_rt(cpi, frame_input);
+                StageTimes.Stop(StageTimes.Stage.SceneDetect, tSd);
             }
             else
             {

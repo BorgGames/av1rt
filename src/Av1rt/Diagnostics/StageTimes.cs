@@ -10,7 +10,7 @@ namespace Av1rt.Diagnostics;
 /// </summary>
 internal static class StageTimes
 {
-    internal enum Stage { Total, EncodeTiles, PickLpf, LoopFilter, CdefSearch, CdefApply, ExtendBorders, PackBitstream, Count }
+    internal enum Stage { Total, Lookahead, SceneDetect, EncodeTiles, PickLpf, LoopFilter, CdefSearch, CdefApply, ExtendBorders, PackBitstream, Count }
 
     internal static readonly bool Enabled = Environment.GetEnvironmentVariable("AV1RT_STAGES") == "1";
     private static readonly long[] s_ticks = new long[(int)Stage.Count];

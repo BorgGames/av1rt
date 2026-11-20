@@ -2641,12 +2641,14 @@ internal static partial class encoder
         }
 
         cpi.ppi.lookahead.copy_threads = AOMMAX(1, cpi.oxcf.max_threads);  // [port]
+        long tLa = StageTimes.Start();
         if (av1_lookahead_push(cpi.ppi.lookahead, sd, time_stamp, end_time,
                                use_highbitdepth, cpi.alloc_pyramid, frame_flags) != 0)
         {
             aom_set_error(cm.error, AOM_CODEC_ERROR, "av1_lookahead_push() failed");
             res = -1;
         }
+        StageTimes.Stop(StageTimes.Stage.Lookahead, tLa);
 
         return res;
     }

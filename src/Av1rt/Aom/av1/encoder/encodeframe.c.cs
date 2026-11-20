@@ -1,6 +1,8 @@
 // Port of libaom av1/encoder/encodeframe.c
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Av1rt.Aom;
 
@@ -1379,15 +1381,14 @@ internal static partial class encodeframe
             int mi_rows = cm.mi_params.mi_rows;
             int mi_cols = cm.mi_params.mi_cols;
             int last_active_segid = cm.seg.last_active_segid;
-            Ptr<byte> map = cpi.enc_seg.map;
-            for (int mi_row = 0; mi_row < mi_rows; ++mi_row)
-            {
-                for (int mi_col = 0; mi_col < mi_cols; ++mi_col)
-                {
-                    map[mi_col] = (byte)AOMMIN(map[mi_col], last_active_segid);
-                }
-                map += mi_cols;
-            }
+            // [port] C clamps row by row (map += mi_cols); the rows are contiguous, so this is
+            // one vectorized min over mi_rows * mi_cols bytes (518K at 4K, on the serial path).
+            Span<byte> map = cpi.enc_seg.map.AsSpan(0, mi_rows * mi_cols);
+            Span<Vector256<byte>> vmap = MemoryMarshal.Cast<byte, Vector256<byte>>(map);
+            Vector256<byte> vlim = Vector256.Create((byte)AOMMIN(last_active_segid, byte.MaxValue));
+            for (int i = 0; i < vmap.Length; i++) vmap[i] = Vector256.Min(vmap[i], vlim);
+            for (int i = vmap.Length * 32; i < map.Length; i++)
+                map[i] = (byte)AOMMIN(map[i], last_active_segid);
         }
 
         av1_setup_frame_buf_refs(cm);
