@@ -40,6 +40,7 @@ public sealed class Av1Encoder : IDisposable
     private readonly aom_image_t _image;
     private readonly int[] _qOut = new int[1];
     private long _nextTimestamp;
+    private readonly FrameIntervals _intervals;
     private long _framesIn;
     private bool _forceKeyFrame;
     private bool _disposed;
@@ -62,6 +63,7 @@ public sealed class Av1Encoder : IDisposable
             EnableCdef = options.EnableCdef, EnableCyclicRefresh = options.EnableCyclicRefresh,
         };
         var o = _options;
+        _intervals = new FrameIntervals(TimestampRate / o.FrameRate);
         int threads = o.Threads > 0 ? o.Threads : Av1EncoderOptions.WebRtcThreads(o.Width, o.Height, Environment.ProcessorCount);
 
         aom_codec_iface_t iface = aom_codec_av1_cx();
@@ -192,7 +194,8 @@ public sealed class Av1Encoder : IDisposable
     /// <param name="output">Receives the temporal unit (temporal delimiter, sequence header on key frames, frame OBU).</param>
     /// <param name="timestamp">
     /// Presentation time in 90 kHz units, or -1 to continue from the previous frame at the nominal
-    /// frame rate. Real capture times let the rate control follow the actual frame rate.
+    /// frame rate. With capture times the rate control follows the actual frame rate: a frame gets
+    /// the bits of the average interval between the frames of the last second.
     /// </param>
     public Av1EncodeResult Encode(in I420Frame frame, IBufferWriter<byte> output, long timestamp = -1)
     {
@@ -338,8 +341,10 @@ public sealed class Av1Encoder : IDisposable
 
     private Av1EncodeResult EncodeImage(IBufferWriter<byte> output, long timestamp)
     {
-        long duration = TimestampRate / _options.FrameRate;
+        // libaom's realtime rate control takes the frame rate from each frame's duration and gives
+        // the frame target bitrate x duration bits.
         long pts = timestamp >= 0 ? timestamp : _nextTimestamp;
+        long duration = timestamp >= 0 ? _intervals.Next(pts) : TimestampRate / _options.FrameRate;
         _nextTimestamp = pts + duration;
 
         aom_enc_frame_flags_t flags = 0;

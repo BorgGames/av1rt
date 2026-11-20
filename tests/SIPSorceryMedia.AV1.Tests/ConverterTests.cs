@@ -1,6 +1,8 @@
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Av1rt;
 using SIPSorceryMedia.Abstractions;
 using Xunit;
@@ -178,8 +180,30 @@ public class ConverterTests
             output.ResetWrittenCount();
             Av1EncodeResult r = direct.Encode(Reference(src, stride, format, w, h), output);
             byte[] want = r.Dropped ? null : output.WrittenSpan.ToArray();
-            byte[] got = adapter.EncodeVideo(w, h, src, format, VideoCodecsEnum.AV1);
+            // The IVideoEncoder overload times frames by their arrival; this one, without a
+            // timestamp, at the nominal rate like `direct`.
+            output.ResetWrittenCount();
+            byte[] got = adapter.EncodeVideo(w, h, src, 0, format, output).Dropped ? null : output.WrittenSpan.ToArray();
             Assert.Equal(want, got);
         }
+    }
+
+    // SIPSorcery passes no timestamps; the adapter stamps frames with their arrival time.
+    [Fact]
+    public void IVideoEncoderFramesAreTimedByArrival()
+    {
+        const int w = 64, h = 64;
+        using var adapter = new AV1VideoEncoder(new Av1EncoderOptions { Threads = 1 });
+        var stamps = new List<long>();
+        adapter.FrameEncoded += r => stamps.Add(r.Timestamp);
+        var frame = new byte[I420Converter.SourceSize(VideoPixelFormatsEnum.I420, w, w, h)];
+        for (int t = 0; t < 3; t++)
+        {
+            if (t > 0) Thread.Sleep(100);
+            adapter.EncodeVideo(w, h, frame, VideoPixelFormatsEnum.I420, VideoCodecsEnum.AV1);
+        }
+        Assert.Equal(3, stamps.Count);
+        for (int t = 1; t < 3; t++)
+            Assert.InRange(stamps[t] - stamps[t - 1], 100 * 90, 2000 * 90);
     }
 }

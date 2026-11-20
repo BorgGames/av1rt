@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Av1rt;
 using SIPSorceryMedia.Abstractions;
 
@@ -16,6 +17,11 @@ namespace SIPSorceryMedia.AV1;
 /// The encoder is created on the first frame and re-created, starting with a key frame, whenever the
 /// frame size changes. Calls are serialised internally.
 /// </para>
+/// <para>
+/// SIPSorcery passes no timestamps, so <see cref="EncodeVideo(int, int, byte[], VideoPixelFormatsEnum, VideoCodecsEnum)"/>
+/// and <see cref="EncodeVideoFaster"/> time each frame by its arrival: the rate control follows the
+/// rate frames actually come in at, and the target bitrate holds whatever the source's frame rate.
+/// </para>
 /// </remarks>
 public sealed class AV1VideoEncoder : IVideoEncoder
 {
@@ -26,6 +32,7 @@ public sealed class AV1VideoEncoder : IVideoEncoder
     private readonly Av1EncoderOptions _template;
     private readonly object _lock = new();
     private readonly ArrayBufferWriter<byte> _output = new(1 << 20);
+    private readonly long _created = Stopwatch.GetTimestamp();
     private Av1Encoder? _encoder;
     private bool _forceKeyFrame;
     private int _targetBitrateKbps;
@@ -74,7 +81,8 @@ public sealed class AV1VideoEncoder : IVideoEncoder
         lock (_lock)
         {
             _output.ResetWrittenCount();
-            Av1EncodeResult result = EncodeVideo(width, height, sample, I420Converter.PackedStride(pixelFormat, width), pixelFormat, _output);
+            Av1EncodeResult result = EncodeVideo(width, height, sample, I420Converter.PackedStride(pixelFormat, width), pixelFormat,
+                                                 _output, ArrivalTime());
             return result.Dropped ? null : _output.WrittenSpan.ToArray();
         }
     }
@@ -93,7 +101,7 @@ public sealed class AV1VideoEncoder : IVideoEncoder
         {
             _output.ResetWrittenCount();
             Av1EncodeResult result = EncodeCore(rawImage.Width, rawImage.Height, default, rawImage.Sample, stride,
-                                                rawImage.PixelFormat, _output, -1);
+                                                rawImage.PixelFormat, _output, ArrivalTime());
             return result.Dropped ? null : _output.WrittenSpan.ToArray();
         }
     }
@@ -108,7 +116,10 @@ public sealed class AV1VideoEncoder : IVideoEncoder
     /// <param name="stride">Bytes between rows of the luma plane or of the packed pixels; 0 for tightly packed.</param>
     /// <param name="pixelFormat">I420, NV12, BGRA, RGBA, BGR or RGB.</param>
     /// <param name="output">Receives the temporal unit.</param>
-    /// <param name="timestamp">Presentation time in 90 kHz units, or -1 for the nominal frame rate.</param>
+    /// <param name="timestamp">
+    /// Presentation (capture) time in 90 kHz units, or -1 for the nominal frame rate; see
+    /// <see cref="Av1Encoder.Encode(in I420Frame, IBufferWriter{byte}, long)"/>.
+    /// </param>
     /// <returns>What was encoded; <see cref="Av1EncodeResult.Dropped"/> if nothing was written.</returns>
     public Av1EncodeResult EncodeVideo(int width, int height, ReadOnlyMemory<byte> sample, int stride,
                                        VideoPixelFormatsEnum pixelFormat, IBufferWriter<byte> output, long timestamp = -1)
@@ -124,6 +135,9 @@ public sealed class AV1VideoEncoder : IVideoEncoder
             return EncodeCore(width, height, sample, IntPtr.Zero, stride, pixelFormat, output, timestamp);
         }
     }
+
+    // Now, in 90 kHz units since the adapter was created.
+    private long ArrivalTime() => Stopwatch.GetElapsedTime(_created).Ticks * 9 / 1000;
 
     // The picture comes from `sample`, or from `native` when that is not zero.
     private Av1EncodeResult EncodeCore(int width, int height, ReadOnlyMemory<byte> sample, IntPtr native, int stride,

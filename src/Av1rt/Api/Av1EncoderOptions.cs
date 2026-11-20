@@ -34,8 +34,9 @@ public sealed class Av1EncoderOptions
     public int Height { get; set; }
 
     /// <summary>
-    /// Nominal frame rate. Used to derive timestamps when <see cref="Av1Encoder.Encode(in I420Frame, System.Buffers.IBufferWriter{byte}, long)"/> is not given
-    /// one, and as the encoder's initial rate estimate.
+    /// Nominal frame rate: the frame time when <see cref="Av1Encoder.Encode(in I420Frame, System.Buffers.IBufferWriter{byte}, long)"/> is not given
+    /// timestamps, and of the first frame when it is. With timestamps the rate control follows
+    /// their actual spacing instead.
     /// </summary>
     public int FrameRate { get; set; } = 60;
 
