@@ -3,6 +3,7 @@
 global using static Av1rt.Aom.entenc;
 global using od_ec_enc_window = ulong;
 
+using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -161,6 +162,15 @@ internal static partial class entenc
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void od_ec_encode_cdf_q15_state(od_ec_enc enc, ref od_ec_enc_state st, int s,
                                                     Ptr<ushort> icdf, int nsyms)
+    {
+        od_ec_encode_cdf_q15_state(enc, ref st, s, icdf.AsSpan(0, nsyms), nsyms);
+    }
+
+    // [port] icdf as a span of at least nsyms entries (callers pass the whole cdf, counter
+    // included, and share the span with update_cdf).
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void od_ec_encode_cdf_q15_state(od_ec_enc enc, ref od_ec_enc_state st, int s,
+                                                    ReadOnlySpan<ushort> icdf, int nsyms)
     {
         uint r = st.rng;
         Debug.Assert(s >= 0);

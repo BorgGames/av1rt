@@ -3,6 +3,7 @@
 global using static Av1rt.Aom.prob;
 global using aom_cdf_prob = ushort;
 
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -94,6 +95,16 @@ internal static partial class prob
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void update_cdf(Ptr<aom_cdf_prob> cdf, int val, int nsymbs)
     {
+        update_cdf(cdf.AsSpan(0, nsymbs + 1), val);
+    }
+
+    // [port] update_cdf on the nsymbs + 1 entries of the cdf (the probabilities and the
+    // adaptation counter). With the loop bound taken from the span's length the JIT drops the
+    // per-entry bounds checks.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void update_cdf(Span<aom_cdf_prob> cdf, int val)
+    {
+        int nsymbs = cdf.Length - 1;
         Debug.Assert(nsymbs < 17);
         Debug.Assert(val >= 0 && val < nsymbs);
         int count = cdf[nsymbs];
@@ -113,14 +124,15 @@ internal static partial class prob
         //  4 + (count >> 4) + (nsymbs > 3).
         int rate = 4 + (count >> 4) + B(nsymbs > 3);
 
-        int i = 0;
-        do
+        // C: do { ... } while (++i < nsymbs - 1); nsymbs >= 2, so the bodies match.
+        for (int i = 0; i < cdf.Length - 2; i++)
         {
             // Compute both and select, a branch on val is hard to predict.
-            int up = cdf[i] + ((CDF_PROB_TOP - cdf[i]) >> rate);
-            int down = cdf[i] - (cdf[i] >> rate);
+            int c = cdf[i];
+            int up = c + ((CDF_PROB_TOP - c) >> rate);
+            int down = c - (c >> rate);
             cdf[i] = (aom_cdf_prob)(i < val ? up : down);
-        } while (++i < nsymbs - 1);
-        cdf[nsymbs] = (aom_cdf_prob)(cdf[nsymbs] + B(count < 32));
+        }
+        cdf[nsymbs] = (aom_cdf_prob)(count + B(count < 32));
     }
 }

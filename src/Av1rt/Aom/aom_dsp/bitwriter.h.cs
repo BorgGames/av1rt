@@ -2,6 +2,7 @@
 
 global using static Av1rt.Aom.bitwriter;
 
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Av1rt.Aom;
@@ -72,8 +73,10 @@ internal static partial class bitwriter
     internal static void aom_write_symbol_state(aom_writer w, ref od_ec_enc_state s, int symb,
                                                 Ptr<aom_cdf_prob> cdf, int nsymbs)
     {
-        od_ec_encode_cdf_q15_state(w.ec, ref s, symb, cdf, nsymbs);
-        if (w.allow_update_cdf != 0) update_cdf(cdf, symb, nsymbs);
+        // [port] One span of the cdf and its counter for both the coder and the update.
+        Span<aom_cdf_prob> c = cdf.AsSpan(0, nsymbs + 1);
+        od_ec_encode_cdf_q15_state(w.ec, ref s, symb, c, nsymbs);
+        if (w.allow_update_cdf != 0) update_cdf(c, symb);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
