@@ -104,6 +104,16 @@ public sealed class Av1Encoder : IDisposable
                 Control(AV1E_SET_TILE_COLUMNS, Math.Max(o.TileColumnsLog2, 0));
                 Control(AV1E_SET_TILE_ROWS, Math.Max(o.TileRowsLog2, 0));
             }
+            else if (threads >= 8 && (long)o.Width * o.Height >= 3840L * 2160 * 3 / 4)
+            {
+                // 4K with 8+ threads: 8x4 tiles. libaom's auto choice (one tile per thread, 4x2
+                // with 12 threads) leaves the bitstream packing, which runs one thread per
+                // tile, waiting on its largest tile: on a 12-thread desktop 4x2 encoded 4K at
+                // 113 fps, 4x4 at 127 and 8x4 at 131 (pack 2.3 -> 1.3 ms per frame), for
+                // +0.8% BD-rate against 4x4 on game content.
+                Control(AV1E_SET_TILE_COLUMNS, 3);
+                Control(AV1E_SET_TILE_ROWS, 2);
+            }
             else
             {
                 Control(AV1E_SET_AUTO_TILES, 1);

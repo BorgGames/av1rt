@@ -51,7 +51,9 @@ public sealed class Av1EncoderOptions
 
     /// <summary>
     /// Worker threads. 0 picks libwebrtc's rule from the frame size and
-    /// <see cref="Environment.ProcessorCount"/>.
+    /// <see cref="Environment.ProcessorCount"/> (at most 8 threads), except that frames of about
+    /// 4K and up use every logical processor (at most 16): 4K at 60 fps needs all of a 6-core
+    /// desktop.
     /// </summary>
     public int Threads { get; set; }
 
@@ -109,10 +111,14 @@ public sealed class Av1EncoderOptions
             throw new ArgumentOutOfRangeException(nameof(KeyFrameInterval));
     }
 
-    /// <summary>libwebrtc's thread count rule (LibaomAv1Encoder::NumberOfThreads).</summary>
+    /// <summary>
+    /// libwebrtc's thread count rule (LibaomAv1Encoder::NumberOfThreads), plus all logical
+    /// processors (up to 16) from about 4K.
+    /// </summary>
     internal static int WebRtcThreads(int width, int height, int cores)
     {
         long area = (long)width * height;
+        if (area >= 3840L * 2160 * 3 / 4 && cores > 8) return Math.Min(cores, 16);
         if (area > 1280 * 720 && cores > 8) return 8;
         if (area >= 640 * 360 && cores > 4) return 4;
         if (area >= 320 * 180 && cores > 2) return 2;
