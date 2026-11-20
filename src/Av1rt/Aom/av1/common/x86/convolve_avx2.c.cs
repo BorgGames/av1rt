@@ -58,7 +58,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -92,7 +92,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -220,7 +220,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -355,7 +355,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -389,7 +389,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -468,7 +468,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -590,7 +590,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -624,7 +624,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -716,7 +716,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -1007,7 +1007,7 @@ internal static partial class convolve_avx2
         Arr6<__m256i> coeffs = default;
         int x = 0, y = h;
 
-        int i, vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
+        int vert_tap = get_filter_tap(filter_params_y, subpel_y_qn);
         Debug.Assert(vert_tap == 2 || vert_tap == 4 || vert_tap == 6 || vert_tap == 8 ||
                      vert_tap == 12);
         Debug.Assert((w % 2) == 0);
@@ -1377,7 +1377,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
@@ -1435,7 +1435,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
@@ -1492,7 +1492,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
@@ -1538,7 +1538,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
@@ -1580,7 +1580,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
@@ -1623,7 +1623,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
@@ -1673,7 +1673,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
@@ -1958,7 +1958,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
@@ -2001,7 +2001,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
@@ -2140,7 +2140,7 @@ internal static partial class convolve_avx2
                                                 ref ConvolveParams conv_params)
     {
         int bits = FILTER_BITS - conv_params.round_0;
-        int i, j, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
+        int i, horiz_tap = get_filter_tap(filter_params_x, subpel_x_qn);
 
         Debug.Assert(bits >= 0);
         Debug.Assert((FILTER_BITS - conv_params.round_1) >= 0 ||
