@@ -19,4 +19,7 @@ internal static partial class stubs_av1_encoder_encodetxb_c
                                                          RUN_TYPE dry_run, BLOCK_SIZE bsize,
                                                          byte allow_update_cdf) =>
         throw new NotImplementedException();
+
+    internal static CB_COEFF_BUFFER av1_get_cb_coeff_buffer(AV1_COMP cpi, int mi_row, int mi_col) =>
+        throw new NotImplementedException();
 }
