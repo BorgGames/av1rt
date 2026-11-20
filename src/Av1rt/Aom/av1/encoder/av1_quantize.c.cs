@@ -63,9 +63,15 @@ internal static partial class av1_quantize
                                          Ptr<short> round_ptr, Ptr<short> quant_ptr,
                                          Ptr<short> qcoeff_ptr, Ptr<short> dqcoeff_ptr,
                                          Ptr<short> dequant_ptr, Ptr<ushort> eob_ptr,
-                                         Ptr<short> scan, Ptr<short> iscan) =>
-        av1_quantize_lp_c(coeff_ptr, n_coeffs, round_ptr, quant_ptr, qcoeff_ptr, dqcoeff_ptr,
-                          dequant_ptr, eob_ptr, scan, iscan);
+                                         Ptr<short> scan, Ptr<short> iscan)
+    {
+        if (Simd.UseAvx2)
+            av1_quantize_lp_avx2(coeff_ptr, n_coeffs, round_ptr, quant_ptr, qcoeff_ptr,
+                                 dqcoeff_ptr, dequant_ptr, eob_ptr, scan, iscan);
+        else
+            av1_quantize_lp_c(coeff_ptr, n_coeffs, round_ptr, quant_ptr, qcoeff_ptr,
+                              dqcoeff_ptr, dequant_ptr, eob_ptr, scan, iscan);
+    }
 
     internal static void av1_quantize_b_facade(Ptr<tran_low_t> coeff_ptr, int n_coeffs,
                                                macroblock_plane p, Ptr<tran_low_t> qcoeff_ptr,

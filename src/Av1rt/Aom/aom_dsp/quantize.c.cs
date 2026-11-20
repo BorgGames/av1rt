@@ -116,9 +116,17 @@ internal static partial class quantize
                                         Ptr<short> quant_ptr, Ptr<short> quant_shift_ptr,
                                         Ptr<tran_low_t> qcoeff_ptr, Ptr<tran_low_t> dqcoeff_ptr,
                                         Ptr<short> dequant_ptr, Ptr<ushort> eob_ptr,
-                                        Ptr<short> scan, Ptr<short> iscan) =>
-        aom_quantize_b_c(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr, quant_shift_ptr,
-                         qcoeff_ptr, dqcoeff_ptr, dequant_ptr, eob_ptr, scan, iscan);
+                                        Ptr<short> scan, Ptr<short> iscan)
+    {
+        if (Simd.UseAvx2)
+            aom_quantize_b_avx2(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr,
+                                quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr, eob_ptr,
+                                scan, iscan);
+        else
+            aom_quantize_b_c(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr,
+                             quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr, eob_ptr,
+                             scan, iscan);
+    }
 
     internal static void aom_quantize_b_32x32_c(Ptr<tran_low_t> coeff_ptr, int n_coeffs,
                                                 Ptr<short> zbin_ptr, Ptr<short> round_ptr,
@@ -142,10 +150,17 @@ internal static partial class quantize
                                               Ptr<tran_low_t> qcoeff_ptr,
                                               Ptr<tran_low_t> dqcoeff_ptr,
                                               Ptr<short> dequant_ptr, Ptr<ushort> eob_ptr,
-                                              Ptr<short> scan, Ptr<short> iscan) =>
-        aom_quantize_b_32x32_c(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr,
-                               quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr, eob_ptr,
-                               scan, iscan);
+                                              Ptr<short> scan, Ptr<short> iscan)
+    {
+        if (Simd.UseAvx2)
+            aom_quantize_b_32x32_avx2(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr,
+                                      quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr,
+                                      eob_ptr, scan, iscan);
+        else
+            aom_quantize_b_32x32_c(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr,
+                                   quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr,
+                                   eob_ptr, scan, iscan);
+    }
 
     // [subset] aom_quantize_b_64x64_c: TX64 is disabled (log_scale 2 never happens).
     // [subset] aom_highbd_quantize_b_c / _32x32_c / _64x64_c: high bitdepth.

@@ -37,9 +37,11 @@ internal static partial class rdopt
         return error;
     }
 
-    // RTCD: av1_rtcd.h maps av1_block_error_lp to av1_block_error_lp_c in this configuration.
+    // RTCD: av1_rtcd.h maps av1_block_error_lp to av1_block_error_lp_avx2 (x86) or
+    // av1_block_error_lp_c.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static long av1_block_error_lp(Ptr<short> coeff, Ptr<short> dqcoeff,
                                             int block_size) =>
-        av1_block_error_lp_c(coeff, dqcoeff, block_size);
+        Simd.UseAvx2 ? av1_block_error_lp_avx2(coeff, dqcoeff, block_size)
+                     : av1_block_error_lp_c(coeff, dqcoeff, block_size);
 }

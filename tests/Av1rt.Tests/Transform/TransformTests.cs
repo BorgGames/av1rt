@@ -105,7 +105,10 @@ public class TransformTests
 
                 E2Shim.e2_fwd_txfm(src, expected, stride, txSize, txType);
                 TxfmParam p = MakeParam(txSize, txType, 0);
-                av1_lowbd_fwd_txfm(src, actual, stride, ref p);
+                // [s2] The C port: the av1_lowbd_fwd_txfm forwarder dispatches to the AVX2
+                // version, which (like libaom's) only implements DCT_DCT/IDTX/V_DCT/H_DCT for
+                // 32-point sizes; it is tested against this in Simd/S2/FwdTxfmSimdTests.cs.
+                av1_lowbd_fwd_txfm_c(src, actual, stride, ref p);
 
                 AssertSame(expected, actual, $"fwd tx_size={txSize} tx_type={txType} case={kase}");
             }

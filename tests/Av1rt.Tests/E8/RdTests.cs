@@ -55,7 +55,9 @@ public class RdTests
                 }
                 long expected = E8Shim.aomshim_e8_block_error_lp(coeff, dqcoeff, n);
                 Assert.Equal(expected, rdopt.av1_block_error_lp_c(coeff, dqcoeff, n));
-                Assert.Equal(expected, rdopt.av1_block_error_lp(coeff, dqcoeff, n));
+                // [s2] The av1_block_error_lp forwarder dispatches to the AVX2 version, which
+                // (like libaom's) needs block_size % 16 == 0 and dqcoeff - coeff in int16; it is
+                // tested against av1_block_error_lp_c in Simd/S2/BlockErrorSimdTests.cs.
             }
         }
         // Non-zero offsets into the arrays.
