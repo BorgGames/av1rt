@@ -136,104 +136,81 @@ internal static class txfm_common_avx2
         }
     }
 
-    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
-    [ThreadStatic] private static __m256i[] t_transpose2_8x8_avx2_t;
-    [ThreadStatic] private static __m256i[] t_transpose2_8x8_avx2_u;
+    // [port] The C stack arrays t[] and u[] are locals: the shuffles stay in registers instead
+    // of storing and reloading each vector. All inputs are read before any output is written.
     [MethodImpl(AI)]
     internal static void transpose2_8x8_avx2(Span<__m256i> @in, Span<__m256i> @out)
     {
-        Span<__m256i> t = t_transpose2_8x8_avx2_t ??= new __m256i[16];
-        Span<__m256i> u = t_transpose2_8x8_avx2_u ??= new __m256i[16];
+        _ = @in[7];
+        transpose2_8x8_avx2(@in[0], @in[1], @in[2], @in[3], @in[4], @in[5], @in[6], @in[7], @out);
+    }
+
+    [MethodImpl(AI)]
+    private static void transpose2_8x8_avx2(__m256i in0, __m256i in1, __m256i in2, __m256i in3,
+                                            __m256i in4, __m256i in5, __m256i in6, __m256i in7,
+                                            Span<__m256i> @out)
+    {
         // (1st, 2nd) ==> (lo, hi)
         //   (0, 1)   ==>  (0, 1)
         //   (2, 3)   ==>  (2, 3)
         //   (4, 5)   ==>  (4, 5)
         //   (6, 7)   ==>  (6, 7)
-        for (int i = 0; i < 4; i++)
-        {
-            t[2 * i] = _mm256_unpacklo_epi16(@in[2 * i], @in[2 * i + 1]);
-            t[2 * i + 1] = _mm256_unpackhi_epi16(@in[2 * i], @in[2 * i + 1]);
-        }
+        __m256i t0 = _mm256_unpacklo_epi16(in0, in1), t1 = _mm256_unpackhi_epi16(in0, in1);
+        __m256i t2 = _mm256_unpacklo_epi16(in2, in3), t3 = _mm256_unpackhi_epi16(in2, in3);
+        __m256i t4 = _mm256_unpacklo_epi16(in4, in5), t5 = _mm256_unpackhi_epi16(in4, in5);
+        __m256i t6 = _mm256_unpacklo_epi16(in6, in7), t7 = _mm256_unpackhi_epi16(in6, in7);
 
         // (1st, 2nd) ==> (lo, hi)
         //   (0, 2)   ==>  (0, 2)
         //   (1, 3)   ==>  (1, 3)
         //   (4, 6)   ==>  (4, 6)
         //   (5, 7)   ==>  (5, 7)
-        for (int i = 0; i < 2; i++)
-        {
-            u[i] = _mm256_unpacklo_epi32(t[i], t[i + 2]);
-            u[i + 2] = _mm256_unpackhi_epi32(t[i], t[i + 2]);
-
-            u[i + 4] = _mm256_unpacklo_epi32(t[i + 4], t[i + 6]);
-            u[i + 6] = _mm256_unpackhi_epi32(t[i + 4], t[i + 6]);
-        }
+        __m256i u0 = _mm256_unpacklo_epi32(t0, t2), u2 = _mm256_unpackhi_epi32(t0, t2);
+        __m256i u4 = _mm256_unpacklo_epi32(t4, t6), u6 = _mm256_unpackhi_epi32(t4, t6);
+        __m256i u1 = _mm256_unpacklo_epi32(t1, t3), u3 = _mm256_unpackhi_epi32(t1, t3);
+        __m256i u5 = _mm256_unpacklo_epi32(t5, t7), u7 = _mm256_unpackhi_epi32(t5, t7);
 
         // (1st, 2nd) ==> (lo, hi)
         //   (0, 4)   ==>  (0, 1)
         //   (1, 5)   ==>  (4, 5)
         //   (2, 6)   ==>  (2, 3)
         //   (3, 7)   ==>  (6, 7)
-        for (int i = 0; i < 2; i++)
-        {
-            @out[2 * i] = _mm256_unpacklo_epi64(u[2 * i], u[2 * i + 4]);
-            @out[2 * i + 1] = _mm256_unpackhi_epi64(u[2 * i], u[2 * i + 4]);
-
-            @out[2 * i + 4] = _mm256_unpacklo_epi64(u[2 * i + 1], u[2 * i + 5]);
-            @out[2 * i + 5] = _mm256_unpackhi_epi64(u[2 * i + 1], u[2 * i + 5]);
-        }
+        @out[7] = _mm256_unpackhi_epi64(u3, u7);
+        @out[0] = _mm256_unpacklo_epi64(u0, u4);
+        @out[1] = _mm256_unpackhi_epi64(u0, u4);
+        @out[4] = _mm256_unpacklo_epi64(u1, u5);
+        @out[5] = _mm256_unpackhi_epi64(u1, u5);
+        @out[2] = _mm256_unpacklo_epi64(u2, u6);
+        @out[3] = _mm256_unpackhi_epi64(u2, u6);
+        @out[6] = _mm256_unpacklo_epi64(u3, u7);
     }
 
-    // [port] C stack array, uninitialised: per-thread scratch instead of a zeroed stackalloc.
-    [ThreadStatic] private static __m256i[] t_transpose_16bit_16x16_avx2_t;
+    // [port] t[] is locals (see transpose2_8x8_avx2). LOADL(i) / LOADR(i), the low / high 128
+    // bits of in[i], pair up as vperm2i128 of in[i] and in[i + 8].
     [MethodImpl(AI)]
     internal static void transpose_16bit_16x16_avx2(Span<__m256i> @in, Span<__m256i> @out)
     {
-        Span<__m256i> t = t_transpose_16bit_16x16_avx2_t ??= new __m256i[16];
+        _ = @in[15];
+        _ = @out[15];
+        __m256i a0 = @in[0], a1 = @in[1], a2 = @in[2], a3 = @in[3];
+        __m256i a4 = @in[4], a5 = @in[5], a6 = @in[6], a7 = @in[7];
+        __m256i b0 = @in[8], b1 = @in[9], b2 = @in[10], b3 = @in[11];
+        __m256i b4 = @in[12], b5 = @in[13], b6 = @in[14], b7 = @in[15];
 
-        // [port] LOADL(idx) / LOADR(idx) macros: `_mm_load_si128((__m128i const *)&in[idx])` is
-        // the low 128 bits of in[idx], `... + 1` the high 128 bits.
-
-        // load left 8x16
-        t[0] = _mm256_castsi128_si256(_mm256_castsi256_si128(@in[0]));  // LOADL(0)
-        t[0] = _mm256_inserti128_si256(t[0], _mm256_castsi256_si128(@in[8]), 1);
-        t[1] = _mm256_castsi128_si256(_mm256_castsi256_si128(@in[1]));  // LOADL(1)
-        t[1] = _mm256_inserti128_si256(t[1], _mm256_castsi256_si128(@in[9]), 1);
-        t[2] = _mm256_castsi128_si256(_mm256_castsi256_si128(@in[2]));  // LOADL(2)
-        t[2] = _mm256_inserti128_si256(t[2], _mm256_castsi256_si128(@in[10]), 1);
-        t[3] = _mm256_castsi128_si256(_mm256_castsi256_si128(@in[3]));  // LOADL(3)
-        t[3] = _mm256_inserti128_si256(t[3], _mm256_castsi256_si128(@in[11]), 1);
-        t[4] = _mm256_castsi128_si256(_mm256_castsi256_si128(@in[4]));  // LOADL(4)
-        t[4] = _mm256_inserti128_si256(t[4], _mm256_castsi256_si128(@in[12]), 1);
-        t[5] = _mm256_castsi128_si256(_mm256_castsi256_si128(@in[5]));  // LOADL(5)
-        t[5] = _mm256_inserti128_si256(t[5], _mm256_castsi256_si128(@in[13]), 1);
-        t[6] = _mm256_castsi128_si256(_mm256_castsi256_si128(@in[6]));  // LOADL(6)
-        t[6] = _mm256_inserti128_si256(t[6], _mm256_castsi256_si128(@in[14]), 1);
-        t[7] = _mm256_castsi128_si256(_mm256_castsi256_si128(@in[7]));  // LOADL(7)
-        t[7] = _mm256_inserti128_si256(t[7], _mm256_castsi256_si128(@in[15]), 1);
-
-        // load right 8x16
-        t[8] = _mm256_castsi128_si256(_mm256_extracti128_si256(@in[0], 1));  // LOADR(0)
-        t[8] = _mm256_inserti128_si256(t[8], _mm256_extracti128_si256(@in[8], 1), 1);
-        t[9] = _mm256_castsi128_si256(_mm256_extracti128_si256(@in[1], 1));  // LOADR(1)
-        t[9] = _mm256_inserti128_si256(t[9], _mm256_extracti128_si256(@in[9], 1), 1);
-        t[10] = _mm256_castsi128_si256(_mm256_extracti128_si256(@in[2], 1));  // LOADR(2)
-        t[10] = _mm256_inserti128_si256(t[10], _mm256_extracti128_si256(@in[10], 1), 1);
-        t[11] = _mm256_castsi128_si256(_mm256_extracti128_si256(@in[3], 1));  // LOADR(3)
-        t[11] = _mm256_inserti128_si256(t[11], _mm256_extracti128_si256(@in[11], 1), 1);
-        t[12] = _mm256_castsi128_si256(_mm256_extracti128_si256(@in[4], 1));  // LOADR(4)
-        t[12] = _mm256_inserti128_si256(t[12], _mm256_extracti128_si256(@in[12], 1), 1);
-        t[13] = _mm256_castsi128_si256(_mm256_extracti128_si256(@in[5], 1));  // LOADR(5)
-        t[13] = _mm256_inserti128_si256(t[13], _mm256_extracti128_si256(@in[13], 1), 1);
-        t[14] = _mm256_castsi128_si256(_mm256_extracti128_si256(@in[6], 1));  // LOADR(6)
-        t[14] = _mm256_inserti128_si256(t[14], _mm256_extracti128_si256(@in[14], 1), 1);
-        t[15] = _mm256_castsi128_si256(_mm256_extracti128_si256(@in[7], 1));  // LOADR(7)
-        t[15] = _mm256_inserti128_si256(t[15], _mm256_extracti128_si256(@in[15], 1), 1);
-
-        // get the top 16x8 result
-        transpose2_8x8_avx2(t, @out);
-        // get the bottom 16x8 result
-        transpose2_8x8_avx2(t.Slice(8), @out.Slice(8));
+        // get the top 16x8 result: left 8x16 (LOADL(i), LOADL(i + 8))
+        transpose2_8x8_avx2(
+            _mm256_permute2x128_si256(a0, b0, 0x20), _mm256_permute2x128_si256(a1, b1, 0x20),
+            _mm256_permute2x128_si256(a2, b2, 0x20), _mm256_permute2x128_si256(a3, b3, 0x20),
+            _mm256_permute2x128_si256(a4, b4, 0x20), _mm256_permute2x128_si256(a5, b5, 0x20),
+            _mm256_permute2x128_si256(a6, b6, 0x20), _mm256_permute2x128_si256(a7, b7, 0x20),
+            @out);
+        // get the bottom 16x8 result: right 8x16 (LOADR(i), LOADR(i + 8))
+        transpose2_8x8_avx2(
+            _mm256_permute2x128_si256(a0, b0, 0x31), _mm256_permute2x128_si256(a1, b1, 0x31),
+            _mm256_permute2x128_si256(a2, b2, 0x31), _mm256_permute2x128_si256(a3, b3, 0x31),
+            _mm256_permute2x128_si256(a4, b4, 0x31), _mm256_permute2x128_si256(a5, b5, 0x31),
+            _mm256_permute2x128_si256(a6, b6, 0x31), _mm256_permute2x128_si256(a7, b7, 0x31),
+            @out.Slice(8));
     }
 
     [MethodImpl(AI)]
