@@ -27,6 +27,14 @@ internal sealed class NONRD_SCRATCH
     // read back by av1_block_yrd() (see the PORT-NOTE in nonrd_opt.c.cs).
     internal readonly short[] coeff_lp = new short[MAX_SB_SQUARE];
 
+    // av1_int_pro_motion_estimation(): the projections C mallocs per call (hbuf, vbuf,
+    // src_hbuf, src_vbuf), kept and grown as needed (see int_pro_buf).
+    internal short[] int_pro_hbuf, int_pro_vbuf, int_pro_src_hbuf, int_pro_src_vbuf;
+
+    // A buffer of at least n entries, reusing buf when it is large enough.
+    internal static short[] int_pro_buf(ref short[] buf, int n) =>
+        buf != null && buf.Length >= n ? buf : buf = new short[n];
+
     // av1_estimate_intra_mode() / av1_nonrd_pick_intra_mode(): `RD_STATS this_rdc` (pointed to by
     // args.rdc, a Ptr<RD_STATS>) and `struct estimate_block_intra_args args`.
     internal readonly RD_STATS[] intra_this_rdc = new RD_STATS[1];

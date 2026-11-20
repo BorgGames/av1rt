@@ -1642,11 +1642,14 @@ internal static partial class mcomp
             search_size_width_left + search_size_width_right + bw;
         int height_ref_buf =
             search_size_height_top + search_size_height_bottom + bh;
-        // TODO(perf): per-call allocation (C mallocs these per call too).
-        short[] hbuf = new short[width_ref_buf];
-        short[] vbuf = new short[height_ref_buf];
-        short[] src_hbuf = new short[bw];
-        short[] src_vbuf = new short[bh];
+        // [av1rt] C mallocs these per call; here they are per-thread buffers reused across
+        // calls (only the first width_ref_buf / height_ref_buf / bw / bh entries are written
+        // and read).
+        NONRD_SCRATCH int_pro = x.nonrd_scratch;
+        short[] hbuf = NONRD_SCRATCH.int_pro_buf(ref int_pro.int_pro_hbuf, width_ref_buf);
+        short[] vbuf = NONRD_SCRATCH.int_pro_buf(ref int_pro.int_pro_vbuf, height_ref_buf);
+        short[] src_hbuf = NONRD_SCRATCH.int_pro_buf(ref int_pro.int_pro_src_hbuf, bw);
+        short[] src_vbuf = NONRD_SCRATCH.int_pro_buf(ref int_pro.int_pro_src_vbuf, bh);
 
         // Set up prediction 1-D reference set for rows.
         ref_buf = xd.plane[0].pre[0].buf - search_size_width_left;

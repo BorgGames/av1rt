@@ -541,11 +541,19 @@ internal static partial class pickcdef
     {
         int nvfb = cdef_search_ctx.nvfb;
         int nhfb = cdef_search_ctx.nhfb;
-        // TODO(perf): per-frame allocation (the C code mallocs per frame too).
-        cdef_search_ctx.sb_index = new int[nvfb * nhfb];
+        // [av1rt] C mallocs these for each frame's search and frees them at its end. They stay
+        // with the context instead (see av1_cdef_dealloc_data) and are reused while large
+        // enough: at 4K they are 2 x 2040 arrays (2.2 MB per frame), and collecting them
+        // stalled the encoder for ~20 ms every few frames. Like the malloc'd C buffers they
+        // are not cleared: the frame's mse calculation writes every entry the search reads.
+        int n = nvfb * nhfb;
+        if (cdef_search_ctx.mse[0] == null || cdef_search_ctx.mse[0].Length < n)
+        {
+            cdef_search_ctx.sb_index = new int[n];
+            cdef_search_ctx.mse[0] = new_jagged<ulong>(n, TOTAL_STRENGTHS);
+            cdef_search_ctx.mse[1] = new_jagged<ulong>(n, TOTAL_STRENGTHS);
+        }
         cdef_search_ctx.sb_count = 0;
-        cdef_search_ctx.mse[0] = new_jagged<ulong>(nvfb * nhfb, TOTAL_STRENGTHS);
-        cdef_search_ctx.mse[1] = new_jagged<ulong>(nvfb * nhfb, TOTAL_STRENGTHS);
     }
 
     // Deallocates the memory allocated for members of CdefSearchCtx.
@@ -556,12 +564,9 @@ internal static partial class pickcdef
     //   Nothing will be returned.
     internal static void av1_cdef_dealloc_data(CdefSearchCtx cdef_search_ctx)
     {
-        if (cdef_search_ctx != null)
-        {
-            cdef_search_ctx.mse[0] = null;
-            cdef_search_ctx.mse[1] = null;
-            cdef_search_ctx.sb_index = Ptr<int>.Null;
-        }
+        // [av1rt] Nothing to free: the buffers stay with the context for the next frame's
+        // search (cdef_alloc_data) and are released with it when the encoder is freed.
+        _ = cdef_search_ctx;
     }
 
     private static readonly copy_fn_t s_copy_sb8_16_lowbd = av1_cdef_copy_sb8_16_lowbd;
