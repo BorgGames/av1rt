@@ -16,11 +16,36 @@
  *          [--threads 8] [--limit N] [--recon recon.yuv] [--qmax 56]
  *          [--drop 0] [--kf-interval 0] [--fps 60] [--sb 0|64|128]
  *          [--tile-cols log2 --tile-rows log2] [--aq 3] [--cdef 1]
+ *
+ * stderr gets the time of the aom_codec_encode calls after a warmup of
+ * min(10, frames / 10) frames, as `Av1rt.Cli bench` reports it.
  */
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+static double now_ms(void) {
+  LARGE_INTEGER f, c;
+  QueryPerformanceFrequency(&f);
+  QueryPerformanceCounter(&c);
+  return (double)c.QuadPart * 1000.0 / (double)f.QuadPart;
+}
+#else
+#include <time.h>
+static double now_ms(void) {
+  struct timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
+  return t.tv_sec * 1e3 + t.tv_nsec / 1e6;
+}
+#endif
+
+static int cmp_double(const void *a, const void *b) {
+  const double x = *(const double *)a, y = *(const double *)b;
+  return x < y ? -1 : x > y;
+}
 
 #include "aom/aom_encoder.h"
 #include "aom/aomcx.h"
@@ -278,6 +303,8 @@ int main(int argc, char **argv) {
   int frames_in = 0, frames_out = 0;
   int64_t total_bytes = 0;
   int flushing = 0;
+  double *enc_ms = NULL;
+  int enc_n = 0, enc_cap = 0;
   while (1) {
     aom_image_t *img = NULL;
     aom_enc_frame_flags_t flags = 0;
@@ -289,8 +316,17 @@ int main(int argc, char **argv) {
     } else {
       flushing = 1;
     }
+    const double t0 = now_ms();
     if (aom_codec_encode(&codec, img, pts, (unsigned long)duration, flags))
       die_codec(&codec, "encode");
+    if (img) {
+      if (enc_n == enc_cap) {
+        enc_cap = enc_cap ? 2 * enc_cap : 256;
+        enc_ms = (double *)realloc(enc_ms, enc_cap * sizeof(*enc_ms));
+        if (!enc_ms) die("out of memory");
+      }
+      enc_ms[enc_n++] = now_ms() - t0;
+    }
     int got = 0;
     const aom_codec_cx_pkt_t *pkt;
     aom_codec_iter_t iter = NULL;
@@ -327,6 +363,28 @@ int main(int argc, char **argv) {
   printf("frames_in %d frames_out %d bytes %lld kbps %.1f\n", frames_in,
          frames_out, (long long)total_bytes,
          frames_in ? total_bytes * 8.0 * fps / frames_in / 1000.0 : 0.0);
+  {
+    const int warmup = enc_n / 10 < 10 ? enc_n / 10 : 10;
+    const int n = enc_n - warmup;
+    if (n > 0) {
+      double sum = 0;
+      int over = 0;
+      for (int i = warmup; i < enc_n; i++) {
+        sum += enc_ms[i];
+        over += enc_ms[i] > 1000.0 / fps;
+      }
+      qsort(enc_ms + warmup, n, sizeof(*enc_ms), cmp_double);
+      const double *t = enc_ms + warmup;
+#define PCT(q) t[(int)((q) * n) < n - 1 ? (int)((q) * n) : n - 1]
+      fprintf(stderr,
+              "encode %.2f ms/frame (%.2f fps) over %d frames\n"
+              "frame ms: p50 %.2f  p95 %.2f  p99 %.2f  max %.2f  over %.2f: %d\n",
+              sum / n, n * 1000.0 / sum, n, PCT(0.5), PCT(0.95), PCT(0.99),
+              t[n - 1], 1000.0 / fps, over);
+#undef PCT
+    }
+    free(enc_ms);
+  }
   aom_img_free(&raw);
   if (aom_codec_destroy(&codec)) die_codec(&codec, "destroy");
   return 0;
