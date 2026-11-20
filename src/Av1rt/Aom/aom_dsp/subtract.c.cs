@@ -30,7 +30,9 @@ internal static partial class subtract
     internal static void aom_subtract_block(int rows, int cols, Ptr<short> diff_ptr,
                                             int diff_stride, Ptr<byte> src_ptr,
                                             int src_stride, Ptr<byte> pred_ptr,
-                                            int pred_stride) =>
-        aom_subtract_block_c(rows, cols, diff_ptr, diff_stride, src_ptr, src_stride, pred_ptr,
-                             pred_stride);
+                                            int pred_stride)
+    {
+        if (Simd.UseAvx2) aom_subtract_block_avx2(rows, cols, diff_ptr, diff_stride, src_ptr, src_stride, pred_ptr, pred_stride);
+        else aom_subtract_block_c(rows, cols, diff_ptr, diff_stride, src_ptr, src_stride, pred_ptr, pred_stride);
+    }
 }
