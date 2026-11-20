@@ -135,6 +135,13 @@ internal static class KernelBench
             T("lpf_h8_quad", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_horizontal_8_quad_avx2(P(ls * 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
             T("lpf_h6_quad", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_horizontal_6_quad_avx2(P(ls * 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
             T("lpf_v6_quad", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_vertical_6_quad_avx2(P(ls * 8 + 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
+            // Noise: the masks reject every pixel and the kernels return early, as on most
+            // edges of a real frame.
+            var noise = new byte[lpf.Length];
+            for (int i = 0; i < noise.Length; i++) { lr = lr * 1103515245 + 12345; noise[i] = (byte)(lr >> 16); }
+            Ptr<byte> N(int off) => new Ptr<byte>(noise, off);
+            T("lpf_h14_quad noise", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_horizontal_14_quad_avx2(N(ls * 16 + (i & 7) * 16), ls, B, L, H); return noise[ls * 16]; });
+            T("lpf_v14_quad noise", () => { for (int i = 0; i < 128; i++) loopfilter_avx2.aom_lpf_vertical_14_quad_avx2(N(ls * 8 + 16 + (i & 7) * 16), ls, B, L, H); return noise[ls * 16]; });
             T("lpf_v6_quad sse2", () => { for (int i = 0; i < 128; i++) loopfilter_sse2.aom_lpf_vertical_6_quad_sse2(P(ls * 8 + 16 + (i & 7) * 16), ls, B, L, H); return lpf[ls * 16]; });
         }
 

@@ -568,38 +568,42 @@ internal static partial class loopfilter_avx2
                                                      Ptr<byte> @out, int out_p,
                                                      int is_store_avx2)
     {
-        __m128i x0 = _mm_loadu_si128(in0);
-        __m128i x1 = _mm_loadu_si128(in0 + in_p * 1);
-        __m128i x2 = _mm_loadu_si128(in0 + in_p * 2);
-        __m128i x3 = _mm_loadu_si128(in0 + in_p * 3);
-        __m128i x4 = _mm_loadu_si128(in0 + in_p * 4);
-        __m128i x5 = _mm_loadu_si128(in0 + in_p * 5);
-        __m128i x6 = _mm_loadu_si128(in0 + in_p * 6);
-        __m128i x7 = _mm_loadu_si128(in0 + in_p * 7);
+        // [port] The 16 rows read and written, each as one checked window (out_p is 16, the
+        // transpose buffer, whenever is_store_avx2 is set).
+        Span<byte> src = in0.AsSpan(0, 15 * in_p + 16);
+        Span<byte> dst = @out.AsSpan(0, 15 * out_p + 16);
+        __m128i x0 = _mm_loadu_si128(src);
+        __m128i x1 = _mm_loadu_si128(src.Slice(in_p * 1));
+        __m128i x2 = _mm_loadu_si128(src.Slice(in_p * 2));
+        __m128i x3 = _mm_loadu_si128(src.Slice(in_p * 3));
+        __m128i x4 = _mm_loadu_si128(src.Slice(in_p * 4));
+        __m128i x5 = _mm_loadu_si128(src.Slice(in_p * 5));
+        __m128i x6 = _mm_loadu_si128(src.Slice(in_p * 6));
+        __m128i x7 = _mm_loadu_si128(src.Slice(in_p * 7));
 
         __m256i y0 = _mm256_insertf128_si256(
-            _mm256_castsi128_si256(x0), _mm_loadu_si128(in0 + in_p * 8),
+            _mm256_castsi128_si256(x0), _mm_loadu_si128(src.Slice(in_p * 8)),
             0x1);
         __m256i y1 = _mm256_insertf128_si256(
-            _mm256_castsi128_si256(x1), _mm_loadu_si128(in0 + in_p * 9),
+            _mm256_castsi128_si256(x1), _mm_loadu_si128(src.Slice(in_p * 9)),
             0x1);
         __m256i y2 = _mm256_insertf128_si256(
-            _mm256_castsi128_si256(x2), _mm_loadu_si128(in0 + in_p * 10),
+            _mm256_castsi128_si256(x2), _mm_loadu_si128(src.Slice(in_p * 10)),
             0x1);
         __m256i y3 = _mm256_insertf128_si256(
-            _mm256_castsi128_si256(x3), _mm_loadu_si128(in0 + in_p * 11),
+            _mm256_castsi128_si256(x3), _mm_loadu_si128(src.Slice(in_p * 11)),
             0x1);
         __m256i y4 = _mm256_insertf128_si256(
-            _mm256_castsi128_si256(x4), _mm_loadu_si128(in0 + in_p * 12),
+            _mm256_castsi128_si256(x4), _mm_loadu_si128(src.Slice(in_p * 12)),
             0x1);
         __m256i y5 = _mm256_insertf128_si256(
-            _mm256_castsi128_si256(x5), _mm_loadu_si128(in0 + in_p * 13),
+            _mm256_castsi128_si256(x5), _mm_loadu_si128(src.Slice(in_p * 13)),
             0x1);
         __m256i y6 = _mm256_insertf128_si256(
-            _mm256_castsi128_si256(x6), _mm_loadu_si128(in0 + in_p * 14),
+            _mm256_castsi128_si256(x6), _mm_loadu_si128(src.Slice(in_p * 14)),
             0x1);
         __m256i y7 = _mm256_insertf128_si256(
-            _mm256_castsi128_si256(x7), _mm_loadu_si128(in0 + in_p * 15),
+            _mm256_castsi128_si256(x7), _mm_loadu_si128(src.Slice(in_p * 15)),
             0x1);
 
         __m256i y_s00 = _mm256_unpacklo_epi8(y0, y1);
@@ -640,47 +644,47 @@ internal static partial class loopfilter_avx2
 
         if (is_store_avx2 != 0)
         {
-            _mm256_storeu_si256(@out, row_s01);
-            _mm256_storeu_si256(@out + (2 * out_p), row_s23);
-            _mm256_storeu_si256(@out + (4 * out_p), row_s45);
-            _mm256_storeu_si256(@out + (6 * out_p), row_s67);
-            _mm256_storeu_si256(@out + (8 * out_p), row_s89);
-            _mm256_storeu_si256(@out + (10 * out_p), row_s1011);
-            _mm256_storeu_si256(@out + (12 * out_p), row_s1213);
-            _mm256_storeu_si256(@out + (14 * out_p), row_s1415);
+            _mm256_storeu_si256(dst, row_s01);
+            _mm256_storeu_si256(dst.Slice(2 * out_p), row_s23);
+            _mm256_storeu_si256(dst.Slice(4 * out_p), row_s45);
+            _mm256_storeu_si256(dst.Slice(6 * out_p), row_s67);
+            _mm256_storeu_si256(dst.Slice(8 * out_p), row_s89);
+            _mm256_storeu_si256(dst.Slice(10 * out_p), row_s1011);
+            _mm256_storeu_si256(dst.Slice(12 * out_p), row_s1213);
+            _mm256_storeu_si256(dst.Slice(14 * out_p), row_s1415);
         }
         else
         {
-            _mm_storeu_si128(@out, _mm256_castsi256_si128(row_s01));
-            _mm_storeu_si128(@out + (2 * out_p),
+            _mm_storeu_si128(dst, _mm256_castsi256_si128(row_s01));
+            _mm_storeu_si128(dst.Slice(2 * out_p),
                              _mm256_castsi256_si128(row_s23));
-            _mm_storeu_si128(@out + (4 * out_p),
+            _mm_storeu_si128(dst.Slice(4 * out_p),
                              _mm256_castsi256_si128(row_s45));
-            _mm_storeu_si128(@out + (6 * out_p),
+            _mm_storeu_si128(dst.Slice(6 * out_p),
                              _mm256_castsi256_si128(row_s67));
-            _mm_storeu_si128(@out + (8 * out_p),
+            _mm_storeu_si128(dst.Slice(8 * out_p),
                              _mm256_castsi256_si128(row_s89));
-            _mm_storeu_si128(@out + (10 * out_p),
+            _mm_storeu_si128(dst.Slice(10 * out_p),
                              _mm256_castsi256_si128(row_s1011));
-            _mm_storeu_si128(@out + (12 * out_p),
+            _mm_storeu_si128(dst.Slice(12 * out_p),
                              _mm256_castsi256_si128(row_s1213));
-            _mm_storeu_si128(@out + (14 * out_p),
+            _mm_storeu_si128(dst.Slice(14 * out_p),
                              _mm256_castsi256_si128(row_s1415));
-            _mm_storeu_si128(@out + (1 * out_p),
+            _mm_storeu_si128(dst.Slice(1 * out_p),
                              _mm256_extracti128_si256(row_s01, 1));
-            _mm_storeu_si128(@out + (3 * out_p),
+            _mm_storeu_si128(dst.Slice(3 * out_p),
                              _mm256_extracti128_si256(row_s23, 1));
-            _mm_storeu_si128(@out + (5 * out_p),
+            _mm_storeu_si128(dst.Slice(5 * out_p),
                              _mm256_extracti128_si256(row_s45, 1));
-            _mm_storeu_si128(@out + (7 * out_p),
+            _mm_storeu_si128(dst.Slice(7 * out_p),
                              _mm256_extracti128_si256(row_s67, 1));
-            _mm_storeu_si128(@out + (9 * out_p),
+            _mm_storeu_si128(dst.Slice(9 * out_p),
                              _mm256_extracti128_si256(row_s89, 1));
-            _mm_storeu_si128(@out + (11 * out_p),
+            _mm_storeu_si128(dst.Slice(11 * out_p),
                              _mm256_extracti128_si256(row_s1011, 1));
-            _mm_storeu_si128(@out + (13 * out_p),
+            _mm_storeu_si128(dst.Slice(13 * out_p),
                              _mm256_extracti128_si256(row_s1213, 1));
-            _mm_storeu_si128(@out + (15 * out_p),
+            _mm_storeu_si128(dst.Slice(15 * out_p),
                              _mm256_extracti128_si256(row_s1415, 1));
         }
     }
@@ -690,35 +694,35 @@ internal static partial class loopfilter_avx2
                                                          Ptr<byte> _limit0,
                                                          Ptr<byte> _thresh0)
     {
+        lpf_horizontal_14_quad(s, p, _blimit0, _limit0, _thresh0);
+    }
+
+    // [av1rt] The body of aom_lpf_horizontal_14_quad_avx2. Returns whether the mask selected a
+    // pixel (false: the lines are unchanged), which aom_lpf_vertical_14_quad_avx2 uses to skip
+    // its transpose back.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool lpf_horizontal_14_quad(Ptr<byte> s, int p, Ptr<byte> _blimit0,
+                                               Ptr<byte> _limit0, Ptr<byte> _thresh0)
+    {
         __m128i mask, flat;
         __m128i zero = _mm_setzero_si128();
         __m128i ff = _mm_cmpeq_epi8(zero, zero);
 
-        __m256i p256_3 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s - 4 * p));
-        __m256i p256_2 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s - 3 * p));
-        __m256i p256_1 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s - 2 * p));
-        __m256i p256_0 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s - 1 * p));
-        __m256i q256_0 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s - 0 * p));
-        __m256i q256_1 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s + 1 * p));
-        __m256i q256_2 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s + 2 * p));
-        __m256i q256_3 =
-            _mm256_castpd_si256(_mm256_broadcast_pd(s + 3 * p));
-
-        __m128i p3 = _mm256_castsi256_si128(p256_3);
-        __m128i p2 = _mm256_castsi256_si128(p256_2);
-        __m128i p1 = _mm256_castsi256_si128(p256_1);
-        __m128i p0 = _mm256_castsi256_si128(p256_0);
-        __m128i q0 = _mm256_castsi256_si128(q256_0);
-        __m128i q1 = _mm256_castsi256_si128(q256_1);
-        __m128i q2 = _mm256_castsi256_si128(q256_2);
-        __m128i q3 = _mm256_castsi256_si128(q256_3);
+        // [av1rt] C loads each line broadcast to both lanes of a 256-bit register (p256_3 ..
+        // q256_3) for the flat filters. Here the lines are 128-bit loads from one window
+        // (w8: lines p3..q3; w14: p6..q6 below), and the 256-bit forms are built only past the
+        // early return most edges take: the lane pairs with _mm256_setr_m128i (C: blends of
+        // two broadcasts) and the 16-bit lines with _mm256_cvtepu8_epi16 (C: shuffles of the
+        // broadcasts with filt_loopfilter_avx2). Same values.
+        Span<byte> w8 = (s - 4 * p).AsSpan(0, 7 * p + 16);
+        __m128i p3 = _mm_loadu_si128(w8);
+        __m128i p2 = _mm_loadu_si128(w8.Slice(p));
+        __m128i p1 = _mm_loadu_si128(w8.Slice(2 * p));
+        __m128i p0 = _mm_loadu_si128(w8.Slice(3 * p));
+        __m128i q0 = _mm_loadu_si128(w8.Slice(4 * p));
+        __m128i q1 = _mm_loadu_si128(w8.Slice(5 * p));
+        __m128i q2 = _mm_loadu_si128(w8.Slice(6 * p));
+        __m128i q3 = _mm_loadu_si128(w8.Slice(7 * p));
 
         {
             __m128i limit_v =
@@ -757,7 +761,7 @@ internal static partial class loopfilter_avx2
             mask = _mm_cmpeq_epi8(mask, zero);
         }
 
-        if (0xffff == _mm_movemask_epi8(_mm_cmpeq_epi8(mask, zero))) return;
+        if (0xffff == _mm_movemask_epi8(_mm_cmpeq_epi8(mask, zero))) return false;
 
         // loop filter
         {
@@ -814,9 +818,9 @@ internal static partial class loopfilter_avx2
             qs1 = _mm_xor_si128(_mm_subs_epi8(qs1, filt), t80);
 
             // Derive flat
-            __m256i p0q0256 = _mm256_blend_epi32(p256_0, q256_0, 0xf0);
-            __m256i p2q2256 = _mm256_blend_epi32(p256_2, q256_2, 0xf0);
-            __m256i p3q3256 = _mm256_blend_epi32(p256_3, q256_3, 0xf0);
+            __m256i p0q0256 = _mm256_setr_m128i(p0, q0);
+            __m256i p2q2256 = _mm256_setr_m128i(p2, q2);
+            __m256i p3q3256 = _mm256_setr_m128i(p3, q3);
             __m256i ps0qs0256 =
                 _mm256_insertf128_si256(_mm256_castsi128_si256(ps0), qs0, 0x1);
             __m256i ps1qs1256 =
@@ -843,23 +847,18 @@ internal static partial class loopfilter_avx2
                 __m256i eight = _mm256_set1_epi16(8);
                 __m256i four = _mm256_set1_epi16(4);
 
-                __m256i p256_4 = _mm256_castpd_si256(
-                    _mm256_broadcast_pd(s - 5 * p));
-                __m256i q256_4 = _mm256_castpd_si256(
-                    _mm256_broadcast_pd(s + 4 * p));
-                __m256i p256_5 = _mm256_castpd_si256(
-                    _mm256_broadcast_pd(s - 6 * p));
-                __m256i q256_5 = _mm256_castpd_si256(
-                    _mm256_broadcast_pd(s + 5 * p));
-                __m256i p256_6 = _mm256_castpd_si256(
-                    _mm256_broadcast_pd(s - 7 * p));
-                __m256i q256_6 = _mm256_castpd_si256(
-                    _mm256_broadcast_pd(s + 6 * p));
+                Span<byte> w14 = (s - 7 * p).AsSpan(0, 13 * p + 16);
+                __m128i p6 = _mm_loadu_si128(w14);
+                __m128i p5 = _mm_loadu_si128(w14.Slice(p));
+                __m128i p4 = _mm_loadu_si128(w14.Slice(2 * p));
+                __m128i q4 = _mm_loadu_si128(w14.Slice(11 * p));
+                __m128i q5 = _mm_loadu_si128(w14.Slice(12 * p));
+                __m128i q6 = _mm_loadu_si128(w14.Slice(13 * p));
 
                 // Derive flat2
-                __m256i p4q4256 = _mm256_blend_epi32(p256_4, q256_4, 0xf0);
-                __m256i p5q5256 = _mm256_blend_epi32(p256_5, q256_5, 0xf0);
-                __m256i p6q6256 = _mm256_blend_epi32(p256_6, q256_6, 0xf0);
+                __m256i p4q4256 = _mm256_setr_m128i(p4, q4);
+                __m256i p5q5256 = _mm256_setr_m128i(p5, q5);
+                __m256i p6q6256 = _mm256_setr_m128i(p6, q6);
                 __m256i work1 = _mm256_or_si256(_mm256_subs_epu8(p4q4256, p0q0256),
                                                 _mm256_subs_epu8(p0q0256, p4q4256));
                 __m256i work2 = _mm256_or_si256(_mm256_subs_epu8(p5q5256, p0q0256),
@@ -874,17 +873,14 @@ internal static partial class loopfilter_avx2
                 flat2 = _mm_cmpeq_epi8(flat2, zero);
                 flat2 = _mm_and_si128(flat2, flat);  // flat2 & flat & mask
 
-                __m256i filter =
-                    _mm256_load_si256(filt_loopfilter_avx2);
-
-                p256_3 = _mm256_shuffle_epi8(p256_3, filter);
-                p256_2 = _mm256_shuffle_epi8(p256_2, filter);
-                p256_1 = _mm256_shuffle_epi8(p256_1, filter);
-                p256_0 = _mm256_shuffle_epi8(p256_0, filter);
-                q256_0 = _mm256_shuffle_epi8(q256_0, filter);
-                q256_1 = _mm256_shuffle_epi8(q256_1, filter);
-                q256_2 = _mm256_shuffle_epi8(q256_2, filter);
-                q256_3 = _mm256_shuffle_epi8(q256_3, filter);
+                __m256i p256_3 = _mm256_cvtepu8_epi16(p3);
+                __m256i p256_2 = _mm256_cvtepu8_epi16(p2);
+                __m256i p256_1 = _mm256_cvtepu8_epi16(p1);
+                __m256i p256_0 = _mm256_cvtepu8_epi16(p0);
+                __m256i q256_0 = _mm256_cvtepu8_epi16(q0);
+                __m256i q256_1 = _mm256_cvtepu8_epi16(q1);
+                __m256i q256_2 = _mm256_cvtepu8_epi16(q2);
+                __m256i q256_3 = _mm256_cvtepu8_epi16(q3);
 
                 __m256i p2p1p0 =
                     _mm256_add_epi16(p256_0, _mm256_add_epi16(p256_2, p256_1));
@@ -947,12 +943,12 @@ internal static partial class loopfilter_avx2
                 {
                     flat2_256 =
                         _mm256_insertf128_si256(_mm256_castsi128_si256(flat2), flat2, 0x1);
-                    p256_6 = _mm256_shuffle_epi8(p256_6, filter);
-                    p256_5 = _mm256_shuffle_epi8(p256_5, filter);
-                    p256_4 = _mm256_shuffle_epi8(p256_4, filter);
-                    q256_4 = _mm256_shuffle_epi8(q256_4, filter);
-                    q256_5 = _mm256_shuffle_epi8(q256_5, filter);
-                    q256_6 = _mm256_shuffle_epi8(q256_6, filter);
+                    __m256i p256_6 = _mm256_cvtepu8_epi16(p6);
+                    __m256i p256_5 = _mm256_cvtepu8_epi16(p5);
+                    __m256i p256_4 = _mm256_cvtepu8_epi16(p4);
+                    __m256i q256_4 = _mm256_cvtepu8_epi16(q4);
+                    __m256i q256_5 = _mm256_cvtepu8_epi16(q5);
+                    __m256i q256_6 = _mm256_cvtepu8_epi16(q6);
 
                     __m256i pixelFilter_p =
                         _mm256_add_epi16(p256_5, _mm256_add_epi16(p256_4, p256_3));
@@ -983,8 +979,8 @@ internal static partial class loopfilter_avx2
 
                     p0 = _mm256_castsi256_si128(p0q0256);
                     q0 = _mm256_extractf128_si256(p0q0256, 1);
-                    _mm_storeu_si128(s - 1 * p, p0);
-                    _mm_storeu_si128(s - 0 * p, q0);
+                    _mm_storeu_si128(w8.Slice(3 * p), p0);
+                    _mm_storeu_si128(w8.Slice(4 * p), q0);
 
                     // Derive p1 and q1
                     sum_p = _mm256_add_epi16(_mm256_sub_epi16(p256_6, q256_5),
@@ -1002,8 +998,8 @@ internal static partial class loopfilter_avx2
                     p1q1256 = _mm256_or_si256(flat2_p1q1, p1q1256);
                     p1 = _mm256_castsi256_si128(p1q1256);
                     q1 = _mm256_extractf128_si256(p1q1256, 1);
-                    _mm_storeu_si128(s - 2 * p, p1);
-                    _mm_storeu_si128(s + 1 * p, q1);
+                    _mm_storeu_si128(w8.Slice(2 * p), p1);
+                    _mm_storeu_si128(w8.Slice(5 * p), q1);
 
                     // Derive p2 and q2
                     sum_p = _mm256_add_epi16(_mm256_sub_epi16(p256_6, q256_4),
@@ -1021,8 +1017,8 @@ internal static partial class loopfilter_avx2
                     p2q2256 = _mm256_or_si256(flat2_p2q2, p2q2256);
                     p2 = _mm256_castsi256_si128(p2q2256);
                     q2 = _mm256_extractf128_si256(p2q2256, 1);
-                    _mm_storeu_si128(s - 3 * p, p2);
-                    _mm_storeu_si128(s + 2 * p, q2);
+                    _mm_storeu_si128(w8.Slice(1 * p), p2);
+                    _mm_storeu_si128(w8.Slice(6 * p), q2);
 
                     // Derive p3 and q3
                     sum_p = _mm256_add_epi16(_mm256_sub_epi16(p256_6, q256_3),
@@ -1040,8 +1036,8 @@ internal static partial class loopfilter_avx2
                     p3q3256 = _mm256_or_si256(flat2_p3q3, p3q3256);
                     p3 = _mm256_castsi256_si128(p3q3256);
                     q3 = _mm256_extractf128_si256(p3q3256, 1);
-                    _mm_storeu_si128(s - 4 * p, p3);
-                    _mm_storeu_si128(s + 3 * p, q3);
+                    _mm_storeu_si128(w8, p3);
+                    _mm_storeu_si128(w8.Slice(7 * p), q3);
 
                     // Derive p4 and q4
                     sum_p = _mm256_add_epi16(_mm256_sub_epi16(p256_6, q256_2),
@@ -1057,9 +1053,9 @@ internal static partial class loopfilter_avx2
                     p4q4256 = _mm256_andnot_si256(flat2_256, p4q4256);
                     flat2_p4q4 = _mm256_and_si256(flat2_256, flat2_p4q4);
                     p4q4256 = _mm256_or_si256(flat2_p4q4, p4q4256);
-                    _mm_storeu_si128(s - 5 * p,
+                    _mm_storeu_si128(w14.Slice(2 * p),
                                      _mm256_castsi256_si128(p4q4256));
-                    _mm_storeu_si128(s + 4 * p,
+                    _mm_storeu_si128(w14.Slice(11 * p),
                                      _mm256_extractf128_si256(p4q4256, 1));
 
                     // Derive p5 and q5
@@ -1076,29 +1072,30 @@ internal static partial class loopfilter_avx2
                     p5q5256 = _mm256_andnot_si256(flat2_256, p5q5256);
                     flat2_p5q5 = _mm256_and_si256(flat2_256, flat2_p5q5);
                     p5q5256 = _mm256_or_si256(flat2_p5q5, p5q5256);
-                    _mm_storeu_si128(s - 6 * p,
+                    _mm_storeu_si128(w14.Slice(1 * p),
                                      _mm256_castsi256_si128(p5q5256));
-                    _mm_storeu_si128(s + 5 * p,
+                    _mm_storeu_si128(w14.Slice(12 * p),
                                      _mm256_extractf128_si256(p5q5256, 1));
                 }
                 else
                 {
-                    _mm_storeu_si128(s - 3 * p, p2);
-                    _mm_storeu_si128(s - 2 * p, p1);
-                    _mm_storeu_si128(s - 1 * p, p0);
-                    _mm_storeu_si128(s - 0 * p, q0);
-                    _mm_storeu_si128(s + 1 * p, q1);
-                    _mm_storeu_si128(s + 2 * p, q2);
+                    _mm_storeu_si128(w8.Slice(1 * p), p2);
+                    _mm_storeu_si128(w8.Slice(2 * p), p1);
+                    _mm_storeu_si128(w8.Slice(3 * p), p0);
+                    _mm_storeu_si128(w8.Slice(4 * p), q0);
+                    _mm_storeu_si128(w8.Slice(5 * p), q1);
+                    _mm_storeu_si128(w8.Slice(6 * p), q2);
                 }
             }
             else
             {
-                _mm_storeu_si128(s - 2 * p, ps1);
-                _mm_storeu_si128(s - 1 * p, ps0);
-                _mm_storeu_si128(s - 0 * p, qs0);
-                _mm_storeu_si128(s + 1 * p, qs1);
+                _mm_storeu_si128(w8.Slice(2 * p), ps1);
+                _mm_storeu_si128(w8.Slice(3 * p), ps0);
+                _mm_storeu_si128(w8.Slice(4 * p), qs0);
+                _mm_storeu_si128(w8.Slice(5 * p), qs1);
             }
         }
+        return true;
     }
 
     // [port] DECLARE_ALIGNED(16, unsigned char, t_dst[256]): per-thread scratch (leaf use).
@@ -1115,8 +1112,10 @@ internal static partial class loopfilter_avx2
         trans_store_16x16_lpf_vert14(s - 8, pitch, t_dst, 16, 1);
 
         // Loop filtering
-        aom_lpf_horizontal_14_quad_avx2(t_dst + 8 * 16, 16, _blimit0, _limit0,
-                                        _thresh0);
+        // [av1rt] Transposed back only when the filter changed a pixel (C always does; the
+        // unchanged buffer transposes back to the same bytes).
+        if (!lpf_horizontal_14_quad(t_dst + 8 * 16, 16, _blimit0, _limit0, _thresh0))
+            return;
 
         // Transpose back
         trans_store_16x16_lpf_vert14(t_dst, 16, s - 8, pitch, 0);
