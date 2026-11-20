@@ -6,6 +6,8 @@ global using aom_cdf_prob = ushort;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.InteropServices;
 
 namespace Av1rt.Aom;
 
@@ -123,6 +125,24 @@ internal static partial class prob
         // Now, the equation becomes:
         //  4 + (count >> 4) + (nsymbs > 3).
         int rate = 4 + (count >> 4) + B(nsymbs > 3);
+
+        // [port] For 3 and 4 symbols (the coefficient base and range symbols, the most frequent
+        // ones) the first four entries are updated as one 64-bit vector of 16-bit lanes, the
+        // same arithmetic as the loop (no lane overflows: 0 <= cdf[i] <= CDF_PROB_TOP). Entry
+        // nsymbs - 1 is the zero terminator: its "down" is 0 and i < val never holds for it.
+        // For 3 symbols lane 3 is the counter, rewritten below.
+        if ((uint)(nsymbs - 3) <= 1 && Vector128.IsHardwareAccelerated)
+        {
+            Span<byte> bytes = MemoryMarshal.AsBytes(cdf);
+            Vector128<ushort> c = Vector128.CreateScalar(MemoryMarshal.Read<ulong>(bytes)).AsUInt16();
+            Vector128<ushort> up = c + Vector128.ShiftRightLogical(Vector128.Create((ushort)CDF_PROB_TOP) - c, rate);
+            Vector128<ushort> down = c - Vector128.ShiftRightLogical(c, rate);
+            Vector128<ushort> below = Vector128.LessThan(Vector128.Create((short)0, 1, 2, 3, 4, 5, 6, 7),
+                                                         Vector128.Create((short)val)).AsUInt16();
+            MemoryMarshal.Write(bytes, Vector128.ConditionalSelect(below, up, down).AsUInt64().ToScalar());
+            cdf[nsymbs] = (aom_cdf_prob)(count + B(count < 32));
+            return;
+        }
 
         // C: do { ... } while (++i < nsymbs - 1); nsymbs >= 2, so the bodies match.
         for (int i = 0; i < cdf.Length - 2; i++)

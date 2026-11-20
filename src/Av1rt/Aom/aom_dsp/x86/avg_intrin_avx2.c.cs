@@ -14,17 +14,21 @@ namespace Av1rt.Aom;
 // executed in the subset, see avg.c.cs) and everything under CONFIG_AV1_HIGHBITDEPTH.
 internal static partial class avg_intrin_avx2
 {
+    // [port] C passes __m256i in[8]; the rows are by-ref locals here, so once inlined they stay in
+    // registers (a span of vectors is a stack buffer every step stores to and reloads from).
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void hadamard_col8x2_avx2(Span<__m256i> @in, int iter)
+    private static void hadamard_col8x2_avx2(ref __m256i in0, ref __m256i in1, ref __m256i in2,
+                                             ref __m256i in3, ref __m256i in4, ref __m256i in5,
+                                             ref __m256i in6, ref __m256i in7, int iter)
     {
-        __m256i a0 = @in[0];
-        __m256i a1 = @in[1];
-        __m256i a2 = @in[2];
-        __m256i a3 = @in[3];
-        __m256i a4 = @in[4];
-        __m256i a5 = @in[5];
-        __m256i a6 = @in[6];
-        __m256i a7 = @in[7];
+        __m256i a0 = in0;
+        __m256i a1 = in1;
+        __m256i a2 = in2;
+        __m256i a3 = in3;
+        __m256i a4 = in4;
+        __m256i a5 = in5;
+        __m256i a6 = in6;
+        __m256i a7 = in7;
 
         __m256i b0 = _mm256_add_epi16(a0, a1);
         __m256i b1 = _mm256_sub_epi16(a0, a1);
@@ -73,67 +77,57 @@ internal static partial class avg_intrin_avx2
             b6 = _mm256_unpackhi_epi32(a2, a3);
             b7 = _mm256_unpackhi_epi32(a6, a7);
 
-            @in[0] = _mm256_unpacklo_epi64(b0, b1);
-            @in[1] = _mm256_unpackhi_epi64(b0, b1);
-            @in[2] = _mm256_unpacklo_epi64(b2, b3);
-            @in[3] = _mm256_unpackhi_epi64(b2, b3);
-            @in[4] = _mm256_unpacklo_epi64(b4, b5);
-            @in[5] = _mm256_unpackhi_epi64(b4, b5);
-            @in[6] = _mm256_unpacklo_epi64(b6, b7);
-            @in[7] = _mm256_unpackhi_epi64(b6, b7);
+            in0 = _mm256_unpacklo_epi64(b0, b1);
+            in1 = _mm256_unpackhi_epi64(b0, b1);
+            in2 = _mm256_unpacklo_epi64(b2, b3);
+            in3 = _mm256_unpackhi_epi64(b2, b3);
+            in4 = _mm256_unpacklo_epi64(b4, b5);
+            in5 = _mm256_unpackhi_epi64(b4, b5);
+            in6 = _mm256_unpacklo_epi64(b6, b7);
+            in7 = _mm256_unpackhi_epi64(b6, b7);
         }
         else
         {
-            @in[0] = _mm256_add_epi16(a0, a4);
-            @in[7] = _mm256_add_epi16(a1, a5);
-            @in[3] = _mm256_add_epi16(a2, a6);
-            @in[4] = _mm256_add_epi16(a3, a7);
-            @in[2] = _mm256_sub_epi16(a0, a4);
-            @in[6] = _mm256_sub_epi16(a1, a5);
-            @in[1] = _mm256_sub_epi16(a2, a6);
-            @in[5] = _mm256_sub_epi16(a3, a7);
+            in0 = _mm256_add_epi16(a0, a4);
+            in7 = _mm256_add_epi16(a1, a5);
+            in3 = _mm256_add_epi16(a2, a6);
+            in4 = _mm256_add_epi16(a3, a7);
+            in2 = _mm256_sub_epi16(a0, a4);
+            in6 = _mm256_sub_epi16(a1, a5);
+            in1 = _mm256_sub_epi16(a2, a6);
+            in5 = _mm256_sub_epi16(a3, a7);
         }
     }
 
     internal static void aom_hadamard_lp_8x8_dual_avx2(Ptr<short> src_diff,
                                                        int src_stride, Ptr<short> coeff)
     {
-        Span<__m256i> src = stackalloc __m256i[8];
-        src[0] = _mm256_loadu_si256(src_diff);
-        src[1] = _mm256_loadu_si256(src_diff += src_stride);
-        src[2] = _mm256_loadu_si256(src_diff += src_stride);
-        src[3] = _mm256_loadu_si256(src_diff += src_stride);
-        src[4] = _mm256_loadu_si256(src_diff += src_stride);
-        src[5] = _mm256_loadu_si256(src_diff += src_stride);
-        src[6] = _mm256_loadu_si256(src_diff += src_stride);
-        src[7] = _mm256_loadu_si256(src_diff + src_stride);
+        // [port] The eight rows in locals (see hadamard_col8x2_avx2), read and written through
+        // spans sliced once.
+        ReadOnlySpan<short> sd = src_diff.AsSpan(0, 7 * src_stride + 16);
+        __m256i src0 = _mm256_loadu_si256(sd);
+        __m256i src1 = _mm256_loadu_si256(sd.Slice(src_stride, 16));
+        __m256i src2 = _mm256_loadu_si256(sd.Slice(2 * src_stride, 16));
+        __m256i src3 = _mm256_loadu_si256(sd.Slice(3 * src_stride, 16));
+        __m256i src4 = _mm256_loadu_si256(sd.Slice(4 * src_stride, 16));
+        __m256i src5 = _mm256_loadu_si256(sd.Slice(5 * src_stride, 16));
+        __m256i src6 = _mm256_loadu_si256(sd.Slice(6 * src_stride, 16));
+        __m256i src7 = _mm256_loadu_si256(sd.Slice(7 * src_stride, 16));
 
-        hadamard_col8x2_avx2(src, 0);
-        hadamard_col8x2_avx2(src, 1);
+        hadamard_col8x2_avx2(ref src0, ref src1, ref src2, ref src3, ref src4, ref src5,
+                             ref src6, ref src7, 0);
+        hadamard_col8x2_avx2(ref src0, ref src1, ref src2, ref src3, ref src4, ref src5,
+                             ref src6, ref src7, 1);
 
-        _mm256_storeu_si256(coeff,
-                            _mm256_permute2x128_si256(src[0], src[1], 0x20));
-        coeff += 16;
-        _mm256_storeu_si256(coeff,
-                            _mm256_permute2x128_si256(src[2], src[3], 0x20));
-        coeff += 16;
-        _mm256_storeu_si256(coeff,
-                            _mm256_permute2x128_si256(src[4], src[5], 0x20));
-        coeff += 16;
-        _mm256_storeu_si256(coeff,
-                            _mm256_permute2x128_si256(src[6], src[7], 0x20));
-        coeff += 16;
-        _mm256_storeu_si256(coeff,
-                            _mm256_permute2x128_si256(src[0], src[1], 0x31));
-        coeff += 16;
-        _mm256_storeu_si256(coeff,
-                            _mm256_permute2x128_si256(src[2], src[3], 0x31));
-        coeff += 16;
-        _mm256_storeu_si256(coeff,
-                            _mm256_permute2x128_si256(src[4], src[5], 0x31));
-        coeff += 16;
-        _mm256_storeu_si256(coeff,
-                            _mm256_permute2x128_si256(src[6], src[7], 0x31));
+        Span<short> c = coeff.AsSpan(0, 128);
+        _mm256_storeu_si256(c, _mm256_permute2x128_si256(src0, src1, 0x20));
+        _mm256_storeu_si256(c.Slice(16), _mm256_permute2x128_si256(src2, src3, 0x20));
+        _mm256_storeu_si256(c.Slice(32), _mm256_permute2x128_si256(src4, src5, 0x20));
+        _mm256_storeu_si256(c.Slice(48), _mm256_permute2x128_si256(src6, src7, 0x20));
+        _mm256_storeu_si256(c.Slice(64), _mm256_permute2x128_si256(src0, src1, 0x31));
+        _mm256_storeu_si256(c.Slice(80), _mm256_permute2x128_si256(src2, src3, 0x31));
+        _mm256_storeu_si256(c.Slice(96), _mm256_permute2x128_si256(src4, src5, 0x31));
+        _mm256_storeu_si256(c.Slice(112), _mm256_permute2x128_si256(src6, src7, 0x31));
     }
 
     internal static void aom_hadamard_lp_16x16_avx2(Ptr<short> src_diff, int src_stride,
@@ -147,12 +141,14 @@ internal static partial class avg_intrin_avx2
                                           t_coeff + (idx * 64 * 2));
         }
 
+        // [port] In place over the 256 coefficients through one span (t_coeff == coeff here).
+        Span<short> tc = t_coeff.AsSpan(0, 256);
         for (int idx = 0; idx < 64; idx += 16)
         {
-            __m256i coeff0 = _mm256_loadu_si256(t_coeff);
-            __m256i coeff1 = _mm256_loadu_si256(t_coeff + 64);
-            __m256i coeff2 = _mm256_loadu_si256(t_coeff + 128);
-            __m256i coeff3 = _mm256_loadu_si256(t_coeff + 192);
+            __m256i coeff0 = _mm256_loadu_si256(tc.Slice(idx, 16));
+            __m256i coeff1 = _mm256_loadu_si256(tc.Slice(idx + 64, 16));
+            __m256i coeff2 = _mm256_loadu_si256(tc.Slice(idx + 128, 16));
+            __m256i coeff3 = _mm256_loadu_si256(tc.Slice(idx + 192, 16));
 
             __m256i b0 = _mm256_add_epi16(coeff0, coeff1);
             __m256i b1 = _mm256_sub_epi16(coeff0, coeff1);
@@ -163,12 +159,10 @@ internal static partial class avg_intrin_avx2
             b1 = _mm256_srai_epi16(b1, 1);
             b2 = _mm256_srai_epi16(b2, 1);
             b3 = _mm256_srai_epi16(b3, 1);
-            _mm256_storeu_si256(coeff, _mm256_add_epi16(b0, b2));
-            _mm256_storeu_si256(coeff + 64, _mm256_add_epi16(b1, b3));
-            _mm256_storeu_si256(coeff + 128, _mm256_sub_epi16(b0, b2));
-            _mm256_storeu_si256(coeff + 192, _mm256_sub_epi16(b1, b3));
-            coeff += 16;
-            t_coeff += 16;
+            _mm256_storeu_si256(tc.Slice(idx, 16), _mm256_add_epi16(b0, b2));
+            _mm256_storeu_si256(tc.Slice(idx + 64, 16), _mm256_add_epi16(b1, b3));
+            _mm256_storeu_si256(tc.Slice(idx + 128, 16), _mm256_sub_epi16(b0, b2));
+            _mm256_storeu_si256(tc.Slice(idx + 192, 16), _mm256_sub_epi16(b1, b3));
         }
     }
 

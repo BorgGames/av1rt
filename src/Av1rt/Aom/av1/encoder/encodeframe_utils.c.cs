@@ -51,7 +51,7 @@ internal static partial class encodeframe_utils
                                           PICK_MODE_CONTEXT ctx, int mi_row,
                                           int mi_col, BLOCK_SIZE bsize, RUN_TYPE dry_run)
     {
-        int i, x_idx, y;
+        int i, y;
         AV1_COMMON cm = cpi.common;
         CommonModeInfoParams mi_params = cm.mi_params;
         int num_planes = av1_num_planes(cm);
@@ -190,9 +190,14 @@ internal static partial class encodeframe_utils
             AOMMIN((xd.mb_to_right_edge >> (3 + MI_SIZE_LOG2)) + mi_width, mi_width);
         int rows = AOMMIN(
             (xd.mb_to_bottom_edge >> (3 + MI_SIZE_LOG2)) + mi_height, mi_height);
-        for (y = 0; y < rows; y++)
+        // [port] C: for (y < rows) for (x_idx < cols) xd->mi[x_idx + y * mis] = mi_addr. The first
+        // row is filled and copied to the others: a bulk copy of references costs one GC write
+        // barrier per row instead of one per element (up to 256 per block).
+        if (rows > 0 && cols > 0)
         {
-            for (x_idx = 0; x_idx < cols; x_idx++) xd.mi[x_idx + y * mis] = mi_addr;
+            Span<MB_MODE_INFO> row0 = xd.mi.AsSpan(0, cols);
+            row0.Fill(mi_addr);
+            for (y = 1; y < rows; y++) row0.CopyTo(xd.mi.AsSpan(y * mis, cols));
         }
 
         if (cpi.oxcf.q_cfg.aq_mode != 0 ||

@@ -506,15 +506,26 @@ internal static partial class encodetxb
         // record tx type usage
         td.rd_counts.tx_type_used[tx_size][tx_type]++;
 
-        for (int c = eob - 1; (c >= 0) && do_coeff_scan; --c)
+        // [port] C sums |qcoeff| over the scan (c = eob - 1 down to 0) into abs_sum_level, then
+        // av1_get_txb_entropy_context sums it again from c = 0, stopping once the sum reaches
+        // COEFF_CONTEXT_MASK. With the full sum at hand, the clamped total is that context level.
+        long abs_sum = -1;
+        if (do_coeff_scan)
         {
-            int pos = scan[c];
-            tran_low_t v = qcoeff[pos];
-            tran_low_t level = Math.Abs(v);
             /* abs_sum_level is needed to decide the job scheduling order of
              * pack bitstream multi-threading. This data is not needed if
              * multi-threading is disabled. */
-            if (cpi.mt_info.pack_bs_mt_enabled) td.abs_sum_level += (ulong)(long)level;
+            ReadOnlySpan<short> sc = scan.AsSpan(0, eob);
+            ReadOnlySpan<tran_low_t> qc = qcoeff.AsSpan(0, av1_get_max_eob(tx_size));
+            long sum = 0;
+            for (int c = 0; c < sc.Length; c++)
+            {
+                int v = qc[sc[c]];
+                int m = v >> 31;
+                sum += (v ^ m) - m;
+            }
+            td.abs_sum_level += (ulong)sum;
+            abs_sum = sum;
         }
         // Update the context needed to code the DC sign (if applicable)
         if (tcoeff[0] != 0)
@@ -522,8 +533,17 @@ internal static partial class encodetxb
             int dc_sign_ctx = txb_ctx.dc_sign_ctx;
             entropy_ctx[block] = (byte)(entropy_ctx[block] | (dc_sign_ctx << DC_SIGN_CTX_SHIFT));
         }
-        byte cul_level =
-            av1_get_txb_entropy_context(tcoeff, scan_order, eob);
+        byte cul_level;
+        if (abs_sum >= 0)
+        {
+            int level = (int)AOMMIN(abs_sum, COEFF_CONTEXT_MASK);
+            set_dc_sign(ref level, tcoeff[0]);
+            cul_level = (byte)level;
+        }
+        else
+        {
+            cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);
+        }
         av1_set_entropy_contexts(xd, pd, plane, plane_bsize, tx_size, cul_level,
                                  blk_col, blk_row);
     }

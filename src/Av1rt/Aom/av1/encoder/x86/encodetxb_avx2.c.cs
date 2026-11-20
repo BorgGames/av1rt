@@ -2,6 +2,7 @@
 
 global using static Av1rt.Aom.encodetxb_avx2;
 
+using System;
 using System.Diagnostics;
 
 namespace Av1rt.Aom;
@@ -22,8 +23,12 @@ internal static partial class encodetxb_avx2
         __m256i y_zeros = _mm256_setzero_si256();
         __m128i zero = _mm256_castsi256_si128(y_zeros);
 
-        Ptr<byte> ls = levels;
-        Ptr<tran_low_t> cf = coeff;
+        // [port] Through spans: each iteration slices its coefficients and level bytes once, so
+        // the loads and stores at constant offsets inside need no further checks.
+        int stride = height + TX_PAD_HOR;
+        ReadOnlySpan<tran_low_t> cs = coeff.AsSpan(0, width * height);
+        Span<byte> lv = levels.AsSpan(0, (width + TX_PAD_BOTTOM) * stride);
+        int ci = 0, li = 0;
 
         // Specialize each transform height with its constant padded stride
         // (height + TX_PAD_HOR) and zero the TX_PAD_BOTTOM (4) trailing rows directly
@@ -33,33 +38,33 @@ internal static partial class encodetxb_avx2
             Debug.Assert(width > 0 && width % 4 == 0);
             // Padded stride = 4 + 4 = 8; 4 rows of 4 coeffs + 4 zero-pad bytes per
             // iter.
-            Ptr<byte> ls_end = levels + width * 8;
-            do
+            for (int i = 0; i < width; i += 4)
             {
-                __m256i c0 = yy_loadu_256(cf);
-                __m256i c1 = yy_loadu_256(cf + 8);
+                ReadOnlySpan<tran_low_t> c = cs.Slice(ci, 16);
+                __m256i c0 = yy_loadu_256(c);
+                __m256i c1 = yy_loadu_256(c.Slice(8));
                 __m256i abs01 = _mm256_abs_epi16(_mm256_packs_epi32(c0, c1));
                 __m256i abs01_8 = _mm256_packs_epi16(abs01, y_zeros);
                 __m256i res_ = _mm256_shuffle_epi32(abs01_8, 0xd8);
                 __m256i res = _mm256_permute4x64_epi64(res_, 0xd8);
-                yy_storeu_256(ls, res);
-                ls += 32;
-                cf += 16;
-            } while (ls < ls_end);
+                yy_storeu_256(lv.Slice(li, 32), res);
+                li += 32;
+                ci += 16;
+            }
             // Zero 4 bottom padding rows (4 * 8 = 32 bytes).
-            yy_storeu_256(ls, y_zeros);
+            lv.Slice(li, 32).Clear();
         }
         else if (height == 8)
         {
             Debug.Assert(width > 0 && width % 4 == 0);
             // Padded stride = 8 + 4 = 12; 4 rows per iteration (4 * 12 = 48 bytes).
-            Ptr<byte> ls_end = levels + width * 12;
-            do
+            for (int i = 0; i < width; i += 4)
             {
-                __m256i coeffA = yy_loadu_256(cf);
-                __m256i coeffB = yy_loadu_256(cf + 8);
-                __m256i coeffC = yy_loadu_256(cf + 16);
-                __m256i coeffD = yy_loadu_256(cf + 24);
+                ReadOnlySpan<tran_low_t> c = cs.Slice(ci, 32);
+                __m256i coeffA = yy_loadu_256(c);
+                __m256i coeffB = yy_loadu_256(c.Slice(8));
+                __m256i coeffC = yy_loadu_256(c.Slice(16));
+                __m256i coeffD = yy_loadu_256(c.Slice(24));
                 __m256i coeffAB = _mm256_packs_epi32(coeffA, coeffB);
                 __m256i coeffCD = _mm256_packs_epi32(coeffC, coeffD);
                 __m256i absAB = _mm256_abs_epi16(coeffAB);
@@ -70,32 +75,32 @@ internal static partial class encodetxb_avx2
                 __m128i res0 = _mm256_castsi256_si128(res);
                 __m128i res1 = _mm256_extracti128_si256(res, 1);
 
-                xx_storel_64(ls, res0);
-                xx_storel_32(ls + 8, zero);
-                xx_storel_64(ls + 12, _mm_srli_si128(res0, 8));
-                xx_storel_32(ls + 20, zero);
-                xx_storel_64(ls + 24, res1);
-                xx_storel_32(ls + 32, zero);
-                xx_storel_64(ls + 36, _mm_srli_si128(res1, 8));
-                xx_storel_32(ls + 44, zero);
-                cf += 32;
-                ls += 48;
-            } while (ls < ls_end);
+                Span<byte> l = lv.Slice(li, 48);
+                xx_storel_64(l, res0);
+                xx_storel_32(l.Slice(8), zero);
+                xx_storel_64(l.Slice(12), _mm_srli_si128(res0, 8));
+                xx_storel_32(l.Slice(20), zero);
+                xx_storel_64(l.Slice(24), res1);
+                xx_storel_32(l.Slice(32), zero);
+                xx_storel_64(l.Slice(36), _mm_srli_si128(res1, 8));
+                xx_storel_32(l.Slice(44), zero);
+                ci += 32;
+                li += 48;
+            }
             // Zero 4 bottom padding rows (4 * 12 = 48 bytes).
-            yy_storeu_256(ls, y_zeros);
-            xx_storeu_128(ls + 32, zero);
+            lv.Slice(li, 48).Clear();
         }
         else if (height == 16)
         {
             Debug.Assert(width > 0 && width % 2 == 0);
             // Padded stride = 16 + 4 = 20; 2 rows per iteration (2 * 20 = 40 bytes).
-            Ptr<byte> ls_end = levels + width * 20;
-            do
+            for (int i = 0; i < width; i += 2)
             {
-                __m256i coeffA = yy_loadu_256(cf);
-                __m256i coeffB = yy_loadu_256(cf + 8);
-                __m256i coeffC = yy_loadu_256(cf + 16);
-                __m256i coeffD = yy_loadu_256(cf + 24);
+                ReadOnlySpan<tran_low_t> c = cs.Slice(ci, 32);
+                __m256i coeffA = yy_loadu_256(c);
+                __m256i coeffB = yy_loadu_256(c.Slice(8));
+                __m256i coeffC = yy_loadu_256(c.Slice(16));
+                __m256i coeffD = yy_loadu_256(c.Slice(24));
                 __m256i coeffAB = _mm256_packs_epi32(coeffA, coeffB);
                 __m256i coeffCD = _mm256_packs_epi32(coeffC, coeffD);
                 __m256i absAB = _mm256_abs_epi16(coeffAB);
@@ -104,29 +109,28 @@ internal static partial class encodetxb_avx2
                 __m256i res_ = _mm256_permute4x64_epi64(absABCD, 0xd8);
                 __m256i res = _mm256_shuffle_epi32(res_, 0xd8);
 
-                xx_storeu_128(ls, _mm256_castsi256_si128(res));
-                xx_storeu_128(ls + 20, _mm256_extracti128_si256(res, 1));
-                cf += 32;
-                xx_storel_32(ls + 16, zero);
-                xx_storel_32(ls + 36, zero);
-                ls += 40;
-            } while (ls < ls_end);
+                Span<byte> l = lv.Slice(li, 40);
+                xx_storeu_128(l, _mm256_castsi256_si128(res));
+                xx_storel_32(l.Slice(16), zero);
+                xx_storeu_128(l.Slice(20), _mm256_extracti128_si256(res, 1));
+                xx_storel_32(l.Slice(36), zero);
+                ci += 32;
+                li += 40;
+            }
             // Zero 4 bottom padding rows (4 * 20 = 80 bytes).
-            yy_storeu_256(ls, y_zeros);
-            yy_storeu_256(ls + 32, y_zeros);
-            xx_storeu_128(ls + 64, zero);
+            lv.Slice(li, 80).Clear();
         }
         else
         {
             Debug.Assert(height == 32 && width > 0);
             // Padded stride = 32 + 4 = 36; 1 row per iteration (36 bytes).
-            Ptr<byte> ls_end = levels + width * 36;
-            do
+            for (int i = 0; i < width; i++)
             {
-                __m256i coeffA = yy_loadu_256(cf);
-                __m256i coeffB = yy_loadu_256(cf + 8);
-                __m256i coeffC = yy_loadu_256(cf + 16);
-                __m256i coeffD = yy_loadu_256(cf + 24);
+                ReadOnlySpan<tran_low_t> c = cs.Slice(ci, 32);
+                __m256i coeffA = yy_loadu_256(c);
+                __m256i coeffB = yy_loadu_256(c.Slice(8));
+                __m256i coeffC = yy_loadu_256(c.Slice(16));
+                __m256i coeffD = yy_loadu_256(c.Slice(24));
                 __m256i coeffAB = _mm256_packs_epi32(coeffA, coeffB);
                 __m256i coeffCD = _mm256_packs_epi32(coeffC, coeffD);
                 __m256i absAB = _mm256_abs_epi16(coeffAB);
@@ -135,17 +139,14 @@ internal static partial class encodetxb_avx2
                 __m256i res_ = _mm256_permute4x64_epi64(absABCD, 0xd8);
                 __m256i res = _mm256_shuffle_epi32(res_, 0xd8);
 
-                yy_storeu_256(ls, res);
-                cf += 32;
-                xx_storel_32(ls + 32, zero);
-                ls += 36;
-            } while (ls < ls_end);
+                Span<byte> l = lv.Slice(li, 36);
+                yy_storeu_256(l, res);
+                xx_storel_32(l.Slice(32), zero);
+                ci += 32;
+                li += 36;
+            }
             // Zero 4 bottom padding rows (4 * 36 = 144 bytes).
-            yy_storeu_256(ls, y_zeros);
-            yy_storeu_256(ls + 32, y_zeros);
-            yy_storeu_256(ls + 64, y_zeros);
-            yy_storeu_256(ls + 96, y_zeros);
-            xx_storeu_128(ls + 128, zero);
+            lv.Slice(li, 144).Clear();
         }
     }
 }
