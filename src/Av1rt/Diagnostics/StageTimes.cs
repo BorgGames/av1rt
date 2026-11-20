@@ -49,8 +49,26 @@ internal static class StageTimes
         if (stage == Stage.Total) s_frames++;
     }
 
+    private static readonly long[] s_frameStart = new long[(int)Stage.Count];
+
+    /// <summary>The stage times since the previous call (one frame when called after each
+    /// frame), as "Stage ms" pairs.</summary>
+    internal static string FrameStages()
+    {
+        if (!Enabled) return string.Empty;
+        var sb = new StringBuilder();
+        for (int i = 1; i < (int)Stage.Count; i++)
+        {
+            long d = s_ticks[i] - s_frameStart[i];
+            s_frameStart[i] = s_ticks[i];
+            if (d > 0) sb.Append($" {(Stage)i} {d * 1000.0 / Stopwatch.Frequency:F2}");
+        }
+        return sb.ToString();
+    }
+
     internal static void Reset()
     {
+        Array.Clear(s_frameStart);
         Array.Clear(s_ticks);
         Array.Clear(s_counters);
         s_frames = 0;

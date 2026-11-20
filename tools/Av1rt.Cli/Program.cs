@@ -95,6 +95,7 @@ static int Encode(string[] args)
 
 static int Bench(string[] args)
 {
+    bool frameLog = Environment.GetEnvironmentVariable("AV1RT_FRAMELOG") == "1";
     if (args.Length < 2) return Usage();
     using var y4m = Y4mReader.Open(args[1]);
     var (o, extra) = Parse(args, 2, y4m);
@@ -115,6 +116,7 @@ static int Bench(string[] args)
     TimeSpan user0 = default, kernel0 = default;
     using var self = Process.GetCurrentProcess();
     using var allocTrace = AllocTrace.Enabled ? new AllocTrace() : null;
+    var frameMs = new List<double>(total);
     for (int i = 0; i < total; i++)
     {
         if (i == warmup)
@@ -134,9 +136,16 @@ static int Bench(string[] args)
         int idx = k < frames.Count ? k : period - k;
         output.ResetWrittenCount();
         long t0 = Av1rt.Diagnostics.StageTimes.Start();
+        long f0 = Stopwatch.GetTimestamp();
         var r = enc.Encode(frames[idx], output);
+        double ms = Stopwatch.GetElapsedTime(f0).TotalMilliseconds;
         Av1rt.Diagnostics.StageTimes.Stop(Av1rt.Diagnostics.StageTimes.Stage.Total, t0);
-        if (i >= warmup) bytes += r.Length;
+        if (i >= warmup)
+        {
+            bytes += r.Length;
+            frameMs.Add(ms);
+        }
+        if (frameLog) Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture, $"frame {i} {ms:F2} ms {r.Length} B{Av1rt.Diagnostics.StageTimes.FrameStages()}"));
     }
     sw.Stop();
     int timed = total - warmup;
@@ -144,6 +153,12 @@ static int Bench(string[] args)
     double kbps = bytes * 8.0 / 1000 / ((double)timed / o.FrameRate);
     Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
         $"{o.Width}x{o.Height} speed {o.Speed}: {fps:F2} fps over {timed} frames, {kbps:F0} kbps at {o.FrameRate} fps nominal"));
+    // Per-frame encode time: what a live 60 fps stream sees, unlike the average.
+    frameMs.Sort();
+    double Pct(double q) => frameMs[Math.Min(frameMs.Count - 1, (int)(q * frameMs.Count))];
+    double budget = 1000.0 / o.FrameRate;
+    Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+        $"frame ms: p50 {Pct(0.5):F2}  p95 {Pct(0.95):F2}  p99 {Pct(0.99):F2}  max {frameMs[^1]:F2}  over {budget:F2}: {frameMs.FindAll(t => t > budget).Count}"));
     Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture,
         $"allocated {(GC.GetTotalAllocatedBytes(true) - alloc0) / (double)timed / 1024:F0} KiB/frame, {GC.CollectionCount(0) - gc0} gen0 collections"));
     self.Refresh();
