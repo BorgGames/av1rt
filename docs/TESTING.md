@@ -30,15 +30,24 @@ not the width, extreme pixel values (0/255), and boundary cases.
 `av1rt` and `tools/oracle/av1rt_oracle.exe` encode the same `.y4m` with the same settings; the IVF
 payloads must be byte-identical, and the reconstruction must match `ffmpeg -c:v libdav1d`'s decode.
 
-The cases are in `tests/Av1rt.Tests/EndToEnd/cases.txt`. The `bbb*` ones use public clips that
-`tools/oracle/get-clips.ps1` cuts from Big Buck Bunny (needs ffmpeg); the others use local captures
-that are not distributed. Make the clips, then the oracle's reference streams, then run:
+The cases are in `tests/Av1rt.Tests/EndToEnd/cases.txt`. Some clips are public, and
+`tools/oracle/get-clips.ps1` makes them (it needs ffmpeg):
+
+* the `bbb*` ones, cut from Big Buck Bunny;
+* `strip640`, a synthetic barcode over a still picture.
+
+The others use local captures that are not distributed. Make the clips, then the oracle's
+reference streams, then run:
 
     pwsh tools/oracle/get-clips.ps1
     bash tools/oracle/make-refs.sh            # skips cases whose clip is missing
-    dotnet test tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release --filter "Category=EndToEnd&DisplayName~bbb"
+    dotnet test tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release --filter "Category=EndToEnd&(DisplayName~bbb|DisplayName~strip)"
 
-CI does the same after the differential tests; drop `&DisplayName~bbb` locally when the captures are there.
+CI does the same after the differential tests. Drop the `DisplayName` part of the filter locally
+when the captures are there.
+
+The oracle is libaom with the fixes in `tools/oracle/patches/` applied, which `build.ps1` does
+(see PORTING.md §1).
 
 ## Finding the first divergence
 

@@ -1,0 +1,30 @@
+nonrd pickmode: test the DC of each transform block before skipping the residual
+
+set_early_term_based_on_uv_plane() lets a block skip its residual when every transform block's
+AC and DC would quantise to zero. `sse == var` (the whole block's residual sums to zero) also
+passes the DC test, but a zero mean over the block does not make each transform block's DC zero:
+positive and negative transform blocks cancel. Two flat 16x16 areas changing in opposite
+directions inside one 32x32 block (for example two cells of a barcode) then make the block skip,
+and it keeps the previous frame's content for as long as the source stays the same.
+
+The port carries the same change (src/Av1rt/Aom/av1/encoder/nonrd_pickmode.c.cs); build.ps1
+applies this to the libaom sources so the oracle stays bit-exact with it.
+
+diff --git a/av1/encoder/nonrd_pickmode.c b/av1/encoder/nonrd_pickmode.c
+index 0e7540f..192016f 100644
+--- a/av1/encoder/nonrd_pickmode.c
++++ b/av1/encoder/nonrd_pickmode.c
+@@ -638,8 +638,11 @@ static inline void set_early_term_based_on_uv_plane(
+       ac_test = 0;
+       break;
+     }
+-    // Check if dc coefficient can be quantized to zero.
+-    if (!(sse_tx[k] - var_tx[k] < dc_thr || sse == var)) {
++    // Check if dc coefficient can be quantized to zero. This is a test of
++    // each transform block: a zero mean over the whole block (sse == var)
++    // does not make the DC of each transform block zero, as positive and
++    // negative transform blocks cancel out.
++    if (!(sse_tx[k] - var_tx[k] < dc_thr)) {
+       dc_test = 0;
+       break;
+     }

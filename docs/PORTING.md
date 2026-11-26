@@ -18,6 +18,16 @@ beats elegance everywhere under `src/Av1rt/Aom/`.
 A clean idiomatic public API is built later in `src/Av1rt/Api/` on top of the port.
 Do not "improve" the port itself: no renames, no restructuring, no algorithm changes.
 
+The one exception is a libaom bug that damages the picture. Fix it in both places: in the port,
+marked `// [fix]` with the reason, and in the oracle, as a patch in `tools/oracle/patches/` that
+`tools/oracle/build.ps1` applies to the libaom sources. That keeps the two byte-identical. Add an
+end-to-end case that shows the bug. Fixes so far:
+
+* `nonrd-dc-skip-per-transform-block.patch`: `set_early_term_based_on_uv_plane` passed the DC
+  test of every transform block when the whole block's residual summed to zero. Blocks with
+  areas changing in opposite directions then skipped, and kept the previous frame's content
+  (case `strip640`, `StaticStripTests`).
+
 ## 2. Files, classes, names
 
 * C file `aom/<dir>/<stem>.c` → `src/Av1rt/Aom/<dir>/<stem>.c.cs`;
