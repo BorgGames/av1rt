@@ -5,6 +5,8 @@
 #
 # Outputs go to .oracle/ in the repository root. Requires Visual Studio 2026 and the libaom
 # sources at the commit in libaom.commit, next to this repository (..\aom) or in $env:AOM_ROOT.
+# The libaom fixes the port carries (patches/*.patch) are applied to those sources first, unless
+# they already are.
 param([switch]$Coverage)
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\common.ps1"
@@ -15,6 +17,14 @@ $aomRoot = $tools.AomRoot
 $vs = $tools.VS
 $cmake = $tools.CMake
 $perl = $tools.Perl
+
+foreach ($patch in Get-ChildItem "$PSScriptRoot\patches\*.patch" | Sort-Object Name) {
+    & git -C $aomRoot apply --ignore-whitespace --reverse --check $patch.FullName 2>$null
+    if ($LASTEXITCODE -eq 0) { continue }
+    & git -C $aomRoot apply --ignore-whitespace $patch.FullName
+    if ($LASTEXITCODE) { throw "cannot apply $($patch.Name) to $aomRoot" }
+    Write-Host "applied $($patch.Name)"
+}
 
 $suffix = if ($Coverage) { '-cov' } else { '' }
 $aomBuild = "$repo\.oracle\build$suffix"

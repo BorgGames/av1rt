@@ -675,7 +675,12 @@ internal static partial class nonrd_pickmode
                 break;
             }
             // Check if dc coefficient can be quantized to zero.
-            if (!(sse_tx[k] - var_tx[k] < dc_thr || sse == var))
+            // [fix] libaom also passes this when sse == var (the whole block's residual sums to
+            // zero), but that does not make each transform block's DC zero: positive and negative
+            // transform blocks cancel, and the block skips a residual it needs (two flat 16x16
+            // areas changing in opposite directions keep the previous frame's content). The
+            // oracle carries the same change: tools/oracle/patches/nonrd-dc-skip-per-transform-block.patch.
+            if (!(sse_tx[k] - var_tx[k] < dc_thr))
             {
                 dc_test = 0;
                 break;

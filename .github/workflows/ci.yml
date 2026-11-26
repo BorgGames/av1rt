@@ -44,7 +44,7 @@ jobs:
             .oracle/shims
             .oracle/oracle/Release/av1rt_oracle.exe
             .oracle/build/Release/aomdec.exe
-          key: libaom-tools-${{ hashFiles('tools/oracle/libaom.commit', 'tools/oracle/*.ps1', 'tools/oracle/CMakeLists.txt', 'tools/oracle/av1rt_oracle.c', 'tools/oracle/shim/**') }}
+          key: libaom-tools-${{ hashFiles('tools/oracle/libaom.commit', 'tools/oracle/*.ps1', 'tools/oracle/CMakeLists.txt', 'tools/oracle/av1rt_oracle.c', 'tools/oracle/shim/**', 'tools/oracle/patches/**') }}
 
       - name: Fetch libaom
         if: steps.shims.outputs.cache-hit != 'true'
@@ -53,6 +53,7 @@ jobs:
         run: |
           $sha = (Get-Content tools/oracle/libaom.commit -TotalCount 1).Trim()
           git init -q $env:AOM_ROOT
+          git -C $env:AOM_ROOT config core.autocrlf false   # LF, as tools/oracle/patches expect
           git -C $env:AOM_ROOT fetch -q --depth 1 https://aomedia.googlesource.com/aom $sha
           if ($LASTEXITCODE) { git -C $env:AOM_ROOT fetch -q --depth 1 https://github.com/m-ab-s/aom $sha }
           if ($LASTEXITCODE) { throw "cannot fetch libaom $sha" }
@@ -110,7 +111,7 @@ jobs:
         run: tools/oracle/make-refs.sh
 
       - name: Test av1rt end to end
-        run: dotnet test tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release --no-build --filter "Category=EndToEnd&DisplayName~bbb"
+        run: dotnet test tests/Av1rt.Tests/Av1rt.Tests.csproj -c Release --no-build --filter "Category=EndToEnd&(DisplayName~bbb|DisplayName~strip)"
 
   publish:
     name: Publish to NuGet

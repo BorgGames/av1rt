@@ -37,3 +37,20 @@ foreach ($c in $clips) {
     Move-Item -Force "$y4m.tmp" $y4m
     Write-Host "made $y4m"
 }
+
+# strip640: a synthetic 640x480 clip, grey but for a barcode of the frame number along the bottom,
+# 32 cells of 16x16 on the transform grid (cell k at x = 64 + 16k shows bit 31 - k, white for 1).
+# Pairs of cells in one 32x32 block flip in opposite directions (01 -> 10), the case where a block
+# whose residual sums to zero must still not skip it (patches/nonrd-dc-skip-per-transform-block.patch).
+$y4m = "$out\strip640.y4m"
+if (-not (Test-Path $y4m)) {
+    $vf = @('drawbox=x=64:y=448:w=512:h=16:color=black:t=fill')
+    foreach ($bit in 0..7) {
+        $vf += "drawbox=x=$(64 + 16 * (31 - $bit)):y=448:w=16:h=16:color=white:t=fill:enable='mod(floor(n/$([math]::Pow(2, $bit))),2)'"
+    }
+    & ffmpeg -nostdin -loglevel error -y -f lavfi -i 'color=c=0x808080:s=640x480:r=30' -vf ($vf -join ',') `
+        -frames:v 150 -pix_fmt yuv420p -f yuv4mpegpipe "$y4m.tmp"
+    if ($LASTEXITCODE) { throw "cannot make $y4m" }
+    Move-Item -Force "$y4m.tmp" $y4m
+    Write-Host "made $y4m"
+}
